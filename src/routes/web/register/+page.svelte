@@ -35,7 +35,7 @@
 
         <!-- Right Section -->
         <div class="flex flex-col items-center flex-1 pt-9">
-            <div class="max-w-[180px] text-center mb-5 border border-gray-200 p-5 rounded-lg">
+            <div class="max-w-[250px] text-center mb-5 border border-gray-200 p-5 rounded-lg">
                 <div class="flex justify-center mb-3">
                     <img src="/img/Star 1.png" alt="" class="h-5 w-5">
                     <img src="/img/Star 1.png" alt="" class="h-5 w-5">
