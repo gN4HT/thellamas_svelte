@@ -11,35 +11,35 @@
   </div>
   <div class="px-2 pb-5 space-y-2">
     <a
-      href="dashboard"
+      href="/app/dashboard"
       class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/dashboard"}
     >
       <img src="/img/Items.png" alt="Dashboard Icon" />
       <span class="ml-3 text-white text-sm">Bảng điều khiển</span>
     </a>
     <a
-      href="items"
-      class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/items"}
+      href="/app/items/all"
+      class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={($page.url.pathname.startsWith("/app/items"))}
     >
       <img src="/img/Items (1).png" alt="Items Icon" />
       <span class="ml-3 text-white text-sm">Mặt hàng</span>
     </a>
     <a
-      href="search"
+      href="/app/search"
       class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/search"}
     >
       <img src="/img/Items (2).png" alt="Search Icon" />
       <span class="ml-3 text-white text-sm">Tìm kiếm</span>
     </a>
     <a
-      href="tags"
+      href="/app/tags"
       class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/tags"}
     >
       <img src="/img/Items (3).png" alt="Tags Icon" />
       <span class="ml-3 text-white text-sm">Các thẻ Tag</span>
     </a>
     <a
-      href="workflows"
+      href="/app/workflows"
       class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/workflows"}
     >
       <img src="/img/Frame 87.png" alt="Workflows Icon" class="ml-1" />
@@ -47,36 +47,38 @@
     </a>
 
     <a
-      href="reports"
-      class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/reports"}
-    >
-      <img src="/img/Items (4).png" alt="Reports Icon" />
-      <span class="ml-3 text-white text-sm">Báo cáo</span>
-    </a>
+    href="/app/reports/activeHistory"
+    class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item"
+    class:active={($page.url.pathname.startsWith("/app/reports"))}
+  >
+    <img src="/img/Items (4).png" alt="Reports Icon" />
+    <span class="ml-3 text-white text-sm">Báo cáo</span>
+  </a>
+  
     <div class="pb-[180px]"></div>
     <a
-      href="productnews"
+      href="/app/productnews"
       class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/productnews"}
     >
       <img src="/img/Items (5).png" alt="Product News Icon" />
       <span class="ml-3 text-white text-sm">Tin tức sản phẩm</span>
     </a>
     <a
-      href="help"
+      href="/app/help"
       class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/help"}
     >
       <img src="/img/Items (6).png" alt="Help Icon" />
       <span class="ml-3 text-white text-sm">Trợ giúp</span>
     </a>
     <a
-      href="notification"
+      href="/app/notification"
       class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/notification"}
     >
       <img src="/img/Items (7).png" alt="Notifications Icon" />
       <span class="ml-3 text-white text-sm">Thông báo</span>
     </a>
     <a
-      href="settings"
+      href="/app/settings"
       class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/settings"}
     >
       <img src="/img/Items (8).png" alt="Settings Icon" />
@@ -106,7 +108,10 @@ aside, main {
   font-family: "PoppinsRegular";
   font-size: 14px;
 }
-.sidebar-item.active {
+.sidebar-item.active, .sidebar-item:hover {
     background-color: rgba(255, 255, 255, 0.1);
+  }
+  .sidebar-item:hover{
+    cursor: pointer;
   }
 </style>

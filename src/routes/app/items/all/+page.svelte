@@ -1,5 +1,4 @@
 <script>
-
   let data = {
     folders: [
       { id: 1, name: "Thư mục A", isNew: true },
@@ -28,34 +27,11 @@
   }
 </script>
 
-<div class="flex">
-  <!-- Sidebar -->
-  <div class="w-64 bg-white shadow-md border-r p-4 h-screen fixed">
-    <div class="mb-6 flex justify-between items-center p-2 border rounded-md">
-    <i class="fa-solid fa-magnifying-glass mr-2"></i>
-      <input type="text" placeholder="Tìm thư mục" class="w-full border-none outline-none" />
-    </div>
-    <div class="flex items-center space-x-2 text-[#00205b] font-medium p-2 bg-gray-100 cursor-pointer rounded-md">
-      <span class="text-lg"><i class="fa-solid fa-box"></i></span>
-      <span>Tất cả mặt hàng</span>
-    </div>
-    {#each data.folders as folder}
-      <div class="pl-6 mt-2">
-        <div class="flex items-center space-x-2 text-gray-600 hover:text-[#00205b] cursor-pointer">
-          <span class="text-lg"><i class="fa-solid fa-folder"></i></span>
-          <span>{folder.name}</span>
-        </div>
-      </div>
-    {/each}
-  </div>
-
-  <!-- Nội dung chính -->
-  <div class="p-4 w-full ml-[250px]">
     <div class="flex items-center justify-between border-b border-gray-500 p-4">
       <h1 class="text-3xl font-bold text-gray-800">Tất cả mặt hàng</h1>
       <div class="flex space-x-4">
-        <a href="items/additem" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm mặt hàng</a>
-        <a href="items/addfolder" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm thư mục</a>
+        <a href="/app/items/additem" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm mặt hàng</a>
+        <a href="/app/items/addfolder" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm thư mục</a>
       </div>
     </div>
 
@@ -203,5 +179,4 @@
     </div>
   </div>
 {/if}
-  </div>
-</div>
+
