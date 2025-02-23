@@ -11,8 +11,8 @@
   </div>
   <div class="px-2 pb-5 space-y-2">
     <a
-      href="/app/dashboard"
-      class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/dashboard"}
+      href="/app"
+      class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app"}
     >
       <img src="/img/Items.png" alt="Dashboard Icon" />
       <span class="ml-3 text-white text-sm">Bảng điều khiển</span>
