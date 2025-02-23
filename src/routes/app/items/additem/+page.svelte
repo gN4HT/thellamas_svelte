@@ -1,12 +1,17 @@
 <div class="container mx-auto ">
   <div class="flex flex-col items-start">
+    <div class="mb-4 flex items-center space-x-2 text-sm text-gray-600 p-7">
+      <img src="/img/package.png" alt="">
+      <a href="#" class="hover:text-gray-800">Thêm Thư Mục</a>
+    </div>
+  
     <!-- Tiêu đề -->
     <h1 class="text-2xl font-bold mb-6 px-6">Thêm Mặt Hàng *</h1>
 
     <!-- Form -->
     <div class="w-full bg-white rounded-lg shadow-md p-6">
       <!-- Mục: Chi tiết sản phẩm -->
-      <h2 class="text-lg font-semibold border-b pb-4 mb-6">CHI TIẾT MẶT HÀNG</h2>
+      <h2 class="text-lg font-semibold  pb-4 mb-6">CHI TIẾT MẶT HÀNG</h2>
       <div class="grid grid-cols-2 gap-8">
         <!-- Cột trái -->
         <div class="space-y-4">
@@ -67,7 +72,7 @@
 
       <!-- Mục: QR / Mã vạch -->
       <div class="mt-8">
-        <h2 class="text-lg font-semibold border-b pb-4 mb-6">QR / MÃ VẠCH</h2>
+        <h2 class="text-lg font-semibold  pb-4 mb-6">QR / MÃ VẠCH</h2>
         <a href="#" class="w-full block border border-gray-300 rounded-lg p-3 text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 text-center">THÊM QR / MÃ VẠCH</a>
         <div class="flex items-center mt-4">
           <label class="text-sm font-medium">Mặt hàng này có nhiều phiên bản</label>
@@ -77,7 +82,7 @@
 
       <!-- Mục: Trường tùy chỉnh -->
       <div class="mt-8">
-        <h2 class="text-lg font-semibold border-b pb-4 mb-6">TRƯỜNG TÙY CHỈNH</h2>
+        <h2 class="text-lg font-semibold  pb-4 mb-6">TRƯỜNG TÙY CHỈNH</h2>
         <a href="#" class="w-full block border border-gray-300 rounded-lg p-3 text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 text-center">+ Thêm trường mới</a>
         <a href="#" class="w-full block border border-gray-300 rounded-lg p-3 text-sm text-gray-700 mt-3 focus:ring-2 focus:ring-blue-500 text-center">Quản lý trường tùy chỉnh</a>
         <div class="mt-4">
