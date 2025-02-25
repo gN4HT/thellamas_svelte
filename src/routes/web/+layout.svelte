@@ -26,7 +26,7 @@
         </div>
         <a href="#" class="text-gray-700 font-medium hover:text-blue-600">Giải pháp</a>
         <a href="#" class="text-gray-700 font-medium hover:text-blue-600">Doanh nghiệp</a>
-        <a href="#" class="text-gray-700 font-medium hover:text-blue-600">Bảng giá</a>
+        <a href="web/plan" class="text-gray-700 font-medium hover:text-blue-600">Bảng giá</a>
         <a href="#" class="text-gray-700 font-medium hover:text-blue-600">Học hỏi</a>
       </div>
 
