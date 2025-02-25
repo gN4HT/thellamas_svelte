@@ -11,8 +11,8 @@
   </div>
   <div class="px-2 pb-5 space-y-2">
     <a
-      href="/app/dashboard"
-      class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/dashboard"}
+      href="/app"
+      class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app"}
     >
       <img src="/img/Items.png" alt="Dashboard Icon" />
       <span class="ml-3 text-white text-sm">Bảng điều khiển</span>
@@ -79,7 +79,7 @@
     </a>
     <a
       href="/app/settings"
-      class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/settings"}
+      class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={($page.url.pathname.startsWith("/app/settings"))}
     >
       <img src="/img/Items (8).png" alt="Settings Icon" />
       <span class="ml-3 text-white text-sm">Thiết lập</span>
@@ -87,10 +87,15 @@
   </div>
 </aside>
 
+<!-- <div class="absolute bottom-5 right-5 bg-[#00205b] w-16 h-16 flex justify-center items-center text-white text-3xl rounded-full">
+  <i class="fa-solid fa-comment"></i>
+</div> -->
+
 <!-- Main content -->
-<main class="ml-[240px]">
+<main class="ml-[240px] relative">
     <slot />
 </main>
+
 
 <style>
 @import "tailwindcss";

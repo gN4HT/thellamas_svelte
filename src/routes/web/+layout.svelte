@@ -9,7 +9,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
       <!-- Logo -->
       <div class="flex items-center">
-        <a href="/web">        
+        <a href="/">        
           <img src="/img/1 (1).png" alt="Logo" class="h-10">
         </a>
       </div>
@@ -49,7 +49,7 @@
     <div>
       <h4 class="text-lg font-bold mb-4">Ngành công nghiệp</h4>
       <ul class="space-y-2">
-        <li><img src="/img/2 2.png" alt="" class="h-10 w-auto"></li>
+        <li><img src="./img/2 2.png" alt="" class="h-10 w-auto"></li>
         <li class="cursor-pointer hover:underline">Ô tô</li>
         <li class="cursor-pointer hover:underline">Nha khoa</li>
         <li class="cursor-pointer hover:underline">Sự kiện</li>
@@ -104,8 +104,8 @@
     <div>
       <h4 class="text-lg font-bold mb-4">Tải xuống</h4>
       <div class="flex space-x-4 mb-6">
-        <img src="/img/appstore-removebg-preview 1.png" alt="App Store" class="h-10 w-auto">
-        <img src="/img/ggplayne 1.png" alt="Google Play" class="h-10 w-auto">
+        <img src="./img/appstore-removebg-preview 1.png" alt="App Store" class="h-10 w-auto">
+        <img src="./img/ggplayne 1.png" alt="Google Play" class="h-10 w-auto">
       </div>
       <h4 class="text-lg font-bold mb-4">Nhận tin tức tồn kho</h4>
       <p class="text-sm mb-4">
