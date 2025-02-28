@@ -53,13 +53,12 @@
         <li class="cursor-pointer hover:underline">Ô tô</li>
         <li class="cursor-pointer hover:underline">Nha khoa</li>
         <li class="cursor-pointer hover:underline">Sự kiện</li>
-        <li class="cursor-pointer hover:underline">Phi lợi nhuận</li>
         <li class="cursor-pointer hover:underline">Giáo dục</li>
         <li class="cursor-pointer hover:underline">Bán lẻ</li>
         <li class="cursor-pointer hover:underline">Đồ cổ</li>
         <li class="cursor-pointer hover:underline">Chính phủ</li>
         <li class="cursor-pointer hover:underline">Hàng không</li>
-        <li class="cursor-pointer hover:underline">Xem tất cả</li>
+      
       </ul>
     </div>
 
@@ -75,7 +74,6 @@
         <li class="cursor-pointer hover:underline">Theo dõi công cụ</li>
         <li class="cursor-pointer hover:underline">Theo dõi thiết bị</li>
         <li class="cursor-pointer hover:underline">Theo dõi thiết bị bảo hộ cá nhân</li>
-        <li class="cursor-pointer hover:underline">Theo dõi tài sản CNTT</li>
         <li class="cursor-pointer hover:underline">Theo dõi hàng tồn kho bán hàng</li>
         <li class="cursor-pointer hover:underline">Mã vạch tồn kho</li>
         <li class="cursor-pointer hover:underline">Ứng dụng tồn kho</li>
@@ -88,28 +86,21 @@
       <ul class="space-y-2">
         <li class="cursor-pointer hover:underline">Bảng giá</li>
         <li class="cursor-pointer hover:underline">Blog</li>
-        <li class="cursor-pointer hover:underline">Thuật ngữ</li>
         <li class="cursor-pointer hover:underline">Về chúng tôi</li>
         <li class="cursor-pointer hover:underline">Đánh giá</li>
         <li class="cursor-pointer hover:underline">Liên hệ</li>
-        <li class="cursor-pointer hover:underline">Nghề nghiệp</li>
         <li class="cursor-pointer hover:underline">Trung tâm trợ giúp</li>
-        <li class="cursor-pointer hover:underline">Trạng thái</li>
         <li class="cursor-pointer hover:underline">Điều khoản dịch vụ</li>
-        <li class="cursor-pointer hover:underline">Chính sách bảo mật</li>
       </ul>
     </div>
 
     <!-- Tải xuống & Đăng ký -->
     <div>
-      <h4 class="text-lg font-bold mb-4">Tải xuống</h4>
-      <div class="flex space-x-4 mb-6">
-        <img src="./img/appstore-removebg-preview 1.png" alt="App Store" class="h-10 w-auto">
-        <img src="./img/ggplayne 1.png" alt="Google Play" class="h-10 w-auto">
-      </div>
-      <h4 class="text-lg font-bold mb-4">Nhận tin tức tồn kho</h4>
+      <h4 class="text-lg font-bold mb-4">Liên lạc</h4>
+      
+      <h4 class="text-lg font-bold mb-4">Nhận tin tức</h4>
       <p class="text-sm mb-4">
-        Tất cả thông tin về hàng tồn kho & kiến thức bạn cần, gửi thẳng đến hộp thư của bạn mỗi tuần.
+        Tất cả thông tin về hàng tồn kho & kiến thức bạn cần, gửi thẳng đến hộp thư của bạn.
       </p>
       <form class="flex flex-col space-y-2">
         <input type="email" placeholder="Địa chỉ email" class="p-2 text-black rounded-md">
