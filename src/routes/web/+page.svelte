@@ -13,7 +13,11 @@
 
     <!-- Video Section -->
     <section class="my-8 bg-gray-50 p-8 rounded shadow-md">
-      <div class="h-72 bg-gray-300 flex justify-center items-center rounded">Video</div>
+
+      <div class="h-72 bg-gray-300 flex justify-center items-center rounded overflow-hidden">
+        <img src="/img/desktop.jpg" alt="BANNER" class="w-full h-full object-cover">
+      </div>  
+
     </section>
 
     <!-- Description Section -->
