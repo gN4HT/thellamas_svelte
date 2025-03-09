@@ -9,8 +9,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
       <!-- Logo -->
       <div class="flex items-center">
-        <a href="/">        
-          <img src="./img/1 (1).png" alt="Logo" class="h-10">
+        <a href="/" sveltekit:navigate>        
+          <img src="/img/1 (1).png" alt="Logo" class="h-10">
         </a>
       </div>
 
@@ -26,18 +26,20 @@
         </div>
         <a href="#" class="text-gray-700 font-medium hover:text-blue-600">Giải pháp</a>
         <a href="#" class="text-gray-700 font-medium hover:text-blue-600">Doanh nghiệp</a>
-        <a href="web/plan" class="text-gray-700 font-medium hover:text-blue-600">Bảng giá</a>
+        <a href="/web/plan" sveltekit:navigate class="text-gray-700 font-medium hover:text-blue-600">Bảng giá</a>
         <a href="#" class="text-gray-700 font-medium hover:text-blue-600">Học hỏi</a>
+        <a href="/web/post" sveltekit:navigate class="text-gray-700 font-medium hover:text-blue-600">Bài viết</a>
       </div>
 
       <!-- Hành động -->
       <div class="flex items-center space-x-4">
-        <a href="/web/login" class="text-gray-700 font-medium hover:text-blue-600">Đăng nhập</a>
+        <a href="/web/login" sveltekit:navigate class="text-gray-700 font-medium hover:text-blue-600">Đăng nhập</a>
         <a href="#" class="bg-[#00205b] text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-blue-700">Dùng thử miễn phí</a>
       </div>
     </div>
   </nav>
 </header>
+
 
 <main>
   <slot />
