@@ -1,9 +1,9 @@
 <div class="flex items-center justify-center h-screen bg-gray-100">
     <div class="flex bg-white p-10 rounded-lg shadow-lg space-x-10">
-        <!-- Reset Form -->
+        <!-- Form Đặt Lại Mật Khẩu -->
         <div class="w-96">
-            <h1 class="text-2xl font-bold mb-4">Reset password</h1>
-            <p class="text-sm text-gray-600 mb-6">Enter the email address associated with your account and we’ll send you a link to reset your password.</p>
+            <h1 class="text-2xl font-bold mb-4">Đặt lại mật khẩu</h1>
+            <p class="text-sm text-gray-600 mb-6">Nhập địa chỉ email liên kết với tài khoản của bạn và chúng tôi sẽ gửi một liên kết để đặt lại mật khẩu.</p>
             <form class="flex flex-col space-y-4">
                 <input 
                     type="email" 
@@ -14,15 +14,15 @@
                 <button 
                     type="submit" 
                     class="bg-[#00205b] text-white py-3 rounded-lg hover:bg-red-600 transition duration-200">
-                    Send link
+                    Gửi liên kết
                 </button>
             </form>
-            <p class="text-sm text-center mt-4">New here? <a href="quenmk" class="text-blue-500 hover:underline">Create an account</a></p>
+            <p class="text-sm text-center mt-4">Mới sử dụng? <a href="quenmk" class="text-blue-500 hover:underline">Tạo tài khoản</a></p>
         </div>
 
-        <!-- Image -->
+        <!-- Ảnh -->
         <div class="flex items-center justify-center">
-            <img src="/img/ảnh tượng trưng.png" alt="Llama" class="max-w-sm rounded-lg shadow-md">
+            <img src="/img/ảnh tượng trưng.png" alt="Hình minh họa" class="max-w-sm rounded-lg shadow-md">
         </div>
     </div>
 </div>
