@@ -7,11 +7,14 @@
     let items = [];
     let searchQuery = "";
     let selectedSupplier = null;
+
+    // Khai báo form supplier
     let show = false;
     let isEditing = false;
     let supplier = { name: "", email: "", phone: "", address: "", status: "" };
     const dispatch = createEventDispatcher();
 
+    // Pagination
     let itemPage = 1;
     const itemsPerPage = 10;
     function paginatedItems() {
