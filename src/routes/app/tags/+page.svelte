@@ -12,6 +12,10 @@
   let editedTagName = "";
   let searchQuery = "";
 
+  let folderPage = 1;
+  let itemPage = 1;
+  const itemsPerPage = 10;
+
 
   async function fetchTags() {
       try {
@@ -106,6 +110,23 @@
       fetchFoldersAndItems(tagName);
   }
 
+  function paginatedFolders() {
+        const start = (folderPage - 1) * itemsPerPage;
+        return folders.slice(start, start + itemsPerPage);
+    }
+
+    function paginatedItems() {
+        const start = (itemPage - 1) * itemsPerPage;
+        return items.slice(start, start + itemsPerPage);
+    }
+    function goToPage(type, event) {
+        let value = parseInt(event.target.value) || 1;
+        let maxPage = Math.ceil((type === 'folder' ? folders.length : items.length) / itemsPerPage);
+        let pageValue = Math.max(1, Math.min(maxPage, value));
+        if (type === 'folder') folderPage = pageValue;
+        else itemPage = pageValue;
+    }
+
   onMount(fetchTags);
 </script>
 
@@ -176,7 +197,7 @@
       {#if folders.length > 0}
           <h2 class="text-gray-500 text-3xl mt-10 ml-4">Thư mục</h2>
           <div class="grid grid-cols-5 gap-4 p-4">
-              {#each folders as folder}
+            {#each paginatedFolders() as folder}
                   <div class="bg-white shadow rounded-lg overflow-hidden">
                       <div class="bg-gray-500 p-10 flex items-center justify-center relative">
                           <span class="text-4xl text-gray-300"><i class="fa-solid fa-folder-open"></i></span>
@@ -187,12 +208,22 @@
                   </div>
               {/each}
           </div>
-      {/if}
+          <div class="flex mt-5 justify-between">
+            <p class="text-gray-500">Tổng số trang: {folderPage}/{Math.ceil(folders.length / itemsPerPage)}</p>
+            <div class="flex gap-2">
+            <button class="hover:text-[#00205B] cursor-pointer" on:click={() => folderPage = 1}>Trang đầu</button>
+          <button class="hover:text-[#00205B] cursor-pointer" on:click={() => folderPage--} disabled={folderPage === 1}>Trước</button>
+          <input type="number" bind:value={folderPage} on:change={(e) => goToPage('folder', e)} class="border rounded p-1 w-16 text-center" />
+          <button class="hover:text-[#00205B] cursor-pointer" on:click={() => folderPage++} disabled={folderPage * itemsPerPage >= folders.length}>Sau</button>
+          <button class="hover:text-[#00205B] cursor-pointer" on:click={() => folderPage = Math.ceil(folders.length / itemsPerPage)}>Trang cuối</button>
+</div>
+        </div>
+          {/if}
   
       {#if items.length > 0}
           <h2 class="text-gray-500 text-3xl mt-10 ml-4">Mặt hàng</h2>
           <div class="grid grid-cols-5 gap-4 p-4">
-              {#each items as item}
+            {#each paginatedItems() as item}
                   <div class="bg-white shadow rounded-lg overflow-hidden">
                       <div class="bg-gray-200 p-10 flex items-center justify-center relative">
                           <span class="text-4xl text-gray-400"><i class="fa-solid fa-file"></i></span>
@@ -207,7 +238,17 @@
                   </div>
               {/each}
           </div>
-      {/if}
+          <div class="flex mt-5 justify-between">
+            <p class="text-gray-500">Tổng số trang: {itemPage}/{Math.ceil(items.length / itemsPerPage)}</p> 
+          <div class="flex gap-2">
+          <button class="hover:text-[#00205B] cursor-pointer" on:click={() => itemPage = 1}>Trang đầu</button>
+          <button class="hover:text-[#00205B] cursor-pointer" on:click={() => itemPage--} disabled={itemPage === 1}>Trước</button>
+          <input type="number" bind:value={itemPage} on:change={(e) => goToPage('item', e)} class="border rounded p-1 w-16 text-center" />
+          <button class="hover:text-[#00205B] cursor-pointer" on:click={() => itemPage++} disabled={itemPage * itemsPerPage >= items.length}>Sau</button>
+          <button class="hover:text-[#00205B] cursor-pointer" on:click={() => itemPage = Math.ceil(items.length / itemsPerPage)}>Trang cuối</button>
+        </div>
+        </div>
+          {/if}
   {:else}
       <!-- Hiển thị khi không có dữ liệu -->
       <div class="flex-1 p-10 flex flex-col items-center justify-center">

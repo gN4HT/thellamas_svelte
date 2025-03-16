@@ -39,6 +39,13 @@
       <span class="ml-3 text-white text-sm">Các thẻ Tag</span>
     </a>
     <a
+    href="/app/suppliers"
+    class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/suppliers"}
+  >
+    <img src="/img/Items (3).png" alt="Suppliers Icon" />
+    <span class="ml-3 text-white text-sm">Suppliers</span>
+  </a>
+    <a
       href="/app/workflows"
       class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/workflows"}
     >

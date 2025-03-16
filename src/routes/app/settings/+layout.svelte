@@ -6,7 +6,8 @@
         { path: "/app/settings", icon: "fa-user", label: "Hồ sơ người dùng" },
         { path: "/app/settings/preferences", icon: "fa-gear", label: "Cài đặt" },
         { path: "/app/settings/company", icon: "fa-briefcase", label: "Thông tin công ty" },
-        { path: "/app/settings/planBill", icon: "fa-credit-card", label: "Kế hoạch & Thanh toán" }
+        { path: "/app/settings/planBill", icon: "fa-credit-card", label: "Kế hoạch & Thanh toán" },
+
     ];
 </script>
 
