@@ -39,6 +39,13 @@
       <span class="ml-3 text-white text-sm">Các thẻ Tag</span>
     </a>
     <a
+    href="/app/suppliers"
+    class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/suppliers"}
+  >
+    <img src="/img/fi_package.png" alt="Suppliers Icon" />
+    <span class="ml-3 text-white text-sm">Nhà cung cấp</span>
+  </a>
+    <a
       href="/app/workflows"
       class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/workflows"}
     >
@@ -55,7 +62,7 @@
     <span class="ml-3 text-white text-sm">Báo cáo</span>
   </a>
   
-    <div class="pb-[180px]"></div>
+    <div class="pb-[100px]"></div>
     <a
       href="/app/productnews"
       class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item" class:active={$page.url.pathname === "/app/productnews"}

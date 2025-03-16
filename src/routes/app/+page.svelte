@@ -1,24 +1,54 @@
 <script>
+  import { onMount } from "svelte";
+
   let data = {
-    inventory_summary: [
-      { icon: "/img/Frame 61.png", value: "3", label: "Mặt hàng" },
-      { icon: "/img/Frame 61 (1).png", value: "1", label: "Thư mục" },
-      { icon: "/img/Frame 61 (2).png", value: "1.3K", label: "Tổng số lượng" },
-      { icon: "/img/Frame 61 (3).png", value: "162.7K", label: "Tổng giá trị" }
-    ],
-    recent_activities: [
-      { user: "Đoàn Nhật Trường", item: "Xe đạp", from: "Items", to: "Test", time: "3:06 AM" },
-      { user: "Đoàn Nhật Trường", item: "Xe máy", from: "Kho A", to: "Kho B", time: "5:30 PM" }
-    ],
-    recent_items: [
-      { img: "/img/kho hàng.png", name: "Item 1", description: "Đây là mô tả", unit: "1 Đơn vị", price: "100,000K" },
-      { img: "/img/kho hàng.png", name: "Item 2", description: "Đây là mô tả", unit: "1 Đơn vị", price: "200,000K" }
-    ],
-    stock_levels: [
-      { img: "/img/file1.png", name: "Item 1", unit: "1 Đơn vị" },
-      { img: "/img/file1.png", name: "Item 2", unit: "2 Đơn vị" }
-    ]
+    inventory_summary: [],
+    recent_activities: [],
+    recent_items: [],
+    stock_levels: []
   };
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/dashboard");
+      const result = await response.json();
+
+      // Xử lý dữ liệu nhận được từ API
+      data.inventory_summary = [
+        { icon: "/img/Frame 61.png", value: result.counts.items, label: "Mặt hàng" },
+        { icon: "/img/Frame 61 (1).png", value: result.counts.folders, label: "Thư mục" },
+        { icon: "/img/Frame 61 (2).png", value: result.counts.quantity, label: "Tổng số lượng" },
+        { icon: "/img/Frame 61 (3).png", value: result.counts.price, label: "Tổng giá trị" }
+      ];
+
+      data.recent_activities = result.user_histories.map(activity => ({
+        activity: activity.activity,
+        time: new Date(activity.created_at).toLocaleString()
+      }));
+
+
+      data.recent_items = result.items.map(item => ({
+        img: `/img/${item.image}`,
+        name: item.name,
+        description: `Số lượng: ${item.quantity}`,
+        unit: `${item.quantity} Đơn vị`,
+        price: `${item.price}K`
+      }));
+
+
+      data.stock_levels = result.low_stock_items.map(item => ({
+        img: `/img/${item.image}`,
+        name: item.name,
+        unit: `${item.quantity} Đơn vị`
+      }));
+    } catch (error) {
+      console.error("Lỗi khi fetch API:", error);
+    }
+  };
+
+  onMount(() => {
+    fetchData();
+  });
 </script>
 
 <div class="p-6">
@@ -58,16 +88,14 @@
         <div class="flex items-center gap-2">
           <span class="text-gray-600 text-sm">Tất cả hoạt động</span>
           <a href="#"
-            ><img src="/img/dashboard-icon.png" class="w-6 h-6"
+          ><img src="/img/dashboard-icon.png" class="w-6 h-6"
           /></a>
         </div>
       </div>
       {#each data.recent_activities as activity}
         <div class="flex justify-between p-4 shadow-md bg-white rounded-md mb-2">
           <p>
-            {activity.user} di chuyển 1 đơn vị <span class="text-blue-700">{activity.item}</span> từ 
-            <span class="text-red-600">{activity.from}</span> sang 
-            <span class="text-red-600">{activity.to}</span>
+            {activity.activity}
           </p>
           <span class="text-sm">{activity.time}</span>
         </div>
@@ -80,7 +108,7 @@
       <div class="grid grid-cols-3 gap-6">
         {#each data.recent_items as item}
           <div class="shadow-md rounded-lg overflow-hidden bg-white">
-            <a href="#"><img src={item.img} class="w-full" /></a>
+            <a href="#"><img src={item.img} alt={item.name} class="w-full h-80" /></a>
             <div class="p-4">
               <h3 class="font-semibold">{item.name}</h3>
               <p class="text-gray-500 py-2">{item.description}</p>
@@ -98,11 +126,11 @@
     <!-- Stock Level -->
     <div class="mt-6">
       <div class="mb-6 flex justify-between items-center">
-        <h2 class="text-lg font-semibold">Mức tồn kho (0 kết quả)</h2>
+        <h2 class="text-lg font-semibold">Mức tồn kho</h2>
         <div class="flex items-center gap-2">
           <span class="text-gray-600 text-sm">Ở hoặc Dưới Mức Tối Thiểu</span>
           <a href="#"
-            ><img src="/img/dashboard-icon.png" class="w-6 h-6"
+          ><img src="/img/dashboard-icon.png" class="w-6 h-6"
           /></a>
         </div>
       </div>
