@@ -16,8 +16,6 @@
       { id: 6, name: "Mặt hàng 2", quantity: "2 đơn vị", price: "₫200,000", isNew: false }
     ]
   };
-  let limitFolders = 3;
-  let limitItems = 5;
 
   function getTotalPrice() {
     return data.items.reduce((total, item) => {
@@ -101,7 +99,7 @@
     {#if data.folders.length > 0 || data.items.length > 0}
     <!-- Danh sách thư mục -->
     <div class="grid grid-cols-5 gap-4 p-4">
-        {#each (limitFolders == -1 ? data.folders : data.folders.slice(0, limitFolders)) as folder}
+        {#each folders as folder } 
         <div class="bg-white shadow rounded-lg overflow-hidden">
           <div class="bg-gray-500 p-10 flex items-center justify-center relative">
             <span class="text-4xl text-gray-300"><i class="fa-solid fa-folder-open"></i></span>
@@ -116,22 +114,9 @@
       {/each}
     </div>
 
-    <div class="p-4 mt-4 flex justify-between items-center">
-        <label class="text-gray-600">
-          Hiển thị thư mục:
-          <select bind:value={limitFolders} class="border rounded p-2 ml-2">
-            <option value={3}>3</option>
-                <option value={6}>6</option>
-                <option value={9}>9</option>
-                <option value={12}>12</option>
-                <option value="-1">Tất cả</option>
-          </select>
-        </label>
-      </div>
-
     <!-- Danh sách mặt hàng -->
     <div class="grid grid-cols-5 gap-4 p-4 mt-10">
-        {#each (limitItems == -1 ? data.items : data.items.slice(0, limitItems)) as item}
+        {#each items as item}
         <div class="bg-white shadow rounded-lg overflow-hidden">
           <div class="bg-gray-200 p-10 flex items-center justify-center relative">
             <span class="text-4xl text-gray-400"><i class="fa-solid fa-file"></i></span>
@@ -147,18 +132,6 @@
       {/each}
     </div>
 
-    <div class="p-4 mt-4 flex justify-between items-center">
-        <label class="text-gray-600">
-            Hiển thị mặt hàng:
-            <select bind:value={limitItems} class="border rounded p-2 ml-2">
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={15}>15</option>
-                <option value={20}>20</option>
-                <option value="-1">Tất cả</option>
-              </select>
-          </label>
-    </div>
     {:else}
   <!-- Hiển thị nếu không có mặt hàng hoặc thư mục -->
   <div class="flex flex-col items-center justify-center mt-12 text-center">
