@@ -133,7 +133,7 @@
 {#if tags.length > 0}
 <div class="bg-gray-100 h-screen flex w-full">
     <!-- Sidebar -->
-    <div class="bg-white p-4 border-r border-gray-300">
+    <div class="bg-white p-4 border-r border-gray-300 overflow-y-auto small-scrollbar w-[250px]">
       <div class="flex justify-between items-center border border-gray-300 rounded p-2 mb-4">
         <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
         <input
@@ -347,3 +347,19 @@
     </div>
   </div>
 {/if}
+
+<style>
+  /* Custom small scrollbar */
+  .small-scrollbar::-webkit-scrollbar {
+    width: 6px; /* Adjust the scrollbar width */
+  }
+  
+  .small-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1; /* Thumb color */
+    border-radius: 4px;
+  }
+  
+  .small-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9; /* Track color */
+  }
+  </style>
