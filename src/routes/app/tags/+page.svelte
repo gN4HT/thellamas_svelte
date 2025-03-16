@@ -1,39 +1,114 @@
 <script>
-    import { onMount } from "svelte";
+  import { onMount } from "svelte";
+  import { page } from "$app/stores";
   
-    // Dữ liệu giả lập về tags
-     let tags = [
-        { id: 1, name: "do choi", selected: true },
-    { id: 2, name: "toy", selected: false },
-    { id: 3, name: "quần áo", selected: false },
-    { id: 4, name: "giày dép", selected: false }
-  ];
+  let tags = [];
+  let folders = [];
+  let items = [];
+  let selectedTag = "";
+  let showModal = false;
+  let newTag = "";
+  let isEditingTag = false;
+  let editedTagName = "";
+  let searchQuery = "";
 
-  let items = [
-    { name: "Gấu bông", quantity: 15, price: "150,000 VND", tag: "toy", isNew: false },
-    { name: "Áo thun", quantity: 20, price: "300,000 VND", tag: "quần áo", isNew: true },
-    { name: "Giày thể thao", quantity: 8, price: "700,000 VND", tag: "giày dép", isNew: false }
-  ];
-    // Biến lưu tag đang chọn
-    let selectedTag = tags.find(tag => tag.selected)?.name || "";
-  
-    // Mở & đóng modal
-    let showModal = false;
-    let newTag = "";
-  
-    function addTag() {
-      if (newTag.length > 1) {
-        tags = [...tags, { id: tags.length + 1, name: newTag, selected: false }];
-        newTag = "";
-        showModal = false;
+
+  async function fetchTags() {
+      try {
+          const response = await fetch("http://127.0.0.1:8000/api/tags");
+          tags = await response.json();
+          if (tags.length > 0) {
+              selectedTag = tags.find(tag => tag.selected)?.name || "";
+              fetchFoldersAndItems(selectedTag);
+          }
+      } catch (error) {
+          console.error("Lỗi khi lấy danh sách tags:", error);
       }
+  }
+
+  async function fetchFoldersAndItems(tagName) {
+      const selectedTagObj = tags.find(tag => tag.name === tagName);
+      if (!selectedTagObj) return;
+      try {
+          const foldersResponse = await fetch(`http://127.0.0.1:8000/api/folders/tag/${selectedTagObj.id}`);
+          folders = await foldersResponse.json();
+          const itemsResponse = await fetch(`http://127.0.0.1:8000/api/items/tag/${selectedTagObj.id}`);
+          items = await itemsResponse.json();
+      } catch (error) {
+          console.error("Lỗi khi lấy danh sách folders hoặc items:", error);
+      }
+  }
+
+  async function addTag() {
+      if (newTag.length > 1) {
+          try {
+              const response = await fetch("http://127.0.0.1:8000/api/tags", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ name: newTag })
+              });
+              if (response.ok) {
+                  newTag = "";
+                  showModal = false;
+                  fetchTags(); // Reload danh sách tags
+              }
+          } catch (error) {
+              console.error("Lỗi khi thêm tag:", error);
+          }
+      }
+  }
+
+  async function updateTagName() {
+        if (!selectedTag) return;
+        if (editedTagName.trim() !== "") {
+            try {
+                const selectedTagObj = tags.find(tag => tag.name === selectedTag);
+                if (!selectedTagObj) return;
+                const response = await fetch(`http://127.0.0.1:8000/api/tags/${selectedTagObj.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name: editedTagName })
+                });
+                if (response.ok) {
+                    selectedTag = editedTagName;
+                    tags = tags.map(tag => tag.id === selectedTagObj.id ? { ...tag, name: editedTagName } : tag);
+                    isEditingTag = false;
+                }
+            } catch (error) {
+                console.error("Lỗi khi cập nhật tag:", error);
+            }
+        }
+        isEditingTag = false;
     }
-  
-    function selectTag(tagName) {
+
+    async function deleteTag(tagId) {
+        if (confirm("Bạn có chắc chắn muốn xóa tag này không?")) {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/api/tags/${tagId}`, {
+                    method: "DELETE"
+                });
+                if (response.ok) {
+                    tags = tags.filter(tag => tag.id !== tagId);
+                    selectedTag = "";
+                    fetchFoldersAndItems("");
+                }
+            } catch (error) {
+                console.error("Lỗi khi xóa tag:", error);
+            }
+        }
+    }
+    function filteredTags() {
+        return tags.filter(tag => tag.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+
+  function selectTag(tagName) {
       selectedTag = tagName;
-      tags = tags.map(tag => ({ ...tag, selected: tag.name === tagName }));
-    }
-  </script>
+      fetchFoldersAndItems(tagName);
+  }
+
+  onMount(fetchTags);
+</script>
+
 {#if tags.length > 0}
 <div class="bg-gray-100 h-screen flex w-full">
     <!-- Sidebar -->
@@ -41,62 +116,108 @@
       <div class="flex justify-between items-center border border-gray-300 rounded p-2 mb-4">
         <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
         <input
-          type="text"
-          placeholder="Tìm kiếm tags"
-          class="w-full outline-none border-none pl-2"
+            type="text"
+            placeholder="Tìm kiếm tags"
+            bind:value={searchQuery}
+            class="w-full outline-none border-none pl-2"
         />
-      </div>
+    </div>
   
       <!-- Danh sách tags -->
       <div>
-        {#each tags as tag}
-          <div
-            class="flex items-center p-2 cursor-pointer rounded {tag.selected ? 'bg-gray-100 text-[#00205B]' : 'text-gray-500 hover:bg-gray-100'}"
+        {#each filteredTags() as tag}
+        <div
+            class="flex items-center p-2 cursor-pointer rounded {selectedTag === tag.name ? 'text-[#00205b]' : 'text-gray-500 hover:bg-gray-100'}"
             on:click={() => selectTag(tag.name)}
-          >
+        >
             <span class="mr-2 text-xl"><i class="fa-solid fa-tag"></i></span>
-            {tag.name}
-          </div>
-        {/each}
+            {#if tag.name.length > 15}
+                {tag.name.slice(0, 15) + '...'}
+            {:else}
+                {tag.name}
+            {/if}
+            <span class="ml-auto text-red-500 cursor-pointer" on:click={() => deleteTag(tag.id)}>  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z"></path></svg></span>
+        </div>
+    {/each}
       </div>
     </div>
   
     <!-- Nội dung chính -->
     <div class="flex flex-col w-full p-3">
       <div class="flex justify-between align-center border-b border-gray-300 p-4">
-        <h2 class="text-gray-500 text-3xl ml-3">{selectedTag || "Chọn tag"}</h2>
+        {#if isEditingTag}
+              <input
+                  type="text"
+                  bind:value={editedTagName}
+                  on:blur={updateTagName}
+                  on:keydown={(e) => e.key === 'Enter' && updateTagName()}
+                  class="border-none outline-none text-3xl text-[#00205B]"
+                  autofocus
+              />
+              
+        {:else}
+        <h2 class="flex items-center gap-2 text-3xl ml-3 cursor-pointer {selectedTag ? 'text-[#00205B]' : 'text-gray-500'}" 
+            on:click={() => { if (selectedTag) { isEditingTag = true; editedTagName = selectedTag; } }}>
+            {#if selectedTag.length > 15}
+                {selectedTag.slice(0, 15) + '...'}
+            {:else}
+                {selectedTag || "Chọn tag"}
+            {/if}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M6.41421 15.89L16.5563 5.74785L15.1421 4.33363L5 14.4758V15.89H6.41421ZM7.24264 17.89H3V13.6473L14.435 2.21231C14.8256 1.82179 15.4587 1.82179 15.8492 2.21231L18.6777 5.04074C19.0682 5.43126 19.0682 6.06443 18.6777 6.45495L7.24264 17.89ZM3 19.89H21V21.89H3V19.89Z"></path></svg>
+        </h2>
+            
+        {/if}
         <button on:click={() => (showModal = true)} class="px-4 py-2 bg-[#00205b] text-white rounded flex items-center">
-          <span class="text-xl mr-2 bg-white/10 px-2 rounded">+</span>Thêm Tag
+            <span class="text-xl mr-2 bg-white/10 px-2 rounded">+</span>Thêm Tag
         </button>
-      </div>
-  
-      {#if items.filter(item => item.tag === selectedTag).length > 0}
-      <div class="grid grid-cols-5 gap-4 p-4 mt-10">
-        {#each items.filter(item => item.tag === selectedTag) as item}
-          <div class="bg-white shadow rounded-lg overflow-hidden">
-            <div class="bg-gray-200 p-10 flex items-center justify-center relative">
-              <span class="text-4xl text-gray-400"><i class="fa-solid fa-file"></i></span>
-              {#if item.isNew}
-                <span class="absolute bottom-2 left-2 text-xs bg-black text-white px-2 py-1 rounded">MỚI</span>
-              {/if}
-            </div>
-            <div class="p-4">
-              <p class="mt-2 font-semibold text-gray-700">{item.name}</p>
-              <p class="text-sm text-gray-500 mt-1">{item.quantity} đơn vị | {item.price}</p>
-            </div>
+    </div>
+
+      {#if folders.length > 0 || items.length > 0}
+      {#if folders.length > 0}
+          <h2 class="text-gray-500 text-3xl mt-10 ml-4">Thư mục</h2>
+          <div class="grid grid-cols-5 gap-4 p-4">
+              {#each folders as folder}
+                  <div class="bg-white shadow rounded-lg overflow-hidden">
+                      <div class="bg-gray-500 p-10 flex items-center justify-center relative">
+                          <span class="text-4xl text-gray-300"><i class="fa-solid fa-folder-open"></i></span>
+                      </div>
+                      <div class="p-4">
+                          <p class="mt-2 font-semibold text-gray-700">{folder.name}</p>
+                      </div>
+                  </div>
+              {/each}
           </div>
-        {/each}
-      </div>
-    {:else}
-      <!-- Hiển thị khi không có items -->
+      {/if}
+  
+      {#if items.length > 0}
+          <h2 class="text-gray-500 text-3xl mt-10 ml-4">Mặt hàng</h2>
+          <div class="grid grid-cols-5 gap-4 p-4">
+              {#each items as item}
+                  <div class="bg-white shadow rounded-lg overflow-hidden">
+                      <div class="bg-gray-200 p-10 flex items-center justify-center relative">
+                          <span class="text-4xl text-gray-400"><i class="fa-solid fa-file"></i></span>
+                          {#if item.isNew}
+                              <span class="absolute bottom-2 left-2 text-xs bg-black text-white px-2 py-1 rounded">MỚI</span>
+                          {/if}
+                      </div>
+                      <div class="p-4">
+                          <p class="mt-2 font-semibold text-gray-700">{item.name}</p>
+                          <p class="text-sm text-gray-500 mt-1">{item.quantity} đơn vị | {item.price}</p>
+                      </div>
+                  </div>
+              {/each}
+          </div>
+      {/if}
+  {:else}
+      <!-- Hiển thị khi không có dữ liệu -->
       <div class="flex-1 p-10 flex flex-col items-center justify-center">
-        <div class="text-center flex flex-col items-center gap-4">
-          <i class="fa-solid fa-tags text-gray-500 text-4xl"></i>
-          <h2 class="text-gray-500 text-4xl">Không có mặt hàng nào cho tag này</h2>
-          <p class="text-[#00205b]">Thêm sản phẩm vào tag để hiển thị chúng ở đây.</p>
-        </div>
+          <div class="text-center flex flex-col items-center gap-4">
+              <i class="fa-solid fa-tags text-gray-500 text-4xl"></i>
+              <h2 class="text-gray-500 text-4xl">Không có thông tin nào trong tag này</h2>
+              <p class="text-[#00205b]">Thêm thư mục hoặc sản phẩm vào tag để hiển thị chúng ở đây.</p>
+          </div>
       </div>
-    {/if}
+  {/if}
     </div>
 </div>
 {:else}
