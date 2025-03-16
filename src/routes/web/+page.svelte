@@ -1,9 +1,9 @@
 <div class="container mx-auto px-4 py-8">
     <!-- Hero Section -->
     <section class="text-center bg-white p-8 rounded shadow-md">
-      <h1 class="text-4xl font-bold text-[#00205b] mb-4">Phần mềm quản lý hàng tồn kho đơn giản.</h1>
+      <h1 class="text-4xl font-bold text-[#00205b] mb-4">Website quản lý hàng tồn kho </h1>
       <p class="text-lg text-gray-600 mb-6">
-        Phần mềm quản lý kho tốt nhất dành cho các doanh nghiệp nhỏ để quản lý hàng tồn kho thực tế, bao gồm vật tư, nguyên vật liệu, công cụ và thiết bị.
+       Website quản lý kho dành cho các doanh nghiệp nhỏ để quản lý hàng tồn kho thực tế, bao gồm vật tư, nguyên vật liệu, công cụ và thiết bị.
       </p>
       <div class="flex justify-center gap-4">
         <a href="#" class="bg-[#00205b] text-white font-bold py-2 px-4 rounded">Hãy thử The Llamas miễn phí</a>
@@ -11,9 +11,26 @@
       </div>
     </section>
 
-    <!-- Video Section -->
+    <!-- Slide Section -->
     <section class="my-8 bg-gray-50 p-8 rounded shadow-md">
-      <div class="h-72 bg-gray-300 flex justify-center items-center rounded">Video</div>
+      <div class="h-72 relative overflow-hidden rounded">
+        {#each slides as slide, index}
+          <img
+            src={slide.image}
+            alt={`Slide ${slide.id}`}
+            class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+            style="opacity: {index === currentSlide ? 1 : 0};"
+          />
+        {/each}
+    
+        <!-- Navigation buttons -->
+        <button on:click={prevSlide} class="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white rounded-full shadow p-2">
+          ❮
+        </button>
+        <button on:click={nextSlide} class="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white rounded-full shadow p-2">
+          ❯
+        </button>
+      </div>
     </section>
 
     <!-- Description Section -->
@@ -136,3 +153,41 @@
       </div>
     </section>
   </div>
+
+  <script>
+    import { onMount } from 'svelte';
+  
+    let currentSlide = 0;
+    const slides = [
+      { id: 1, image: './static/img/slide.png/800x400?text=Slide+1' },
+      { id: 2, image: './static/img/slide.png/800x400?text=Slide+2' },
+      { id: 3, image: './static/img/slide.png/800x400?text=Slide+3' },
+      { id: 4, image: './static/img/slide.png/800x400?text=Slide+4' },
+      { id: 5, image: './static/img/slide.png/800x400?text=Slide+5' },
+    ];
+  
+    const nextSlide = () => {
+      currentSlide = (currentSlide + 1) % slides.length;
+    };
+  
+    const prevSlide = () => {
+      currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+    };
+  
+    const visibleSlides = () => {
+      const totalSlides = slides.length;
+      return [
+        slides[(currentSlide - 1 + totalSlides) % totalSlides],
+        slides[currentSlide],
+        slides[(currentSlide + 1) % totalSlides],
+      ];
+    };
+  
+    // Auto-play setup
+    onMount(() => {
+      const interval = setInterval(nextSlide, 2000); // Chuyển slide mỗi 3 giây
+      return () => clearInterval(interval); // Dọn dẹp khi component bị hủy
+    });
+    
+  </script>
+  

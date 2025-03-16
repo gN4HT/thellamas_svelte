@@ -17,7 +17,7 @@
       <!-- Mục menu -->
       <div class="hidden md:flex items-center space-x-6">
         <div class="relative group">
-          <a href="#" class="text-gray-700 font-medium">Đặc trưng</a>
+          <a href="#" class="text-gray-700 font-medium">Trang chủ </a>
           <div class="absolute hidden group-hover:block bg-white shadow rounded-lg mt-2 w-40">
             <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Tính năng 1</a>
             <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Tính năng 2</a>

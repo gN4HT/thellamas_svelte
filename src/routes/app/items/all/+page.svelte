@@ -32,6 +32,8 @@
       <div class="flex space-x-4">
         <a href="/app/items/additem" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm mặt hàng</a>
         <a href="/app/items/addfolder" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm thư mục</a>
+        <a href="/app/items/addfields" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm trường dữ liệu</a>
+
       </div>
     </div>
 
