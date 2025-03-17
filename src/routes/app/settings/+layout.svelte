@@ -1,5 +1,6 @@
 <script>
     import { page } from '$app/stores';
+    import { goto } from "$app/navigation";
 
     // Danh sách menu
     const menuItems = [
@@ -9,6 +10,13 @@
         { path: "/app/settings/planBill", icon: "fa-credit-card", label: "Kế hoạch & Thanh toán" },
 
     ];
+
+function logout() {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("token_type");
+    localStorage.removeItem("expires_in");
+    goto("web/login");
+}
 </script>
 
 <div class="flex">
@@ -25,6 +33,11 @@
                     </a>
                 </li>
             {/each}
+            <li>
+                <button on:click={logout} class="bg-red-500 text-white px-4 py-2 rounded">
+                    Đăng xuất
+                </button>
+            </li>
         </ul>
     </div>
 

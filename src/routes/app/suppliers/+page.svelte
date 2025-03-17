@@ -2,6 +2,8 @@
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
     import { createEventDispatcher } from "svelte";
+    import { apiFetch } from "$lib/api";
+
 
     let suppliers = [];
     let items = [];
@@ -30,27 +32,24 @@
     }
 
     async function fetchSuppliers() {
-        try {
-            const response = await fetch("http://127.0.0.1:8000/api/suppliers");
-            if (!response.ok) throw new Error("Lỗi khi lấy dữ liệu suppliers");
-            suppliers = await response.json();
-        } catch (error) {
-            console.error(error);
-        }
+    try {
+        suppliers = await apiFetch("http://127.0.0.1:8000/api/suppliers");
+    } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu suppliers:", error);
     }
+}
 
-    async function fetchItems(supplierId) {
-        try {
-            const response = await fetch(`http://127.0.0.1:8000/api/items`);
-            if (!response.ok) throw new Error("Lỗi khi lấy dữ liệu items");
-            const allItems = await response.json();
-            
-            // Lọc items theo supplier_id
-            items = allItems.filter(item => item.supplier_id === supplierId);
-        } catch (error) {
-            console.error(error);
-        }
+async function fetchItems(supplierId) {
+    try {
+        const allItems = await apiFetch("http://127.0.0.1:8000/api/items");
+
+        // Lọc items theo supplier_id
+        items = allItems.filter(item => item.supplier_id === supplierId);
+    } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu items:", error);
     }
+}
+
 
     function filteredSuppliers() {
         return suppliers.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -65,8 +64,7 @@ async function deleteSupplier(id) {
     if (!confirm("Bạn có chắc muốn xóa supplier này?")) return;
 
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/suppliers/${id}`, { method: "DELETE" });
-        if (!response.ok) throw new Error("Xóa không thành công");
+        await apiFetch(`http://127.0.0.1:8000/api/suppliers/${id}`, "DELETE");
 
         suppliers = suppliers.filter(s => s.id !== id);
         if (selectedSupplier && selectedSupplier.id === id) {
@@ -74,7 +72,7 @@ async function deleteSupplier(id) {
             items = [];
         }
     } catch (error) {
-        console.error(error);
+        console.error("Lỗi khi xóa supplier:", error);
     }
 }
 
@@ -89,31 +87,25 @@ function openModal(editMode = false, data = null) {
     }
 
     async function saveSupplier() {
-        if (!supplier.name.trim()) {
-            alert("Tên supplier là bắt buộc");
-            return;
-        }
-
-        try {
-            const method = isEditing ? "PUT" : "POST";
-            const url = isEditing 
-                ? `http://127.0.0.1:8000/api/suppliers/${supplier.id}` 
-                : "http://127.0.0.1:8000/api/suppliers";
-            
-            const response = await fetch(url, {
-                method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(supplier),
-            });
-
-            if (!response.ok) throw new Error("Lưu không thành công");
-            dispatch("refresh"); // Gửi sự kiện để cập nhật danh sách
-            closeModal();
-        } catch (error) {
-            console.error(error);
-        }
+    if (!supplier.name.trim()) {
+        alert("Tên supplier là bắt buộc");
+        return;
     }
 
+    try {
+        const method = isEditing ? "PUT" : "POST";
+        const url = isEditing 
+            ? `http://127.0.0.1:8000/api/suppliers/${supplier.id}` 
+            : "http://127.0.0.1:8000/api/suppliers";
+
+        await apiFetch(url, method, supplier);
+
+        dispatch("refresh"); // Gửi sự kiện để cập nhật danh sách
+        closeModal();
+    } catch (error) {
+        console.error("Lỗi khi lưu supplier:", error);
+    }
+}
 
     onMount(fetchSuppliers);
 </script>

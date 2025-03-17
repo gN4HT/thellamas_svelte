@@ -1,5 +1,7 @@
 <script>
   import { onMount } from "svelte";
+  import { apiFetch } from "$lib/api";
+
 
   let folders = [];
   let items = [];
@@ -26,25 +28,21 @@
     }
 
 
-  async function fetchData() {
+    async function fetchData() {
     try {
-     // Fetch danh sách thư mục
-    const foldersRes = await fetch("http://127.0.0.1:8000/api/folders");
-    if (!foldersRes.ok) throw new Error("Lỗi khi lấy dữ liệu folders");
-    
-    const allFolders = await foldersRes.json();
-    
-    // Lọc thư mục có parent_id = null
-    folders = allFolders.filter(folder => folder.parent_id === null);
+        // Fetch danh sách thư mục
+        const allFolders = await apiFetch("http://127.0.0.1:8000/api/folders");
 
-      // Fetch danh sách mặt hàng
-      const itemsRes = await fetch("http://127.0.0.1:8000/api/items");
-      if (!itemsRes.ok) throw new Error("Lỗi khi lấy dữ liệu items");
-      items = await itemsRes.json();
+        // Lọc thư mục có parent_id = null
+        folders = allFolders.filter(folder => folder.parent_id === null);
+
+        // Fetch danh sách mặt hàng
+        items = await apiFetch("http://127.0.0.1:8000/api/items");
     } catch (error) {
-      console.error("Lỗi khi tải dữ liệu:", error);
+        console.error("Lỗi khi tải dữ liệu:", error);
     }
-  }
+}
+
 
   function getTotalPrice() {
     return items.reduce((total, item) => {
