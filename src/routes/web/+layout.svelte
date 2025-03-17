@@ -9,7 +9,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4">
       <!-- Logo -->
       <div class="flex items-center">
-        <a href="/">        
+        <a href="/" sveltekit:navigate>        
           <img src="/img/1 (1).png" alt="Logo" class="h-10">
         </a>
       </div>

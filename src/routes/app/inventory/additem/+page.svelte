@@ -1,126 +1,103 @@
-<script>
-  let name = "";
-  let quantity = "";
-  let alert = "";
-  let price = "";
-  let images = "";
-  let notes = "";
-  let folder_id = "";
-  let supplier_id = "";
-  let tags = "";
-  let fields = "";
-
-  async function addProduct() {
-    const productData = {
-      name,
-      quantity: Number(quantity),
-      alert: Number(alert),
-      price: Number(price),
-      images: images.split(","), // Chuyển chuỗi thành mảng (URL ảnh cách nhau bởi dấu ",")
-      notes,
-      folder_id: Number(folder_id),
-      supplier_id: Number(supplier_id),
-      tags: tags.split(","),
-      fields: fields.split(",")
-    };
-
-    try {
-      const response = await fetch("http://127.0.0.1:8000/api/items/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer YOUR_ACCESS_TOKEN" // Nếu API cần token
-        },
-        body: JSON.stringify(productData)
-      });
-
-      const result = await response.json();
-      console.log(result);
-      alert(result.message);
-    } catch (error) {
-      console.error("Lỗi khi thêm sản phẩm:", error);
-    }
-  }
-</script>
-
-<div class="max-w-lg mx-auto bg-white p-6 rounded-2xl shadow-lg">
-  <h2 class="text-2xl font-semibold text-gray-800 mb-4">Thêm Sản Phẩm</h2>
+<div class="container mx-auto ">
+  <div class="flex flex-col items-start">
+    <div class="mb-4 flex items-center space-x-2 text-sm text-gray-600 p-7">
+      <img src="/img/package.png" alt="">
+      <a href="#" class="hover:text-gray-800">Thêm Thư Mục</a>
+    </div>
   
-  <form on:submit|preventDefault={addProduct} class="space-y-4">
-    <div>
-      <label class="block text-gray-600">Tên sản phẩm</label>
-      <input type="text" placeholder="Tên sản phẩm" required 
-        class="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 outline-none"
-        on:input={(e) => name = e.target.value}>
-    </div>
+    <!-- Tiêu đề -->
+    <h1 class="text-2xl font-bold mb-6 px-6">Thêm Mặt Hàng *</h1>
 
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-gray-600">Số lượng</label>
-        <input type="number" placeholder="Số lượng" required 
-          class="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 outline-none"
-          on:input={(e) => quantity = e.target.value}>
+    <!-- Form -->
+    <div class="w-full bg-white rounded-lg shadow-md p-6">
+      <!-- Mục: Chi tiết sản phẩm -->
+      <h2 class="text-lg font-semibold  pb-4 mb-6">CHI TIẾT MẶT HÀNG</h2>
+      <div class="grid grid-cols-2 gap-8">
+        <!-- Cột trái -->
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Số lượng *</label>
+            <input type="number" value="1" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Mức tối thiểu</label>
+            <input type="number" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Giá *</label>
+            <input type="text" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Thẻ (Tags)</label>
+            <input type="text" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Nhà cung cấp</label>
+            <input type="text" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Ghi chú</label>
+            <textarea class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
+        </div>
+
+        <!-- Cột phải -->
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Đơn vị đo lường</label>
+            <select class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500">
+              <option>Đơn vị</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Cài đặt cảnh báo</label>
+            <a href="#" class="w-full flex items-center justify-center border border-gray-300 rounded-lg p-3 text-sm text-gray-700 focus:ring-2 focus:ring-blue-500">
+              <svg class="w-5 h-5 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C7.58 2 4 5.58 4 10V15L2 17V18H22V17L20 15V10C20 5.58 16.42 2 12 2Z" />
+              </svg>
+              Cài đặt cảnh báo
+            </a>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Hình ảnh</label>
+            <div class="border border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center">
+              <svg class="w-10 h-10 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 3C7.03 3 3 7.03 3 12C3 16.97 7.03 21 12 21C16.97 21 21 16.97 21 12C21 7.03 16.97 3 12 3ZM11 7H13V12H11V7ZM11 14H13V16H11V14Z" />
+              </svg>
+              <span class="text-gray-500 text-sm mt-2">Tối đa 8 ảnh, 30 MB</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div>
-        <label class="block text-gray-600">Mức độ cảnh báo</label>
-        <input type="number" placeholder="Số lượng cảnh báo" required 
-          class="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 outline-none"
-          on:input={(e) => alert = e.target.value}>
+
+      <!-- Mục: QR / Mã vạch -->
+      <div class="mt-8">
+        <h2 class="text-lg font-semibold  pb-4 mb-6">QR / MÃ VẠCH</h2>
+        <a href="#" class="w-full block border border-gray-300 rounded-lg p-3 text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 text-center">THÊM QR / MÃ VẠCH</a>
+        <div class="flex items-center mt-4">
+          <label class="text-sm font-medium">Mặt hàng này có nhiều phiên bản</label>
+          <input type="checkbox" class="ml-2" />
+        </div>
+      </div>
+
+      <!-- Mục: Trường tùy chỉnh -->
+      <div class="mt-8">
+        <h2 class="text-lg font-semibold  pb-4 mb-6">TRƯỜNG TÙY CHỈNH</h2>
+        <a href="#" class="w-full block border border-gray-300 rounded-lg p-3 text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 text-center">+ Thêm trường mới</a>
+        <a href="#" class="w-full block border border-gray-300 rounded-lg p-3 text-sm text-gray-700 mt-3 focus:ring-2 focus:ring-blue-500 text-center">Quản lý trường tùy chỉnh</a>
+        <div class="mt-4">
+          <label class="block text-sm font-medium mb-1">Thêm vào thư mục</label>
+          <select class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500">
+            <option>Tất cả mặt hàng</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Nút -->
+      <div class="mt-8 flex justify-end space-x-4">
+        <a href="#" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-600 text-center">Hủy</a>
+        <a href="#" class="px-6 py-3 bg-blue-600 text-white rounded-lg text-center">Thêm</a>
       </div>
     </div>
-
-    <div>
-      <label class="block text-gray-600">Giá</label>
-      <input type="number" step="0.01" placeholder="Giá" required 
-        class="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 outline-none"
-        on:input={(e) => price = e.target.value}>
-    </div>
-
-    <div>
-      <label class="block text-gray-600">Danh sách ảnh (cách nhau bởi dấu phẩy)</label>
-      <input type="text" placeholder="URL ảnh" 
-        class="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 outline-none"
-        on:input={(e) => images = e.target.value}>
-    </div>
-
-    <div>
-      <label class="block text-gray-600">Ghi chú</label>
-      <textarea placeholder="Ghi chú" rows="3"
-        class="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 outline-none"
-        on:input={(e) => notes = e.target.value}></textarea>
-    </div>
-
-    <!-- <div>
-      <label class="block text-gray-600">ID thư mục</label>
-      <input type="number" placeholder="ID thư mục" required 
-        class="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 outline-none"
-        on:input={(e) => folder_id = e.target.value}>
-    </div>
-
-    <div>
-      <label class="block text-gray-600">ID nhà cung cấp</label>
-      <input type="number" placeholder="ID nhà cung cấp" required 
-        class="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 outline-none"
-        on:input={(e) => supplier_id = e.target.value}>
-    </div>
-
-    <div>
-      <label class="block text-gray-600">Tags (cách nhau bởi dấu phẩy)</label>
-      <input type="text" placeholder="Tags" 
-        class="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 outline-none"
-        on:input={(e) => tags = e.target.value}>
-    </div>
-
-    <div>
-      <label class="block text-gray-600">Fields (cách nhau bởi dấu phẩy)</label>
-      <input type="text" placeholder="Fields" 
-        class="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 outline-none"
-        on:input={(e) => fields = e.target.value}>
-    </div> -->
-
-    <button type="submit" 
-      class="w-full bg-blue-500 text-white font-semibold p-3 rounded-lg hover:bg-blue-600 transition">
-      Thêm sản phẩm
-    </button>
-  </form>
+  </div>
 </div>
