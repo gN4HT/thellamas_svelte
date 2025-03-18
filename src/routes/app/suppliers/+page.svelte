@@ -25,10 +25,9 @@
     }
     function goToPage(type, event) {
         let value = parseInt(event.target.value) || 1;
-        let maxPage = Math.ceil((type === 'folder' ? folders.length : items.length) / itemsPerPage);
+        let maxPage = Math.ceil((items.length) / itemsPerPage);
         let pageValue = Math.max(1, Math.min(maxPage, value));
-        if (type === 'folder') folderPage = pageValue;
-        else itemPage = pageValue;
+        itemPage = pageValue;
     }
 
     async function fetchSuppliers() {
@@ -124,28 +123,31 @@ function openModal(editMode = false, data = null) {
         </div>
 
         <div>
-            {#each filteredSuppliers() as supplier}
-            <div 
-            class="flex items-center justify-between p-2 cursor-pointer rounded {selectedSupplier && selectedSupplier.id === supplier.id ? 'text-[#00205b]' : 'text-gray-500 hover:bg-gray-100'}"
-            on:click={() => selectSupplier(supplier)}
-        >
-                <div class="flex items-center gap-1">
-                    <span class="mr-2 text-xl"><i class="fa-solid fa-box"></i></span>
-                {supplier.name.length > 15 ? `${supplier.name.slice(0, 15)}...` : supplier.name}
+            {#each filteredSuppliers() as supplier (supplier.id)}
+                <div
+                        class="flex items-center justify-between p-2 cursor-pointer rounded
+                {selectedSupplier && selectedSupplier.id === supplier.id ? 'text-[#00205b]' : 'text-gray-500 hover:bg-gray-100'}"
+                        on:click={() => selectSupplier(supplier)}
+                >
+                    <div class="flex items-center gap-1">
+                        <span class="mr-2 text-xl"><i class="fa-solid fa-box"></i></span>
+                        <span title={supplier.name}>
+                    {supplier.name.length > 15 ? ${supplier.name.slice(0, 15)}... : supplier.name}
+                </span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <a href="#" on:click={event => handleOpenModal(event, supplier)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                <path d="M6.41421 15.89L16.5563 5.74785L15.1421 4.33363L5 14.4758V15.89H6.41421ZM7.24264 17.89H3V13.6473L14.435 2.21231C14.8256 1.82179 15.4587 1.82179 15.8492 2.21231L18.6777 5.04074C19.0682 5.43126 19.0682 6.06443 18.6777 6.45495L7.24264 17.89ZM3 19.89H21V21.89H3V19.89Z"></path>
+                            </svg>
+                        </a>
+                        <span class="ml-auto text-red-500 cursor-pointer" on:click={event => handleDelete(event, supplier.id)}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                        <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z"></path>
+                    </svg>
+                </span>
+                    </div>
                 </div>
-                <div class="flex items-center gap-1">
-                    <a href="#" on:click={(e) => { e.preventDefault(); openModal(true, supplier); }}>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-                            <path d="M6.41421 15.89L16.5563 5.74785L15.1421 4.33363L5 14.4758V15.89H6.41421ZM7.24264 17.89H3V13.6473L14.435 2.21231C14.8256 1.82179 15.4587 1.82179 15.8492 2.21231L18.6777 5.04074C19.0682 5.43126 19.0682 6.06443 18.6777 6.45495L7.24264 17.89ZM3 19.89H21V21.89H3V19.89Z"></path>
-                        </svg>
-                    </a>
-                    <span class="ml-auto text-red-500 cursor-pointer" on:click={(e) => { e.stopPropagation(); deleteSupplier(supplier.id); }}>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-                            <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z"></path>
-                        </svg>
-                    </span>
-                </div>
-            </div>
             {/each}
         </div>
     </div>
