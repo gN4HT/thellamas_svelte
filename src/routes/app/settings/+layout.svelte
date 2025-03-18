@@ -15,7 +15,7 @@ function logout() {
     localStorage.removeItem("access_token");
     localStorage.removeItem("token_type");
     localStorage.removeItem("expires_in");
-    goto("web/login");
+    goto("/web/login");
 }
 </script>
 
