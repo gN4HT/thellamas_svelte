@@ -58,13 +58,13 @@
         <div class="flex items-center space-x-2">
             <span class="text-gray-700">Gộp mặt hàng</span>
             <input type="checkbox" class="toggle-checkbox hidden"/>
-            <label
+            <div
                     class="w-10 h-5 flex items-center bg-gray-300 rounded-full p-1 cursor-pointer"
             >
                 <div
                         class="w-4 h-4 bg-white rounded-full shadow-md transform translate-x-0 transition-transform duration-300"
                 ></div>
-            </label>
+            </div>
         </div>
 
         <div class="flex items-center space-x-2 text-gray-700">
@@ -103,7 +103,7 @@
 {#if data.folders.length > 0 || data.items.length > 0}
     <!-- Danh sách thư mục -->
     <div class="grid grid-cols-5 gap-4 p-4">
-        {#each (limitFolders == -1 ? data.folders : data.folders.slice(0, limitFolders)) as folder}
+        {#each (limitFolders === -1 ? data.folders : data.folders.slice(0, limitFolders)) as folder}
             <div class="bg-white shadow rounded-lg overflow-hidden">
                 <div class="bg-gray-500 p-10 flex items-center justify-center relative">
                     <span class="text-4xl text-gray-300"><i class="fa-solid fa-folder-open"></i></span>
@@ -133,7 +133,7 @@
 
     <!-- Danh sách mặt hàng -->
     <div class="grid grid-cols-5 gap-4 p-4 mt-10">
-        {#each (limitItems == -1 ? data.items : data.items.slice(0, limitItems)) as item}
+        {#each (limitItems === -1 ? data.items : data.items.slice(0, limitItems)) as item}
             <div class="bg-white shadow rounded-lg overflow-hidden">
                 <div class="bg-gray-200 p-10 flex items-center justify-center relative">
                     <span class="text-4xl text-gray-400"><i class="fa-solid fa-file"></i></span>

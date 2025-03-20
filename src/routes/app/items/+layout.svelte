@@ -1,9 +1,9 @@
 <script>
     import {onMount} from "svelte";
-    import {page} from '$app/stores';
+    import {page} from '$app/state';
 
-
-    let folders = [];
+    const {children} = $props();
+    let folders = $state([]);
     const fetchFolders = async () => {
         try {
             const response = await fetch("http://127.0.0.1:8000/api/folders");
@@ -41,7 +41,6 @@
             </a>
         </div>
 
-        <!-- Danh sách thư mục từ API -->
         {#each folders as folder}
             <a href="/app/items/folder/{folder.id}"
                class="folder-item flex items-center space-x-2 text-gray-600 hover:text-[#00205b] cursor-pointer block pl-6 mt-2
@@ -55,7 +54,7 @@
 
     <!-- Nội dung chính -->
     <div class="p-4 w-full ml-[250px]">
-        <slot/>
+        {@render children()}
     </div>
 </div>
 
