@@ -2,7 +2,7 @@
     <div class="flex flex-col items-start">
         <div class="mb-4 flex items-center space-x-2 text-sm text-gray-600 p-7">
             <img src="/img/package.png" alt="">
-            <a href="#" class="hover:text-gray-800">Thêm Thư Mục</a>
+            <a href="/" class="hover:text-gray-800">Thêm Thư Mục</a>
         </div>
 
         <!-- Tiêu đề -->
@@ -16,47 +16,47 @@
                 <!-- Cột trái -->
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium mb-1">Số lượng *</label>
-                        <input type="number" value="1"
+                        <label for="item-amount" class="block text-sm font-medium mb-1">Số lượng *</label>
+                        <input type="number" value="1" id="item-amount"
                                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500"/>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Mức tối thiểu</label>
-                        <input type="number"
+                        <label for="item-atleast" class="block text-sm font-medium mb-1">Mức tối thiểu</label>
+                        <input type="number" id="item-atleast"
                                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500"/>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Giá *</label>
-                        <input type="text"
+                        <label class="block text-sm font-medium mb-1" for="item-price">Giá *</label>
+                        <input type="text" id="item-price"
                                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500"/>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Thẻ (Tags)</label>
-                        <input type="text"
+                        <label for="item-tags" class="block text-sm font-medium mb-1">Thẻ (Tags)</label>
+                        <input type="text" id="item-tags"
                                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500"/>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Nhà cung cấp</label>
-                        <input type="text"
+                        <label for="item-supplier" class="block text-sm font-medium mb-1">Nhà cung cấp</label>
+                        <input type="text" id="item-supplier"
                                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500"/>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Ghi chú</label>
-                        <textarea
-                                class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500"></textarea>
+                        <label for="item-note" class="block text-sm font-medium mb-1">Ghi chú</label>
+                        <textarea id="item-note"
+                                  class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500"></textarea>
                     </div>
                 </div>
 
                 <!-- Cột phải -->
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium mb-1">Đơn vị đo lường</label>
+                        <div class="block text-sm font-medium mb-1">Đơn vị đo lường</div>
                         <select class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500">
                             <option>Đơn vị</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Cài đặt cảnh báo</label>
+                        <div class="block text-sm font-medium mb-1">Cài đặt cảnh báo</div>
                         <a href="#"
                            class="w-full flex items-center justify-center border border-gray-300 rounded-lg p-3 text-sm text-gray-700 focus:ring-2 focus:ring-blue-500">
                             <svg class="w-5 h-5 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg"
@@ -67,7 +67,7 @@
                         </a>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Hình ảnh</label>
+                        <div class="block text-sm font-medium mb-1">Hình ảnh</div>
                         <div class="border border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center">
                             <svg class="w-10 h-10 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                  fill="currentColor">

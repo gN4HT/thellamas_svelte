@@ -105,9 +105,7 @@
 
 <!-- Main content -->
 <main class="ml-[240px] relative">
-
     {@render children()}
-
 </main>
 
 
