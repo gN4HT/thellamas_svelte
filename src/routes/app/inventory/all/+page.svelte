@@ -4,6 +4,7 @@
     import type {Item} from "../../../../models/item";
     import type {Folder} from "../../../../models/folder";
     import Folders from "../../../../components/Folders.svelte";
+    import NotFoundData from "../../../../components/NotFoundData.svelte";
 
 
     let folders = $state<Folder[]>([]);
@@ -148,18 +149,5 @@
 
 {:else}
     <!-- Hiển thị nếu không có mặt hàng hoặc thư mục -->
-    <div class="flex flex-col items-center justify-center mt-12 text-center">
-        <img src="/img/empty-product.webp" alt="Không có sản phẩm"/>
-        <p class="mt-4 text-gray-700 font-medium">
-            Nơi này có vẻ hơi cô đơn.<br/>
-            Hãy làm cho nó trở nên thú vị hơn với một số hàng tồn kho.
-        </p>
-
-        <!-- Nút bấm -->
-        <div class="mt-6 flex space-x-4">
-            <button class="bg-[#00205b] text-white px-4 py-2 rounded shadow hover:bg-[#001639]" on:click={fetchData}>
-                Tải lại dữ liệu
-            </button>
-        </div>
-    </div>
+    <NotFoundData {fetchData}/>
 {/if}
