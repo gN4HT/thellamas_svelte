@@ -1,7 +1,7 @@
 <div class="container mx-auto px-6 py-8">
     <div class="mb-4 flex items-center space-x-2 text-sm text-gray-600">
         <img src="/img/package.png" alt="">
-        <a href="#" class="hover:text-gray-800">Thêm Thư Mục</a>
+        <button class="hover:text-gray-800">Thêm Thư Mục</button>
     </div>
 
     <!-- Tiêu đề -->

@@ -3,6 +3,7 @@
     import {apiFetch} from "$lib/api";
     import type {Item} from "../../../../models/item";
     import type {Folder} from "../../../../models/folder";
+    import Folders from "../../../../components/Folders.svelte";
 
 
     let folders = $state<Folder[]>([]);
@@ -81,18 +82,7 @@
             <h2 class="text-[#00205B] text-2xl">Thư mục:</h2>
             <div class="grid grid-cols-5 gap-4">
                 {#each paginatedFolders() as folder (folder.id)}
-                    <div class="bg-white shadow rounded-lg overflow-hidden">
-                        <a href="/app/inventory/folder/{folder.id}"
-                           class="bg-gray-500 p-10 flex items-center justify-center relative">
-                            <span class="text-4xl text-gray-300"><i class="fa-solid fa-folder-open"></i></span>
-                            {#if folder.isNew}
-                                <span class="absolute bottom-2 left-2 text-xs bg-black text-white px-2 py-1 rounded">MỚI</span>
-                            {/if}
-                        </a>
-                        <div class="p-4">
-                            <p class="mt-2 font-semibold text-gray-700">{folder.name}</p>
-                        </div>
-                    </div>
+                    <Folders {folder}/>
                 {/each}
             </div>
             <div class="flex mt-5 justify-between">
