@@ -78,8 +78,8 @@
 
     <!-- Nút hành động -->
     <div class="mt-8 flex justify-end space-x-4">
-        <a href="#" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-600">Hủy</a>
-        <a href="#" class="px-6 py-3 bg-blue-600 text-white rounded-lg">Thêm</a>
+        <div class="px-6 py-3 border border-gray-300 rounded-lg text-gray-600">Hủy</div>
+        <div class="px-6 py-3 bg-blue-600 text-white rounded-lg">Thêm</div>
     </div>
 </div>
   
