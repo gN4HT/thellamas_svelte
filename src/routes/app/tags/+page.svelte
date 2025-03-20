@@ -1,6 +1,8 @@
 <script>
   import { onMount } from "svelte";
   import { page } from "$app/stores";
+  import { apiFetch } from "$lib/api";
+
   
   let tags = [];
   let folders = [];
@@ -12,11 +14,16 @@
   let editedTagName = "";
   let searchQuery = "";
 
+  let folderPage = 1;
+  let itemPage = 1;
+  const itemsPerPage = 10;
 
+
+
+  // Lấy danh sách tags
   async function fetchTags() {
       try {
-          const response = await fetch("http://127.0.0.1:8000/api/tags");
-          tags = await response.json();
+          tags = await apiFetch("http://127.0.0.1:8000/api/tags");
           if (tags.length > 0) {
               selectedTag = tags.find(tag => tag.selected)?.name || "";
               fetchFoldersAndItems(selectedTag);
@@ -26,84 +33,122 @@
       }
   }
 
+  // Lấy danh sách thư mục và mặt hàng theo tag
   async function fetchFoldersAndItems(tagName) {
-      const selectedTagObj = tags.find(tag => tag.name === tagName);
-      if (!selectedTagObj) return;
-      try {
-          const foldersResponse = await fetch(`http://127.0.0.1:8000/api/folders/tag/${selectedTagObj.id}`);
-          folders = await foldersResponse.json();
-          const itemsResponse = await fetch(`http://127.0.0.1:8000/api/items/tag/${selectedTagObj.id}`);
-          items = await itemsResponse.json();
-      } catch (error) {
-          console.error("Lỗi khi lấy danh sách folders hoặc items:", error);
-      }
-  }
+    const selectedTagObj = tags.find(tag => tag.name === tagName);
+    if (!selectedTagObj) return;
 
+    try {
+        let fetchedFolders = await apiFetch(`http://127.0.0.1:8000/api/folders/tag/${selectedTagObj.id}`);
+        folders = Array.isArray(fetchedFolders) ? fetchedFolders : [];
+
+        let fetchedItems = await apiFetch(`http://127.0.0.1:8000/api/items/tag/${selectedTagObj.id}`);
+        items = Array.isArray(fetchedItems) ? fetchedItems : [];
+    } catch (error) {
+        console.error("Lỗi khi lấy danh sách folders hoặc items:", error);
+        folders = [];
+        items = [];
+    }
+}
+
+
+  // Thêm tag mới
   async function addTag() {
-      if (newTag.length > 1) {
-          try {
-              const response = await fetch("http://127.0.0.1:8000/api/tags", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ name: newTag })
-              });
-              if (response.ok) {
-                  newTag = "";
-                  showModal = false;
-                  fetchTags(); // Reload danh sách tags
-              }
-          } catch (error) {
-              console.error("Lỗi khi thêm tag:", error);
-          }
-      }
+    if (newTag.trim().length < 2) {
+        alert("Tên tag phải có ít nhất 2 ký tự!");
+        return;
+    }
+
+    try {
+        const response = await apiFetch("http://127.0.0.1:8000/api/tags", {
+            method: "POST",
+            body: JSON.stringify({ name: newTag }),
+        });
+
+        if (response) {
+            newTag = "";
+            showModal = false;
+            await fetchTags(); // Gọi lại API để cập nhật danh sách tags mới nhất
+        }
+    } catch (error) {
+        console.error("Lỗi khi thêm tag:", error);
+    }
+}
+
+
+  // Cập nhật tên tag
+  async function updateTagName() {
+    if (!selectedTag || editedTagName.trim() === "") return;
+
+    try {
+        const selectedTagObj = tags.find(tag => tag.name === selectedTag);
+        if (!selectedTagObj) return;
+
+        const updatedTag = await apiFetch(`http://127.0.0.1:8000/api/tags/${selectedTagObj.id}`, {
+            method: "PUT",
+            body: { name: editedTagName },
+        });
+
+        if (updatedTag) {
+            selectedTag = updatedTag.name; 
+            await fetchTags(); // Lấy lại danh sách tags mới từ API
+            isEditingTag = false;
+        }
+    } catch (error) {
+        console.error("Lỗi khi cập nhật tag:", error);
+    }
+}
+
+  // Xóa tag
+  async function deleteTag(tagId) {
+    if (!confirm("Bạn có chắc chắn muốn xóa tag này không?")) return;
+
+    try {
+        const response = await apiFetch(`http://127.0.0.1:8000/api/tags/${tagId}`, {
+            method: "DELETE",
+        });
+
+        if (response) {
+            await fetchTags(); // Gọi lại API để cập nhật danh sách tags mới nhất
+            selectedTag = "";
+            folders = [];
+            items = [];
+        }
+    } catch (error) {
+        console.error("Lỗi khi xóa tag:", error);
+    }
+}
+
+  // Lọc danh sách tag theo search query
+  function filteredTags() {
+      return tags.filter(tag => tag.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }
 
-  async function updateTagName() {
-        if (!selectedTag) return;
-        if (editedTagName.trim() !== "") {
-            try {
-                const selectedTagObj = tags.find(tag => tag.name === selectedTag);
-                if (!selectedTagObj) return;
-                const response = await fetch(`http://127.0.0.1:8000/api/tags/${selectedTagObj.id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name: editedTagName })
-                });
-                if (response.ok) {
-                    selectedTag = editedTagName;
-                    tags = tags.map(tag => tag.id === selectedTagObj.id ? { ...tag, name: editedTagName } : tag);
-                    isEditingTag = false;
-                }
-            } catch (error) {
-                console.error("Lỗi khi cập nhật tag:", error);
-            }
-        }
-        isEditingTag = false;
-    }
-
-    async function deleteTag(tagId) {
-        if (confirm("Bạn có chắc chắn muốn xóa tag này không?")) {
-            try {
-                const response = await fetch(`http://127.0.0.1:8000/api/tags/${tagId}`, {
-                    method: "DELETE"
-                });
-                if (response.ok) {
-                    tags = tags.filter(tag => tag.id !== tagId);
-                    selectedTag = "";
-                    fetchFoldersAndItems("");
-                }
-            } catch (error) {
-                console.error("Lỗi khi xóa tag:", error);
-            }
-        }
-    }
-    function filteredTags() {
-        return tags.filter(tag => tag.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    }
-
+  // Chọn tag
   function selectTag(tagName) {
       selectedTag = tagName;
       fetchFoldersAndItems(tagName);
+  }
+
+  // Phân trang thư mục
+  function paginatedFolders() {
+      const start = (folderPage - 1) * itemsPerPage;
+      return folders.slice(start, start + itemsPerPage);
+  }
+
+  // Phân trang items
+  function paginatedItems() {
+      const start = (itemPage - 1) * itemsPerPage;
+      return items.slice(start, start + itemsPerPage);
+  }
+
+  // Chuyển trang
+  function goToPage(type, event) {
+      let value = parseInt(event.target.value) || 1;
+      let maxPage = Math.ceil((type === 'folder' ? folders.length : items.length) / itemsPerPage);
+      let pageValue = Math.max(1, Math.min(maxPage, value));
+      if (type === 'folder') folderPage = pageValue;
+      else itemPage = pageValue;
   }
 
   onMount(fetchTags);
@@ -112,7 +157,7 @@
 {#if tags.length > 0}
 <div class="bg-gray-100 h-screen flex w-full">
     <!-- Sidebar -->
-    <div class="bg-white p-4 border-r border-gray-300">
+    <div class="bg-white p-4 border-r border-gray-300 overflow-y-auto small-scrollbar w-[250px]">
       <div class="flex justify-between items-center border border-gray-300 rounded p-2 mb-4">
         <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
         <input
@@ -176,7 +221,7 @@
       {#if folders.length > 0}
           <h2 class="text-gray-500 text-3xl mt-10 ml-4">Thư mục</h2>
           <div class="grid grid-cols-5 gap-4 p-4">
-              {#each folders as folder}
+            {#each paginatedFolders() as folder}
                   <div class="bg-white shadow rounded-lg overflow-hidden">
                       <div class="bg-gray-500 p-10 flex items-center justify-center relative">
                           <span class="text-4xl text-gray-300"><i class="fa-solid fa-folder-open"></i></span>
@@ -187,12 +232,22 @@
                   </div>
               {/each}
           </div>
-      {/if}
+          <div class="flex mt-5 justify-between">
+            <p class="text-gray-500">Tổng số trang: {folderPage}/{Math.ceil(folders.length / itemsPerPage)}</p>
+            <div class="flex gap-2">
+            <button class="hover:text-[#00205B] cursor-pointer" on:click={() => folderPage = 1}>Trang đầu</button>
+          <button class="hover:text-[#00205B] cursor-pointer" on:click={() => folderPage--} disabled={folderPage === 1}>Trước</button>
+          <input type="number" bind:value={folderPage} on:change={(e) => goToPage('folder', e)} class="border rounded p-1 w-16 text-center" />
+          <button class="hover:text-[#00205B] cursor-pointer" on:click={() => folderPage++} disabled={folderPage * itemsPerPage >= folders.length}>Sau</button>
+          <button class="hover:text-[#00205B] cursor-pointer" on:click={() => folderPage = Math.ceil(folders.length / itemsPerPage)}>Trang cuối</button>
+</div>
+        </div>
+          {/if}
   
       {#if items.length > 0}
           <h2 class="text-gray-500 text-3xl mt-10 ml-4">Mặt hàng</h2>
           <div class="grid grid-cols-5 gap-4 p-4">
-              {#each items as item}
+            {#each paginatedItems() as item}
                   <div class="bg-white shadow rounded-lg overflow-hidden">
                       <div class="bg-gray-200 p-10 flex items-center justify-center relative">
                           <span class="text-4xl text-gray-400"><i class="fa-solid fa-file"></i></span>
@@ -207,7 +262,17 @@
                   </div>
               {/each}
           </div>
-      {/if}
+          <div class="flex mt-5 justify-between">
+            <p class="text-gray-500">Tổng số trang: {itemPage}/{Math.ceil(items.length / itemsPerPage)}</p> 
+          <div class="flex gap-2">
+          <button class="hover:text-[#00205B] cursor-pointer" on:click={() => itemPage = 1}>Trang đầu</button>
+          <button class="hover:text-[#00205B] cursor-pointer" on:click={() => itemPage--} disabled={itemPage === 1}>Trước</button>
+          <input type="number" bind:value={itemPage} on:change={(e) => goToPage('item', e)} class="border rounded p-1 w-16 text-center" />
+          <button class="hover:text-[#00205B] cursor-pointer" on:click={() => itemPage++} disabled={itemPage * itemsPerPage >= items.length}>Sau</button>
+          <button class="hover:text-[#00205B] cursor-pointer" on:click={() => itemPage = Math.ceil(items.length / itemsPerPage)}>Trang cuối</button>
+        </div>
+        </div>
+          {/if}
   {:else}
       <!-- Hiển thị khi không có dữ liệu -->
       <div class="flex-1 p-10 flex flex-col items-center justify-center">
@@ -306,3 +371,19 @@
     </div>
   </div>
 {/if}
+
+<style>
+  /* Custom small scrollbar */
+  .small-scrollbar::-webkit-scrollbar {
+    width: 6px; /* Adjust the scrollbar width */
+  }
+  
+  .small-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1; /* Thumb color */
+    border-radius: 4px;
+  }
+  
+  .small-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9; /* Track color */
+  }
+  </style>

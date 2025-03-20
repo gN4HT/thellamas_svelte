@@ -1,8 +1,18 @@
-<script lang="ts">
+<script>
+    import {page} from "$app/state";
+    import {goto} from "$app/navigation";
+    import {onMount} from "svelte";
 
-    import {page} from '$app/state';
+    export function protectRoute() {
+        const token = localStorage.getItem("access_token");
+        let {children} = $props();
+        if (!token) {
+            goto("web/login");
+        }
+    }
 
-    let {children} = $props();
+    onMount(protectRoute);
+
 </script>
 
 <!-- Sidebar -->
@@ -16,7 +26,7 @@
         <a
                 href="/app"
                 class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item"
-                class:active={page.url.pathname === "/app"}
+                class:active={$page.url.pathname === "/app"}
         >
             <img src="/img/Items.png" alt="Dashboard Icon"/>
             <span class="ml-3 text-white text-sm">Bảng điều khiển</span>
@@ -24,7 +34,7 @@
         <a
                 href="/app/items/all"
                 class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item"
-                class:active={(page.url.pathname.startsWith("/app/items"))}
+                class:active={($page.url.pathname.startsWith("/app/items"))}
         >
             <img src="/img/Items (1).png" alt="Items Icon"/>
             <span class="ml-3 text-white text-sm">Mặt hàng</span>
@@ -32,7 +42,7 @@
         <a
                 href="/app/search"
                 class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item"
-                class:active={page.url.pathname === "/app/search"}
+                class:active={$page.url.pathname === "/app/search"}
         >
             <img src="/img/Items (2).png" alt="Search Icon"/>
             <span class="ml-3 text-white text-sm">Tìm kiếm</span>
@@ -40,7 +50,7 @@
         <a
                 href="/app/tags"
                 class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item"
-                class:active={page.url.pathname === "/app/tags"}
+                class:active={$page.url.pathname === "/app/tags"}
         >
             <img src="/img/Items (3).png" alt="Tags Icon"/>
             <span class="ml-3 text-white text-sm">Các thẻ Tag</span>
@@ -48,7 +58,7 @@
         <a
                 href="/app/workflows"
                 class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item"
-                class:active={page.url.pathname === "/app/workflows"}
+                class:active={$page.url.pathname === "/app/workflows"}
         >
             <img src="/img/Frame 87.png" alt="Workflows Icon" class="ml-1"/>
             <span class="ml-3 text-white text-sm">Quy trình làm việc</span>
@@ -57,7 +67,7 @@
         <a
                 href="/app/reports/activeHistory"
                 class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item"
-                class:active={(page.url.pathname.startsWith("/app/reports"))}
+                class:active={($page.url.pathname.startsWith("/app/reports"))}
         >
             <img src="/img/Items (4).png" alt="Reports Icon"/>
             <span class="ml-3 text-white text-sm">Báo cáo</span>
@@ -67,7 +77,7 @@
         <a
                 href="/app/productnews"
                 class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item"
-                class:active={page.url.pathname === "/app/productnews"}
+                class:active={$page.url.pathname === "/app/productnews"}
         >
             <img src="/img/Items (5).png" alt="Product News Icon"/>
             <span class="ml-3 text-white text-sm">Tin tức sản phẩm</span>
@@ -75,7 +85,7 @@
         <a
                 href="/app/help"
                 class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item"
-                class:active={page.url.pathname === "/app/help"}
+                class:active={$page.url.pathname === "/app/help"}
         >
             <img src="/img/Items (6).png" alt="Help Icon"/>
             <span class="ml-3 text-white text-sm">Trợ giúp</span>
@@ -83,7 +93,7 @@
         <a
                 href="/app/notification"
                 class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item"
-                class:active={page.url.pathname === "/app/notification"}
+                class:active={$page.url.pathname === "/app/notification"}
         >
             <img src="/img/Items (7).png" alt="Notifications Icon"/>
             <span class="ml-3 text-white text-sm">Thông báo</span>
@@ -91,7 +101,7 @@
         <a
                 href="/app/settings"
                 class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item"
-                class:active={(page.url.pathname.startsWith("/app/settings"))}
+                class:active={($page.url.pathname.startsWith("/app/settings"))}
         >
             <img src="/img/Items (8).png" alt="Settings Icon"/>
             <span class="ml-3 text-white text-sm">Thiết lập</span>

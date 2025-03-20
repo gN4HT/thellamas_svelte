@@ -1,18 +1,18 @@
 <script>
   import { onMount } from "svelte";
+  import { apiFetch } from "$lib/api";
+
 
   let data = {
     inventory_summary: [],
     recent_activities: [],
-    recent_items: [],
+    recent_items: [], 
     stock_levels: []
   };
 
   const fetchData = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/dashboard");
-      const result = await response.json();
-
+      const result = await apiFetch("http://127.0.0.1:8000/api/dashboard");
       // Xử lý dữ liệu nhận được từ API
       data.inventory_summary = [
         { icon: "/img/Frame 61.png", value: result.counts.items, label: "Mặt hàng" },
