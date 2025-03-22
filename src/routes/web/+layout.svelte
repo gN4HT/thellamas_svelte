@@ -22,23 +22,23 @@
       <!-- Mục menu -->
       <div class="hidden md:flex items-center space-x-6">
         <div class="relative group">
-          <a href="#" class="text-gray-700 font-medium">Đặc trưng</a>
+          <a href="" class="text-gray-700 font-medium">Đặc trưng</a>
           <div class="absolute hidden group-hover:block bg-white shadow rounded-lg mt-2 w-40">
-            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Tính năng 1</a>
-            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Tính năng 2</a>
-            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Tính năng 3</a>
+            <a href="" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Tính năng 1</a>
+            <a href="" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Tính năng 2</a>
+            <a href="" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Tính năng 3</a>
           </div>
         </div>
-        <a href="#" class="text-gray-700 font-medium hover:text-blue-600">Giải pháp</a>
-        <a href="#" class="text-gray-700 font-medium hover:text-blue-600">Doanh nghiệp</a>
+        <a href="" class="text-gray-700 font-medium hover:text-blue-600">Giải pháp</a>
+        <a href="" class="text-gray-700 font-medium hover:text-blue-600">Doanh nghiệp</a>
         <a href="web/plan" class="text-gray-700 font-medium hover:text-blue-600">Bảng giá</a>
-        <a href="#" class="text-gray-700 font-medium hover:text-blue-600">Học hỏi</a>
+        <a href="" class="text-gray-700 font-medium hover:text-blue-600">Học hỏi</a>
       </div>
 
       <!-- Hành động -->
       <div class="flex items-center space-x-4">
         <a href="/web/login" class="text-gray-700 font-medium hover:text-blue-600">Đăng nhập</a>
-        <a href="#" class="bg-[#00205b] text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-blue-700">Dùng thử miễn phí</a>
+        <a href="" class="bg-[#00205b] text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-blue-700">Dùng thử miễn phí</a>
       </div>
     </div>
   </nav>
