@@ -2,6 +2,8 @@
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
     import { createEventDispatcher } from "svelte";
+    import { apiFetch } from "$lib/api";
+
 
     let suppliers = [];
     let items = [];
@@ -23,34 +25,30 @@
     }
     function goToPage(type, event) {
         let value = parseInt(event.target.value) || 1;
-        let maxPage = Math.ceil((type === 'folder' ? folders.length : items.length) / itemsPerPage);
+        let maxPage = Math.ceil((items.length) / itemsPerPage);
         let pageValue = Math.max(1, Math.min(maxPage, value));
-        if (type === 'folder') folderPage = pageValue;
-        else itemPage = pageValue;
+        itemPage = pageValue;
     }
 
     async function fetchSuppliers() {
-        try {
-            const response = await fetch("http://127.0.0.1:8000/api/suppliers");
-            if (!response.ok) throw new Error("Lỗi khi lấy dữ liệu suppliers");
-            suppliers = await response.json();
-        } catch (error) {
-            console.error(error);
-        }
+    try {
+        suppliers = await apiFetch("http://127.0.0.1:8000/api/suppliers");
+    } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu suppliers:", error);
     }
+}
 
-    async function fetchItems(supplierId) {
-        try {
-            const response = await fetch(`http://127.0.0.1:8000/api/items`);
-            if (!response.ok) throw new Error("Lỗi khi lấy dữ liệu items");
-            const allItems = await response.json();
-            
-            // Lọc items theo supplier_id
-            items = allItems.filter(item => item.supplier_id === supplierId);
-        } catch (error) {
-            console.error(error);
-        }
+async function fetchItems(supplierId) {
+    try {
+        const allItems = await apiFetch("http://127.0.0.1:8000/api/items");
+
+        // Lọc items theo supplier_id
+        items = allItems.filter(item => item.supplier_id === supplierId);
+    } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu items:", error);
     }
+}
+
 
     function filteredSuppliers() {
         return suppliers.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -65,8 +63,7 @@ async function deleteSupplier(id) {
     if (!confirm("Bạn có chắc muốn xóa supplier này?")) return;
 
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/suppliers/${id}`, { method: "DELETE" });
-        if (!response.ok) throw new Error("Xóa không thành công");
+        await apiFetch(`http://127.0.0.1:8000/api/suppliers/${id}`, "DELETE");
 
         suppliers = suppliers.filter(s => s.id !== id);
         if (selectedSupplier && selectedSupplier.id === id) {
@@ -74,7 +71,7 @@ async function deleteSupplier(id) {
             items = [];
         }
     } catch (error) {
-        console.error(error);
+        console.error("Lỗi khi xóa supplier:", error);
     }
 }
 
@@ -89,31 +86,25 @@ function openModal(editMode = false, data = null) {
     }
 
     async function saveSupplier() {
-        if (!supplier.name.trim()) {
-            alert("Tên supplier là bắt buộc");
-            return;
-        }
-
-        try {
-            const method = isEditing ? "PUT" : "POST";
-            const url = isEditing 
-                ? `http://127.0.0.1:8000/api/suppliers/${supplier.id}` 
-                : "http://127.0.0.1:8000/api/suppliers";
-            
-            const response = await fetch(url, {
-                method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(supplier),
-            });
-
-            if (!response.ok) throw new Error("Lưu không thành công");
-            dispatch("refresh"); // Gửi sự kiện để cập nhật danh sách
-            closeModal();
-        } catch (error) {
-            console.error(error);
-        }
+    if (!supplier.name.trim()) {
+        alert("Tên supplier là bắt buộc");
+        return;
     }
 
+    try {
+        const method = isEditing ? "PUT" : "POST";
+        const url = isEditing 
+            ? `http://127.0.0.1:8000/api/suppliers/${supplier.id}` 
+            : "http://127.0.0.1:8000/api/suppliers";
+
+        await apiFetch(url, method, supplier);
+
+        dispatch("refresh"); // Gửi sự kiện để cập nhật danh sách
+        closeModal();
+    } catch (error) {
+        console.error("Lỗi khi lưu supplier:", error);
+    }
+}
 
     onMount(fetchSuppliers);
 </script>
@@ -132,28 +123,31 @@ function openModal(editMode = false, data = null) {
         </div>
 
         <div>
-            {#each filteredSuppliers() as supplier}
-            <div 
-            class="flex items-center justify-between p-2 cursor-pointer rounded {selectedSupplier && selectedSupplier.id === supplier.id ? 'text-[#00205b]' : 'text-gray-500 hover:bg-gray-100'}"
-            on:click={() => selectSupplier(supplier)}
-        >
-                <div class="flex items-center gap-1">
-                    <span class="mr-2 text-xl"><i class="fa-solid fa-box"></i></span>
-                {supplier.name.length > 15 ? `${supplier.name.slice(0, 15)}...` : supplier.name}
+            {#each filteredSuppliers() as supplier (supplier.id)}
+                <div
+                        class="flex items-center justify-between p-2 cursor-pointer rounded
+                {selectedSupplier && selectedSupplier.id === supplier.id ? 'text-[#00205b]' : 'text-gray-500 hover:bg-gray-100'}"
+                        on:click={() => selectSupplier(supplier)}
+                >
+                    <div class="flex items-center gap-1">
+                        <span class="mr-2 text-xl"><i class="fa-solid fa-box"></i></span>
+                        <span title={supplier.name}>
+                    {supplier.name.length > 15 ? ${supplier.name.slice(0, 15)}... : supplier.name}
+                </span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <a href="#" on:click={event => handleOpenModal(event, supplier)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                <path d="M6.41421 15.89L16.5563 5.74785L15.1421 4.33363L5 14.4758V15.89H6.41421ZM7.24264 17.89H3V13.6473L14.435 2.21231C14.8256 1.82179 15.4587 1.82179 15.8492 2.21231L18.6777 5.04074C19.0682 5.43126 19.0682 6.06443 18.6777 6.45495L7.24264 17.89ZM3 19.89H21V21.89H3V19.89Z"></path>
+                            </svg>
+                        </a>
+                        <span class="ml-auto text-red-500 cursor-pointer" on:click={event => handleDelete(event, supplier.id)}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                        <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z"></path>
+                    </svg>
+                </span>
+                    </div>
                 </div>
-                <div class="flex items-center gap-1">
-                    <a href="#" on:click={(e) => { e.preventDefault(); openModal(true, supplier); }}>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-                            <path d="M6.41421 15.89L16.5563 5.74785L15.1421 4.33363L5 14.4758V15.89H6.41421ZM7.24264 17.89H3V13.6473L14.435 2.21231C14.8256 1.82179 15.4587 1.82179 15.8492 2.21231L18.6777 5.04074C19.0682 5.43126 19.0682 6.06443 18.6777 6.45495L7.24264 17.89ZM3 19.89H21V21.89H3V19.89Z"></path>
-                        </svg>
-                    </a>
-                    <span class="ml-auto text-red-500 cursor-pointer" on:click={(e) => { e.stopPropagation(); deleteSupplier(supplier.id); }}>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-                            <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z"></path>
-                        </svg>
-                    </span>
-                </div>
-            </div>
             {/each}
         </div>
     </div>

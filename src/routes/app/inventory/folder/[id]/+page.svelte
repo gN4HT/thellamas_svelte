@@ -1,6 +1,8 @@
 <script>
   import { page } from '$app/stores';
   import { onDestroy } from 'svelte';
+  import { apiFetch } from "$lib/api";
+
 
   let folderName = "Đang tải...";
   let folders = [];
@@ -12,27 +14,25 @@
 
   async function fetchFolderAndItems(folderId) {
     try {
-      console.log("Fetching data for folder ID:", folderId);
+        console.log("Fetching data for folder ID:", folderId);
 
-      // Lấy danh sách thư mục
-      const folderRes = await fetch("http://127.0.0.1:8000/api/folders");
-      const allFolders = await folderRes.json();
+        // Lấy danh sách thư mục
+        const allFolders = await apiFetch("http://127.0.0.1:8000/api/folders");
 
-      // Tìm thư mục hiện tại theo folderId
-      const folder = allFolders.find(f => f.id == folderId);
-      folderName = folder ? folder.name : "Thư mục không tồn tại";
+        // Tìm thư mục hiện tại theo folderId
+        const folder = allFolders.find(f => f.id == folderId);
+        folderName = folder ? folder.name : "Thư mục không tồn tại";
 
-      // Lọc danh sách thư mục con của folderId
-      folders = allFolders.filter(f => f.parent_id === Number(folderId));
+        // Lọc danh sách thư mục con của folderId
+        folders = allFolders.filter(f => f.parent_id === Number(folderId));
 
-      // Lấy danh sách mặt hàng và lọc theo folder_id
-      const itemsRes = await fetch("http://127.0.0.1:8000/api/items");
-      const allItems = await itemsRes.json();
-      items = allItems.filter(item => item.folder_id == folderId);
+        // Lấy danh sách mặt hàng và lọc theo folder_id
+        const allItems = await apiFetch("http://127.0.0.1:8000/api/items");
+        items = allItems.filter(item => item.folder_id == folderId);
     } catch (error) {
-      console.error("Lỗi khi tải dữ liệu:", error);
+        console.error("Lỗi khi tải dữ liệu:", error);
     }
-  }
+}
 
   function paginatedItems() {
     const start = (itemPage - 1) * itemsPerPage;

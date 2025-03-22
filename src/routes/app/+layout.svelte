@@ -1,5 +1,17 @@
 <script>
   import { page } from "$app/stores";
+  import { goto } from "$app/navigation";
+  import { onMount } from "svelte";
+  export function protectRoute() {
+  const token = localStorage.getItem("access_token");
+
+  if (!token) {
+    goto("web/login");
+  }
+}
+
+onMount(protectRoute);
+
 </script>
 
 <!-- Sidebar -->

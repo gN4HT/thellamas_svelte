@@ -1,6 +1,8 @@
 <script>
   import { onMount } from "svelte";
   import { page } from "$app/stores";
+  import { apiFetch } from "$lib/api";
+
   
   let tags = [];
   let folders = [];
@@ -17,10 +19,11 @@
   const itemsPerPage = 10;
 
 
+
+  // Lấy danh sách tags
   async function fetchTags() {
       try {
-          const response = await fetch("http://127.0.0.1:8000/api/tags");
-          tags = await response.json();
+          tags = await apiFetch("http://127.0.0.1:8000/api/tags");
           if (tags.length > 0) {
               selectedTag = tags.find(tag => tag.selected)?.name || "";
               fetchFoldersAndItems(selectedTag);
@@ -30,102 +33,123 @@
       }
   }
 
+  // Lấy danh sách thư mục và mặt hàng theo tag
   async function fetchFoldersAndItems(tagName) {
-      const selectedTagObj = tags.find(tag => tag.name === tagName);
-      if (!selectedTagObj) return;
-      try {
-          const foldersResponse = await fetch(`http://127.0.0.1:8000/api/folders/tag/${selectedTagObj.id}`);
-          folders = await foldersResponse.json();
-          const itemsResponse = await fetch(`http://127.0.0.1:8000/api/items/tag/${selectedTagObj.id}`);
-          items = await itemsResponse.json();
-      } catch (error) {
-          console.error("Lỗi khi lấy danh sách folders hoặc items:", error);
-      }
-  }
+    const selectedTagObj = tags.find(tag => tag.name === tagName);
+    if (!selectedTagObj) return;
 
+    try {
+        let fetchedFolders = await apiFetch(`http://127.0.0.1:8000/api/folders/tag/${selectedTagObj.id}`);
+        folders = Array.isArray(fetchedFolders) ? fetchedFolders : [];
+
+        let fetchedItems = await apiFetch(`http://127.0.0.1:8000/api/items/tag/${selectedTagObj.id}`);
+        items = Array.isArray(fetchedItems) ? fetchedItems : [];
+    } catch (error) {
+        console.error("Lỗi khi lấy danh sách folders hoặc items:", error);
+        folders = [];
+        items = [];
+    }
+}
+
+
+  // Thêm tag mới
   async function addTag() {
-      if (newTag.length > 1) {
-          try {
-              const response = await fetch("http://127.0.0.1:8000/api/tags", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ name: newTag })
-              });
-              if (response.ok) {
-                  newTag = "";
-                  showModal = false;
-                  fetchTags(); // Reload danh sách tags
-              }
-          } catch (error) {
-              console.error("Lỗi khi thêm tag:", error);
-          }
-      }
+    if (newTag.trim().length < 2) {
+        alert("Tên tag phải có ít nhất 2 ký tự!");
+        return;
+    }
+
+    try {
+        const response = await apiFetch("http://127.0.0.1:8000/api/tags", {
+            method: "POST",
+            body: JSON.stringify({ name: newTag }),
+        });
+
+        if (response) {
+            newTag = "";
+            showModal = false;
+            await fetchTags(); // Gọi lại API để cập nhật danh sách tags mới nhất
+        }
+    } catch (error) {
+        console.error("Lỗi khi thêm tag:", error);
+    }
+}
+
+
+  // Cập nhật tên tag
+  async function updateTagName() {
+    if (!selectedTag || editedTagName.trim() === "") return;
+
+    try {
+        const selectedTagObj = tags.find(tag => tag.name === selectedTag);
+        if (!selectedTagObj) return;
+
+        const updatedTag = await apiFetch(`http://127.0.0.1:8000/api/tags/${selectedTagObj.id}`, {
+            method: "PUT",
+            body: { name: editedTagName },
+        });
+
+        if (updatedTag) {
+            selectedTag = updatedTag.name; 
+            await fetchTags(); // Lấy lại danh sách tags mới từ API
+            isEditingTag = false;
+        }
+    } catch (error) {
+        console.error("Lỗi khi cập nhật tag:", error);
+    }
+}
+
+  // Xóa tag
+  async function deleteTag(tagId) {
+    if (!confirm("Bạn có chắc chắn muốn xóa tag này không?")) return;
+
+    try {
+        const response = await apiFetch(`http://127.0.0.1:8000/api/tags/${tagId}`, {
+            method: "DELETE",
+        });
+
+        if (response) {
+            await fetchTags(); // Gọi lại API để cập nhật danh sách tags mới nhất
+            selectedTag = "";
+            folders = [];
+            items = [];
+        }
+    } catch (error) {
+        console.error("Lỗi khi xóa tag:", error);
+    }
+}
+
+  // Lọc danh sách tag theo search query
+  function filteredTags() {
+      return tags.filter(tag => tag.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }
 
-  async function updateTagName() {
-        if (!selectedTag) return;
-        if (editedTagName.trim() !== "") {
-            try {
-                const selectedTagObj = tags.find(tag => tag.name === selectedTag);
-                if (!selectedTagObj) return;
-                const response = await fetch(`http://127.0.0.1:8000/api/tags/${selectedTagObj.id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name: editedTagName })
-                });
-                if (response.ok) {
-                    selectedTag = editedTagName;
-                    tags = tags.map(tag => tag.id === selectedTagObj.id ? { ...tag, name: editedTagName } : tag);
-                    isEditingTag = false;
-                }
-            } catch (error) {
-                console.error("Lỗi khi cập nhật tag:", error);
-            }
-        }
-        isEditingTag = false;
-    }
-
-    async function deleteTag(tagId) {
-        if (confirm("Bạn có chắc chắn muốn xóa tag này không?")) {
-            try {
-                const response = await fetch(`http://127.0.0.1:8000/api/tags/${tagId}`, {
-                    method: "DELETE"
-                });
-                if (response.ok) {
-                    tags = tags.filter(tag => tag.id !== tagId);
-                    selectedTag = "";
-                    fetchFoldersAndItems("");
-                }
-            } catch (error) {
-                console.error("Lỗi khi xóa tag:", error);
-            }
-        }
-    }
-    function filteredTags() {
-        return tags.filter(tag => tag.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    }
-
+  // Chọn tag
   function selectTag(tagName) {
       selectedTag = tagName;
       fetchFoldersAndItems(tagName);
   }
 
+  // Phân trang thư mục
   function paginatedFolders() {
-        const start = (folderPage - 1) * itemsPerPage;
-        return folders.slice(start, start + itemsPerPage);
-    }
+      const start = (folderPage - 1) * itemsPerPage;
+      return folders.slice(start, start + itemsPerPage);
+  }
 
-    function paginatedItems() {
-        const start = (itemPage - 1) * itemsPerPage;
-        return items.slice(start, start + itemsPerPage);
-    }
-    function goToPage(type, event) {
-        let value = parseInt(event.target.value) || 1;
-        let maxPage = Math.ceil((type === 'folder' ? folders.length : items.length) / itemsPerPage);
-        let pageValue = Math.max(1, Math.min(maxPage, value));
-        if (type === 'folder') folderPage = pageValue;
-        else itemPage = pageValue;
-    }
+  // Phân trang items
+  function paginatedItems() {
+      const start = (itemPage - 1) * itemsPerPage;
+      return items.slice(start, start + itemsPerPage);
+  }
+
+  // Chuyển trang
+  function goToPage(type, event) {
+      let value = parseInt(event.target.value) || 1;
+      let maxPage = Math.ceil((type === 'folder' ? folders.length : items.length) / itemsPerPage);
+      let pageValue = Math.max(1, Math.min(maxPage, value));
+      if (type === 'folder') folderPage = pageValue;
+      else itemPage = pageValue;
+  }
 
   onMount(fetchTags);
 </script>

@@ -8,9 +8,7 @@
       item: "test",
       quantityChange: "-",
       remaining: "-",
-      moved: "-",
-      sourceFolder: "-",
-      destinationFolder: "-"
+      
     },
     {
       date: "21/01/2025 9:05 AM",
@@ -20,9 +18,7 @@
       item: "-",
       quantityChange: "-",
       remaining: "-",
-      moved: "-",
-      sourceFolder: "-",
-      destinationFolder: "-"
+
     },
     {
       date: "21/01/2025 9:05 AM",
@@ -32,9 +28,7 @@
       item: "test",
       quantityChange: "-",
       remaining: "-",
-      moved: "-",
-      sourceFolder: "-",
-      destinationFolder: "-"
+
     }
   ];
   let limitRows = 3;
@@ -70,9 +64,7 @@
             <th class="py-3 px-4 border w-64">Mục Hoặc Thư Mục</th>
             <th class="py-3 px-4 border w-40">Số Lượng Thay Đổi</th>
             <th class="py-3 px-4 border w-40">Số Lượng Còn</th>
-            <th class="py-3 px-4 border w-40">Số Lượng Di Chuyển</th>
-            <th class="py-3 px-4 border w-64">Thư Mục Nguồn</th>
-            <th class="py-3 px-4 border w-64">Thư Mục Đích</th>
+
           </tr>
         </thead>
         <tbody class="text-gray-600">
@@ -85,9 +77,6 @@
               <td class="py-2 px-4 border">{item.item}</td>
               <td class="py-2 px-4 border">{item.quantityChange}</td>
               <td class="py-2 px-4 border">{item.remaining}</td>
-              <td class="py-2 px-4 border">{item.moved}</td>
-              <td class="py-2 px-4 border">{item.sourceFolder}</td>
-              <td class="py-2 px-4 border">{item.destinationFolder}</td>
             </tr>
           {/each}
         </tbody>

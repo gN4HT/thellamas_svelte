@@ -1,6 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import { page } from '$app/stores';
+  import { apiFetch } from "$lib/api";
 
   let folders = [];
 
@@ -14,18 +15,13 @@
       }));
   }
 
-  // Fetch danh sách thư mục từ API
   const fetchFolders = async () => {
-    try {
-      const response = await fetch("http://127.0.0.1:8000/api/folders");
-      const result = await response.json();
-
-      // Xây dựng cây thư mục
-      folders = buildFolderTree(result);
-    } catch (error) {
-      console.error("Lỗi khi fetch API:", error);
+    const result = await apiFetch("http://127.0.0.1:8000/api/folders");
+    if (result) {
+        folders = buildFolderTree(result);
     }
-  };
+    console.log(folders);
+};
 
   onMount(fetchFolders);
 </script>

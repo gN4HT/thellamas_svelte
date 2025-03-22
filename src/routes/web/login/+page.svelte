@@ -25,6 +25,8 @@
   
           // Lưu access_token vào localStorage
           localStorage.setItem("access_token", data.access_token);
+          localStorage.setItem("token_type", data.token_type);
+          localStorage.setItem("expires_in", data.expires_in);
   
           // Chuyển hướng sau khi đăng nhập thành công
           window.location.href = "/app"; 
