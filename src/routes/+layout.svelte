@@ -1,10 +1,13 @@
-<script>
-    import { browser } from "$app/environment";
-    import { goto } from "$app/navigation";
-  
+<script lang="ts">
+    import {browser} from "$app/environment";
+    import {goto} from "$app/navigation";
+
     if (browser && window.location.pathname === "/") {
-      goto("/web");
+        goto("/web");
     }
-  </script>
-  
-  <slot />
+    let {children} = $props();
+</script>
+
+<div class="">
+    {@render children()}
+</div>

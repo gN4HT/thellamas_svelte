@@ -21,6 +21,7 @@
 	},
 	"dependencies": {
 		"@tailwindcss/vite": "^4.0.8",
+		"lucia": "^3.2.2",
 		"swiper": "^11.2.5"
 	}
 }
