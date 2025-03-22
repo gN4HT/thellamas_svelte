@@ -23,7 +23,7 @@
             <span class="ml-3 text-white text-sm">Bảng điều khiển</span>
         </a>
         <a
-                href="/app/items/all"
+                href="/app/inventory/all"
                 class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item"
                 class:active={page.url.pathname.startsWith("/app/items")}
         >

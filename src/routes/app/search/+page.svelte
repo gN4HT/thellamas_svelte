@@ -34,7 +34,7 @@
 
         <!-- Thư mục -->
         <div class="border-b py-4">
-            <div class="flex justify-between items-center cursor-pointer" on:click={() => toggleSection('folders')}>
+            <div class="flex justify-between items-center cursor-pointer" onclick={() => toggleSection('folders')}>
                 <div class="flex items-center">
                     <i class="fas fa-chevron-down transition-transform mr-2" class:rotate-180={sections.folders}></i>
                     <span class="font-semibold">Thư mục</span>
@@ -53,7 +53,7 @@
 
         <!-- Tên -->
         <div class="border-b py-4">
-            <div class="flex justify-between items-center cursor-pointer" on:click={() => toggleSection('name')}>
+            <div class="flex justify-between items-center cursor-pointer" onclick={() => toggleSection('name')}>
                 <div class="flex items-center">
                     <i class="fas fa-chevron-down transition-transform mr-2" class:rotate-180={sections.name}></i>
                     <span class="font-semibold">Tên</span>
@@ -67,7 +67,7 @@
 
         <!-- Số lượng -->
         <div class="border-b py-4">
-            <div class="flex justify-between items-center cursor-pointer" on:click={() => toggleSection('quantity')}>
+            <div class="flex justify-between items-center cursor-pointer" onclick={() => toggleSection('quantity')}>
                 <div class="flex items-center">
                     <i class="fas fa-chevron-down transition-transform mr-2" class:rotate-180={sections.quantity}></i>
                     <span class="font-semibold">Số lượng</span>
@@ -87,13 +87,13 @@
 
         <!-- Mức tối thiểu -->
         <div class="border-b py-4">
-            <div class="flex justify-between items-center cursor-pointer" on:click={() => toggleSection('minlevel')}>
-                <div class="flex items-center">
+            <button class="flex justify-between items-center cursor-pointer" onclick={() => toggleSection('minlevel')}>
+                <span class="flex items-center">
                     <i class="fas fa-chevron-down transition-transform mr-2" class:rotate-180={sections.minlevel}></i>
                     <span class="font-semibold">Mức tối thiểu</span>
-                </div>
+                </span>
                 <i class="fas fa-search text-blue-500"></i>
-            </div>
+            </button>
             {#if sections.minlevel}
                 <div class="mt-4">
                     <select class="w-full p-2 border rounded bg-gray-100">
