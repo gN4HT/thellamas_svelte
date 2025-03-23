@@ -56,7 +56,10 @@
     <div class="flex justify-between border-b pb-4">
         <h1 class="text-2xl font-semibold text-gray-900">Bảng điều khiển</h1>
         <button class="flex items-center bg-blue-900 text-white px-4 py-2 rounded-md">
-            <img src="/img/Frame 55.png" alt="Set Folders Icon" class="w-6 h-6"/>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
+                 fill="rgba(255,255,255,1)">
+                <path d="M16 18V20H5V18H16ZM21 11V13H3V11H21ZM19 4V6H8V4H19Z"></path>
+            </svg>
             <span class="ml-2 uppercase text-sm tracking-wide">Cài đặt thư mục</span>
         </button>
     </div>

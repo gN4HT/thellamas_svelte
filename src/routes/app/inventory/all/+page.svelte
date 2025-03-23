@@ -62,9 +62,9 @@
 <div class="flex items-center justify-between border-b border-gray-500 p-4">
     <h1 class="text-3xl font-bold text-gray-800">Tất cả mặt hàng</h1>
     <div class="flex space-x-4">
-        <a href="/app/inventory/additem" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm mặt
+        <a href="/app/inventory/additem" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639] border border-[#00205b] hover:bg-white hover:text-[#00205b] transition-colors duration-200">Thêm mặt
             hàng</a>
-        <a href="/app/inventory/addfolder" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm thư
+        <a href="/app/inventory/addfolder" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639] border border-[#00205b] hover:bg-white hover:text-[#00205b] transition-colors duration-200">Thêm thư
             mục</a>
     </div>
 </div>

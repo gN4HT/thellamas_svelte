@@ -50,8 +50,7 @@
         {#each folders as folder}
             <a href="/app/inventory/folder/{folder.id}"
                class="folder-item flex items-center space-x-2 text-gray-600 hover:text-[#00205b] cursor-pointer block mt-2 ml-3
-        {(page.url.pathname === `/app/inventory/folder/${folder.id}`) ? 'active' : ''}"
-            >
+        {(page.url.pathname === `/app/inventory/folder/${folder.id}`) ? 'active' : ''}">
                 <span class="text-lg"><i class="fa-solid fa-folder"></i></span>
                 <span>{folder.name}</span>
             </a>
@@ -61,8 +60,7 @@
                 <div class="ml-4">
                     <a href="/app/inventory/folder/{child.id}"
                        class="folder-item flex items-center space-x-2 text-gray-500 hover:text-[#00205b] cursor-pointer block pl-6 mt-1
-      {(page.url.pathname === `/app/inventory/folder/${child.id}`) ? 'active' : ''}"
-                    >
+            {(page.url.pathname === `/app/inventory/folder/${child.id}`) ? 'active' : ''}">
                         <span class="text-lg"><i class="fa-regular fa-folder"></i></span>
                         <span>{child.name}</span>
                     </a>
@@ -86,8 +84,7 @@
                                             {#each subChild.children as deepChild}
                                                 <div class="ml-4">
                                                     <a href="/app/inventory/folder/{deepChild.id}"
-                                                       class="folder-item flex items-center space-x-2 text-gray-500 hover:text-[#00205b] cursor-pointer block pl-6 mt-1
-                      {(page.url.pathname === `/app/inventory/folder/${deepChild.id}`) ? 'active' : ''}"
+                                                       class="folder-item flex items-center space-x-2 text-gray-500 hover:text-[#00205b] cursor-pointer block pl-6 mt-1{(page.url.pathname === `/app/inventory/folder/${deepChild.id}`) ? 'active' : ''}"
                                                     >
                                                         <span class="text-lg"><i
                                                                 class="fa-regular fa-folder"></i></span>
