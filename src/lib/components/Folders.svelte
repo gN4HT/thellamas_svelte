@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type {Folder} from "../models/folder";
+    import type {Folder} from "../../models/folder";
 
     let props: { folder: Folder } = $props();
 </script>

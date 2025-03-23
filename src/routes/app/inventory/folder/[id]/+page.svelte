@@ -71,18 +71,24 @@
 </script>
 
 <div class="p-4">
-
-
-
   <!-- Header -->
-<div class="flex items-center justify-between border-b border-gray-500">
-  <h1 class="text-3xl font-bold text-gray-800">{folderName}</h1>
-  <div class="flex space-x-4">
-    <a href="/app/inventory/additem" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm mặt hàng</a>
-    <a href="/app/inventory/addfolder" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm thư mục</a>
+  <div class="flex items-center justify-between border-b border-gray-500">
+    <h1 class=" title text-2xl sm:text-xl font-bold text-gray-800">{folderName}</h1>
+    <div class="flex gap-4">
+      <a 
+        href="/app/inventory/additem" 
+        class="bg-[#00205b] text-sm sm:text-base md:text-lg text-white px-4 py-2 rounded-lg hover:bg-[#001639] border border-[#00205b] hover:bg-white hover:text-[#00205b] transition-colors duration-200">
+        Thêm mặt hàng
+      </a>
+      <a 
+        href="/app/inventory/addfolder" 
+        class="bg-[#00205b] text-sm sm:text-base md:text-lg text-white px-4 py-2 rounded-lg hover:bg-[#001639] border border-[#00205b] hover:bg-white hover:text-[#00205b] transition-colors duration-200">
+        Thêm thư mục
+      </a>
+    </div>
   </div>
-</div>
-
+  
+  
   <!-- Thống kê -->
   <div class="my-4 flex space-x-6 text-gray-700">
     <span>Thư mục: <strong>{folders.length}</strong></span>
@@ -154,3 +160,28 @@
   </div>
 </div>
 </div>
+
+<style>
+  .title {
+  font-size: 2rem; 
+  font-weight: bold;
+  color: #1f2937;
+}
+  @media (max-width: 1024px) {
+  .title {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 2px; 
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 0.5rem; 
+  }
+}
+</style>

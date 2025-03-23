@@ -1,11 +1,13 @@
 <script lang="ts">
-    import {browser} from "$app/environment";
-    import {goto} from "$app/navigation";
-
+    import "../app.css";
+    import { browser } from "$app/environment";
+    import { goto } from "$app/navigation";
+    
     if (browser && window.location.pathname === "/") {
         goto("/web");
     }
-    let {children} = $props();
+    
+    let { children } = $props();
 </script>
 
 <div class="">

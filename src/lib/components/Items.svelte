@@ -1,6 +1,6 @@
 <script lang="ts">
 
-    import type {Item} from "../models/item";
+    import type {Item} from "../../models/item";
 
     const item: Item = $props();
 </script>

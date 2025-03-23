@@ -3,9 +3,9 @@
     import {apiFetch} from "$lib/api";
     import type {Item} from "../../../../models/item";
     import type {Folder} from "../../../../models/folder";
-    import Folders from "../../../../components/Folders.svelte";
-    import NotFoundData from "../../../../components/NotFoundData.svelte";
-    import Items from "../../../../components/Items.svelte";
+    import Folders from "../../../../lib/components/Folders.svelte";
+    import NotFoundData from "../../../../lib/components/NotFoundData.svelte";
+    import Items from "../../../../lib/components/Items.svelte";
 
 
     let folders = $state<Folder[]>([]);
@@ -62,9 +62,9 @@
 <div class="flex items-center justify-between border-b border-gray-500 p-4">
     <h1 class="text-3xl font-bold text-gray-800">Tất cả mặt hàng</h1>
     <div class="flex space-x-4">
-        <a href="/app/inventory/additem" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm mặt
+        <a href="/app/inventory/additem" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639] border border-[#00205b] hover:bg-white hover:text-[#00205b] transition-colors duration-200">Thêm mặt
             hàng</a>
-        <a href="/app/inventory/addfolder" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm thư
+        <a href="/app/inventory/addfolder" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639] border border-[#00205b] hover:bg-white hover:text-[#00205b] transition-colors duration-200">Thêm thư
             mục</a>
     </div>
 </div>
