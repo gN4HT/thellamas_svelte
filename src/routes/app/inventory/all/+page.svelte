@@ -1,143 +1,162 @@
 <script lang="ts">
-    import {onMount} from "svelte";
-    import {apiFetch} from "$lib/api";
-    import type {Item} from "../../../../models/item";
-    import type {Folder} from "../../../../models/folder";
+    import { onMount } from "svelte";
+    import { apiFetch } from "$lib/api";
+    import type { Item } from "../../../../models/item";
+    import type { Folder } from "../../../../models/folder";
     import Folders from "../../../../components/Folders.svelte";
     import NotFoundData from "../../../../components/NotFoundData.svelte";
     import Items from "../../../../components/Items.svelte";
-
-
-    let folders = $state<Folder[]>([]);
-    let items = $state<Item[]>([]);
-
-    let [folderPage, itemPage] = $state([1, 1]);
+    import Paginations from "../../../../components/Paginations.svelte";
+    import FolderModal from "../../../../components/FolderModal.svelte";
+  
+    let folders: Folder[] = [];
+    let items: Item[] = [];
+  
+    let folderPage = 1;
+    let itemPage = 1;
     const itemsPerPage = 10;
-
+  
     function paginatedFolders() {
-        const start = (folderPage - 1) * itemsPerPage;
-        return folders.slice(start, start + itemsPerPage);
+      const start = (folderPage - 1) * itemsPerPage;
+      return folders.slice(start, start + itemsPerPage);
     }
-
+  
     function paginatedItems() {
-        const start = (itemPage - 1) * itemsPerPage;
-        return items.slice(start, start + itemsPerPage);
+      const start = (itemPage - 1) * itemsPerPage;
+      return items.slice(start, start + itemsPerPage);
     }
-
-    function goToPage(type: 'folder' | 'item', event): void {
-        let value = parseInt(event.target.value) || 1;
-        let maxPage = Math.ceil((type === 'folder' ? folders.length : items.length) / itemsPerPage);
-        let pageValue = Math.max(1, Math.min(maxPage, value));
-        if (type === 'folder') {
-            folderPage = pageValue;
-            return;
-        }
-        itemPage = pageValue;
-    }
-
-
+  
     async function fetchData() {
-        try {
-            const allFolders: Folder[] = await apiFetch("http://127.0.0.1:8000/api/folders");
-
-            folders = allFolders.filter(folder => folder.parent_id === null);
-
-            items = await apiFetch("http://127.0.0.1:8000/api/items");
-        } catch (error) {
-            console.error("Lỗi khi tải dữ liệu:", error);
-        }
+      try {
+        const allFolders: Folder[] = await apiFetch("http://127.0.0.1:8000/api/folders");
+        // Lọc ra các thư mục có parent_id === null
+        folders = allFolders.filter(folder => folder.parent_id === null);
+        items = await apiFetch("http://127.0.0.1:8000/api/items");
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu:", error);
+      }
     }
-
+  
     function getTotalPrice() {
-        return items.reduce((total, item) => {
-            let price = +(String(item.price).replace(/\D/g, "")) || 0;
-            return total + price;
-        }, 0);
+      return items.reduce((total, item) => {
+        let price = +(String(item.price).replace(/\D/g, "")) || 0;
+        return total + price;
+      }, 0);
     }
-
+  
+    // Quản lý modal thư mục
+    let showFolderModal = false;
+    let editModeFolder = false;
+    let selectedFolder: Partial<Folder> = {};
+  
+    function handleAddFolder() {
+      editModeFolder = false;
+      selectedFolder = {};
+      showFolderModal = true;
+    }
+  
+    // Ví dụ: chỉnh sửa thư mục
+    function handleEditFolder(folder: Folder) {
+  editModeFolder = true;
+  selectedFolder = {}; 
+  Object.assign(selectedFolder, folder); 
+  showFolderModal = true;
+}
+  
+    // Nhận dữ liệu thư mục cập nhật từ FolderModal
+    async function handleFolderSubmit(event: CustomEvent<{ data: Partial<Folder> }>) {
+    const folderData = event.detail.data;
+    try {
+      if (editModeFolder) {
+        // Update folder theo id
+        await apiFetch(`http://127.0.0.1:8000/api/folders/${folderData.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: folderData
+        });
+      } else {
+        // Thêm mới folder
+        await apiFetch(`http://127.0.0.1:8000/api/folders`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: folderData
+        });
+      }
+      await fetchData();
+    } catch (error) {
+      console.error("Error updating/creating folder", error);
+    }
+    showFolderModal = false;
+  }
+  
+    function handleFolderClose() {
+      showFolderModal = false;
+    }
+  
     onMount(fetchData);
-</script>
-
-<!-- Header -->
-<div class="flex items-center justify-between border-b border-gray-500 p-4">
+  </script>
+  
+  <!-- Header -->
+  <div class="flex items-center justify-between border-b border-gray-500 p-4">
     <h1 class="text-3xl font-bold text-gray-800">Tất cả mặt hàng</h1>
     <div class="flex space-x-4">
-        <a href="/app/inventory/additem" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm mặt
-            hàng</a>
-        <a href="/app/inventory/addfolder" class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm thư
-            mục</a>
+      <button class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm mặt hàng</button>
+      <button on:click={handleAddFolder} class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">Thêm thư mục</button>
     </div>
-</div>
-
-<!-- Thống kê -->
-<div class="p-4 mt-4 flex space-x-6 text-gray-700">
+  </div>
+  
+  <!-- Thống kê -->
+  <div class="p-4 mt-4 flex space-x-6 text-gray-700">
     <span>Thư mục: <strong>{folders.length}</strong></span>
     <span>Mặt hàng: <strong>{items.length}</strong></span>
     <span>Tổng giá trị: <strong>₫{getTotalPrice().toLocaleString()}</strong></span>
-</div>
-
-
-{#if folders.length > 0 || items.length > 0}
+  </div>
+  
+  {#if folders.length > 0 || items.length > 0}
     <div class="p-4">
-        <!-- Danh sách thư mục -->
-        <div class="flex flex-col gap-3">
-            <h2 class="text-[#00205B] text-2xl">Thư mục:</h2>
-            <div class="grid grid-cols-5 gap-4">
-                {#each paginatedFolders() as folder (folder.id)}
-                    <Folders {folder}/>
-                {/each}
+      <!-- Danh sách thư mục -->
+      <div class="flex flex-col gap-3">
+        <h2 class="text-[#00205B] text-2xl">Thư mục:</h2>
+        <div class="grid grid-cols-5 gap-4">
+          {#each paginatedFolders() as folder (folder.id)}
+            <div>
+              <Folders {folder} />
+              <button on:click={() => handleEditFolder(folder)} class="mt-2 px-2 py-1 bg-yellow-500 text-white rounded">Edit</button>
             </div>
-            <div class="flex mt-5 justify-between">
-                <p class="text-gray-500">Tổng số trang: {folderPage}/{Math.ceil(folders.length / itemsPerPage)}</p>
-                <div class="flex gap-2">
-                    <button class="hover:text-[#00205B] cursor-pointer" onclick={() => folderPage = 1}>Trang đầu
-                    </button>
-                    <button class="hover:text-[#00205B] cursor-pointer" onclick={() => folderPage--}
-                            disabled={folderPage === 1}>Trước
-                    </button>
-                    <input type="number" bind:value={folderPage} onchange={(e) => goToPage('folder', e)}
-                           class="border rounded p-1 w-16 text-center"/>
-                    <button class="hover:text-[#00205B] cursor-pointer" onclick={() => folderPage++}
-                            disabled={folderPage * itemsPerPage >= folders.length}>Sau
-                    </button>
-                    <button class="hover:text-[#00205B] cursor-pointer"
-                            onclick={() => folderPage = Math.ceil(folders.length / itemsPerPage)}>Trang cuối
-                    </button>
-                </div>
-            </div>
+          {/each}
         </div>
-
-
-        <!-- Danh sách mặt hàng -->
-        <div class="flex flex-col gap-3 mt-10">
-            <h2 class="text-[#00205B] text-2xl">Mặt hàng:</h2>
-
-            <div class="grid grid-cols-5 gap-4">
-                {#each paginatedItems() as item (item.id)}
-                    <Items {...item}/>
-                {/each}
-            </div>
-            <div class="flex mt-5 justify-between">
-                <p class="text-gray-500">Tổng số trang: {itemPage}/{Math.ceil(items.length / itemsPerPage)}</p>
-                <div class="flex gap-2">
-                    <button class="hover:text-[#00205B] cursor-pointer" onclick={() => itemPage = 1}>Trang đầu</button>
-                    <button class="hover:text-[#00205B] cursor-pointer" onclick={() => itemPage--}
-                            disabled={itemPage === 1}>Trước
-                    </button>
-                    <input type="number" bind:value={itemPage} onchange={(e) => goToPage('item', e)}
-                           class="border rounded p-1 w-16 text-center"/>
-                    <button class="hover:text-[#00205B] cursor-pointer" onclick={() => itemPage++}
-                            disabled={itemPage * itemsPerPage >= items.length}>Sau
-                    </button>
-                    <button class="hover:text-[#00205B] cursor-pointer"
-                            onclick={() => itemPage = Math.ceil(items.length / itemsPerPage)}>Trang cuối
-                    </button>
-                </div>
-            </div>
+        <div class="flex mt-5 justify-between">
+          <Paginations totalItems={folders.length} bind:currentPage={folderPage} />
         </div>
+      </div>
+  
+      <!-- Danh sách mặt hàng -->
+      <div class="flex flex-col gap-3 mt-10">
+        <h2 class="text-[#00205B] text-2xl">Mặt hàng:</h2>
+        <div class="grid grid-cols-5 gap-4">
+          {#each paginatedItems() as item (item.id)}
+            <Items {...item} />
+          {/each}
+        </div>
+        <div class="flex mt-5 justify-between">
+          <Paginations totalItems={items.length} bind:currentPage={itemPage} />
+        </div>
+      </div>
     </div>
-
-{:else}
+  {:else}
     <!-- Hiển thị nếu không có mặt hàng hoặc thư mục -->
-    <NotFoundData {fetchData}/>
-{/if}
+    <NotFoundData {fetchData} />
+  {/if}
+  
+  <FolderModal
+    bind:showModal={showFolderModal}
+    bind:folder={selectedFolder}
+    bind:isEditMode={editModeFolder}
+    on:submit={handleFolderSubmit}
+    on:close={handleFolderClose}
+  />
+  

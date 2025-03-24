@@ -1,35 +1,36 @@
-<script>
+<script lang="ts">
     import {onMount} from "svelte";
     import {page} from '$app/state';
     import {apiFetch} from "$lib/api";
+    import FolderTree from "../../../components/FolderTree.svelte";
+    import type {Folder} from "../../../models/folder";
 
-    let folders = [];
+    let folders = $state<Folder[]>([]);
 
-    // Hàm đệ quy để xây dựng cây thư mục nhiều cấp
     function buildFolderTree(folders, parentId = null) {
         return folders
             .filter(folder => folder.parent_id === parentId)
             .map(folder => ({
-                ...folder,
-                children: buildFolderTree(folders, folder.id) // Đệ quy lấy danh sách con
+            ...folder,
+            children: buildFolderTree(folders, folder.id)
             }));
+     }
+    async function fetchData() {
+        try {
+            const allFolders: Folder[] = await apiFetch("http://127.0.0.1:8000/api/folders");
+            folders = buildFolderTree(allFolders);
+        } catch (error) {
+            console.error("Lỗi khi tải dữ liệu:", error);
+        }
     }
 
-    const fetchFolders = async () => {
-        const result = await apiFetch("http://127.0.0.1:8000/api/folders");
-        if (result) {
-            folders = buildFolderTree(result);
-        }
-        console.log(folders);
-    };
-
-    onMount(fetchFolders);
+    onMount(fetchData);
 </script>
 
 
 <div class="flex">
     <!-- Sidebar -->
-    <div class="w-64 bg-white shadow-md border-r p-4 h-screen fixed">
+    <div class="w-64 bg-white shadow-md border-r p-4 overflow-y-auto min-h-[1260px] max-h-[1260px] custom-scrollbar">
         <!-- Thanh tìm kiếm -->
         <div class="mb-6 flex justify-between items-center p-2 border rounded-md">
             <i class="fa-solid fa-magnifying-glass mr-2"></i>
@@ -47,73 +48,19 @@
         </div>
 
         <!-- Danh sách thư mục dạng bậc thang -->
-        {#each folders as folder}
-            <a href="/app/inventory/folder/{folder.id}"
-               class="folder-item flex items-center space-x-2 text-gray-600 hover:text-[#00205b] cursor-pointer block mt-2 ml-3
-        {(page.url.pathname === `/app/inventory/folder/${folder.id}`) ? 'active' : ''}"
-            >
-                <span class="text-lg"><i class="fa-solid fa-folder"></i></span>
-                <span>{folder.name}</span>
-            </a>
-
-            <!-- Hiển thị thư mục con -->
-            {#each folder.children as child}
-                <div class="ml-4">
-                    <a href="/app/inventory/folder/{child.id}"
-                       class="folder-item flex items-center space-x-2 text-gray-500 hover:text-[#00205b] cursor-pointer block pl-6 mt-1
-      {(page.url.pathname === `/app/inventory/folder/${child.id}`) ? 'active' : ''}"
-                    >
-                        <span class="text-lg"><i class="fa-regular fa-folder"></i></span>
-                        <span>{child.name}</span>
-                    </a>
-
-                    <!-- Gọi lại chính nó để hiển thị các thư mục con sâu hơn -->
-                    {#if child.children.length > 0}
-                        <div class="ml-6">
-                            {#each child.children as subChild}
-                                <div class="ml-4">
-                                    <a href="/app/inventory/folder/{subChild.id}"
-                                       class="folder-item flex items-center space-x-2 text-gray-500 hover:text-[#00205b] cursor-pointer block pl-6 mt-1
-              {(page.url.pathname === `/app/inventory/folder/${subChild.id}`) ? 'active' : ''}"
-                                    >
-                                        <span class="text-lg"><i class="fa-regular fa-folder"></i></span>
-                                        <span>{subChild.name}</span>
-                                    </a>
-
-                                    <!-- Tiếp tục hiển thị thư mục con -->
-                                    {#if subChild.children.length > 0}
-                                        <div class="ml-6">
-                                            {#each subChild.children as deepChild}
-                                                <div class="ml-4">
-                                                    <a href="/app/inventory/folder/{deepChild.id}"
-                                                       class="folder-item flex items-center space-x-2 text-gray-500 hover:text-[#00205b] cursor-pointer block pl-6 mt-1
-                      {(page.url.pathname === `/app/inventory/folder/${deepChild.id}`) ? 'active' : ''}"
-                                                    >
-                                                        <span class="text-lg"><i
-                                                                class="fa-regular fa-folder"></i></span>
-                                                        <span>{deepChild.name}</span>
-                                                    </a>
-                                                </div>
-                                            {/each}
-                                        </div>
-                                    {/if}
-                                </div>
-                            {/each}
-                        </div>
-                    {/if}
-                </div>
-            {/each}
-
-        {/each}
+            <FolderTree {folders} />
     </div>
 
     <!-- Nội dung chính -->
-    <div class="p-4 w-full ml-[250px]">
+    <div class="p-4 w-full">
         <slot/>
     </div>
 </div>
 
 <style>
+    .custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
     .folder-item.active {
         color: #00205b;
         font-weight: bold;

@@ -6,7 +6,7 @@
 
 <div class="bg-white shadow rounded-lg overflow-hidden">
     <a href="/app/inventory/folder/{props.folder.id}"
-       class="bg-gray-500 p-10 flex items-center justify-center relative">
+       class="p-10 flex items-center justify-center relative" style="background-color: {props.folder.color || '#6A7282'}">
         <span class="text-4xl text-gray-300"><i class="fa-solid fa-folder-open"></i></span>
         {#if props.folder.isNew}
             <span class="absolute bottom-2 left-2 text-xs bg-black text-white px-2 py-1 rounded">MỚI</span>
