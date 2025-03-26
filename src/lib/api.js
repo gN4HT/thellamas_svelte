@@ -20,7 +20,7 @@ export const apiFetch = async (
     };
 
     if (body && method !== "GET") {
-      options.body = JSON.stringify(body);
+      options.body = body;
     }
 
     const response = await fetch(url, options);
@@ -35,6 +35,6 @@ export const apiFetch = async (
     return await response.json();
   } catch (error) {
     console.error("Fetch error:", error.message);
-    throw error; // Rethrow the error for proper handling
+    throw error; // Rethrow the error để xử lý ở nơi gọi
   }
 };

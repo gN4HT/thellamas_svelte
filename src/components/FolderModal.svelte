@@ -30,6 +30,7 @@
         name: '',
         description: '',
         color: '',
+        parent_id: folder?.id ?? null,
         inventory_id: inventoryId,
         created_at: currentDate,
         updated_at: currentDate,
