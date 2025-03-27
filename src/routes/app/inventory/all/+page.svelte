@@ -145,20 +145,11 @@
       Nơi này có vẻ hơi cô đơn.<br />
       Hãy làm cho nó trở nên thú vị hơn với một số hàng tồn kho.
     </p>
-<<<<<<< HEAD
-    <div class="mt-6 flex space-x-4">
-      <button class="bg-[#00205b] text-white px-4 py-2 rounded shadow hover:bg-[#001639]">
-        Thêm mặt hàng
-      </button>
-      <button class="bg-[#00205b] text-white px-4 py-2 rounded shadow hover:bg-[#001639]">
-        Thêm thư mục
-=======
 
     <!-- Nút bấm -->
     <div class="mt-6 flex space-x-4">
       <button class="bg-[#00205b] text-white px-4 py-2 rounded shadow hover:bg-[#001639]" on:click={fetchData}>
         Tải lại dữ liệu
->>>>>>> f427221b1fd70328566191166837e5d58fdf1ddd
       </button>
     </div>
   </div>
