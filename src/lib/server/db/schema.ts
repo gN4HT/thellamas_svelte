@@ -17,7 +17,9 @@ const users = sqliteTable("access_tokens", {
         .notNull()
         .$defaultFn(() => generateId(15)),
     token: text().unique().notNull(),
+    user_id: text('user_id').unique().notNull()
 });
+
 
 const sessions = sqliteTable("sessions", {
     id: text("id")
@@ -28,7 +30,6 @@ const sessions = sqliteTable("sessions", {
     userId: text("user_id")
         .notNull()
         .references(() => users.id),
-
     ...timestamp,
 });
 

@@ -3,20 +3,15 @@ export const apiFetch = async (
     {method = "GET", body = null, headers = {}} = {}
 ) => {
     try {
-        const token = localStorage.getItem("access_token");
-
         const defaultHeaders = {
             "Content-Type": "application/json",
             ...headers,
         };
 
-        if (token) {
-            defaultHeaders["Authorization"] = `Bearer ${token}`;
-        }
-
         const options = {
             method,
             headers: defaultHeaders,
+            credentials: "include", // Ensure cookies are sent with the request
         };
 
         if (body && method !== "GET") {
@@ -27,7 +22,6 @@ export const apiFetch = async (
 
         if (!response.ok) {
             const errorData = await response.json();
-
             return new Error(
                 `HTTP ${response.status}: ${errorData?.message || response.statusText}`
             );
@@ -39,3 +33,4 @@ export const apiFetch = async (
         return null;
     }
 };
+

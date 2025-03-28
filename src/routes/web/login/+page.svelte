@@ -1,14 +1,13 @@
 <script lang="ts">
 
-    import type {AccessToken} from "../../../models/auth/accessToken";
+    import {error} from "@sveltejs/kit";
 
     let email = "";
     let password = "";
     let errorMessage = "";
 
-    const login = async () => {
-        errorMessage = ""; // Reset lỗi trước khi gửi request
 
+    export const login = async (email: string, password: string) => {
         try {
             const response = await fetch("http://127.0.0.1:8000/api/login", {
                 method: "POST",
@@ -16,28 +15,21 @@
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({email, password}),
+                credentials: "include", // ⬅️ Allows cookies to be stored!
             });
 
-            const data: AccessToken = await response.json();
-
-            if (response.ok) {
-                console.log("Đăng nhập thành công:", data);
-
-                // Lưu access_token vào localStorage
-                localStorage.setItem("access_token", data.access_token);
-                localStorage.setItem("token_type", data.token_type);
-                localStorage.setItem("expires_in", data.expires_in);
-
-                // Chuyển hướng sau khi đăng nhập thành công
-                window.location.href = "/app";
-            } else {
-                errorMessage = data.message || "Sai email hoặc mật khẩu!";
+            if (!response.ok) {
+                const data = await response.json();
+                throw error(response.status, data.error || "Sai email hoặc mật khẩu!");
             }
-        } catch (error) {
-            console.error("Lỗi kết nối:", error);
-            errorMessage = "Không thể kết nối đến server!";
+
+            return {success: true};
+        } catch (err) {
+            console.error("Login error:", err);
+            throw error(500, "Không thể kết nối đến server!");
         }
     };
+
 </script>
 
 <div class="flex items-center justify-center min-h-screen font-sans py-20">
