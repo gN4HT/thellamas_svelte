@@ -33,9 +33,9 @@
                 <p class="text-base text-black">Phần mềm quản lý hàng tồn kho hiệu quả, trực quan và mạnh mẽ giúp doanh
                     nghiệp và nhóm của bạn luôn ngăn nắp</p>
             </div>
-            <a class="flex items-center w-full px-5 py-3 mb-5 text-sm font-bold text-white bg-[#00205b] gap-10 hover:bg-[#00205b]">
+            <div class="flex items-center w-full px-5 py-3 mb-5 text-sm font-bold text-white bg-[#00205b] gap-10 hover:bg-[#00205b]">
                 <img src="/img/u_google.png" alt=""> Đăng nhập bằng Google
-            </a>
+            </div>
             <div class="flex items-center text-sm text-gray-500 my-4">
                 <div class="flex-1 border-b border-gray-300"></div>
                 <span class="px-4">Hoặc</span>
