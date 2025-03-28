@@ -1,15 +1,16 @@
 export interface Item {
-  id: number;
+  id?: number;
   name: string;
-  isNew: boolean;
-  quantity: number | null;
-  price: number | null;
-  stock_level: number | null;
-  images: File[];
+  quantity: number;
+  stock_level: number;
+  price: number;
+  images: any;
   notes: string;
-  folder_id?: number;
-  created_at?: string;
-  updated_at?: string;
-  inventory_id?: number;
-  is_deleted?: number;
+  qr: string;
+  is_deleted: number;
+  supplier_id: number;
+  folder_id: number | null;
+  inventory_id: number;
+  created_at: string;
+  updated_at: string;
 }

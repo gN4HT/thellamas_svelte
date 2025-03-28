@@ -80,13 +80,27 @@
 
   function handleAddFolder() {
     editModeFolder = false;
-    selectedFolder = {};
+    selectedFolder = {
+        name: '',
+        parent_id: folder_Id || null,
+        is_deleted: 0
+    };
     showFolderModal = true;
   }
 
   function handleAddItem() {
     editModeItem = false;
-    selectedItem = {};
+    selectedItem = {
+        name: '',
+        quantity: 0,
+        stock_level: 0,
+        price: 0,
+        notes: '',
+        folder_id: folder_Id || 0,
+        inventory_id: 2,
+        supplier_id: 1,
+        is_deleted: 0
+    };
     showItemModal = true;
   }
 
@@ -104,62 +118,74 @@
 
   // Xử lý sự kiện submit từ FolderModal
   async function handleFolderSubmit(event: CustomEvent<{ data: Partial<Folder> }>) {
-    const folderData = event.detail.data;
-    // Nếu đang thêm mới, gán parent_id nếu có folder_Id
-    if (!editModeFolder && folder_Id) {
-      folderData.parent_id = folder_Id;
-    }
     try {
-      if (editModeFolder) {
-        // Cập nhật folder theo ID
-        await apiFetch(`http://127.0.0.1:8000/api/folders/${folderData.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(folderData)
-        });
-      } else {
-        // Thêm mới folder
-        await apiFetch(`http://127.0.0.1:8000/api/folders`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(folderData)
-        });
-      }
-      await fetchData(folder_Id || 0);
+        const folderData = {
+            ...event.detail.data,
+            parent_id: folder_Id || null, // Folder hiện tại sẽ là parent
+            is_deleted: 0
+        };
+
+        console.log("Submitting folder:", folderData);
+
+        if (editModeFolder && folderData.id) {
+            await apiFetch(`/folders/${folderData.id}`, {
+                method: 'PUT',
+                body: folderData
+            });
+        } else {
+            await apiFetch('/folders', {
+                method: 'POST',
+                body: folderData
+            });
+        }
+
+        await fetchData($page.params.id);
+        showFolderModal = false;
     } catch (error) {
-      console.error("Error updating/creating folder", error);
+        console.error("Lỗi khi xử lý thư mục:", error);
+        alert(error.message || "Có lỗi xảy ra khi lưu thư mục. Vui lòng thử lại.");
     }
-    showFolderModal = false;
   }
 
   // Xử lý sự kiện submit từ ItemModal
   async function handleItemSubmit(event: CustomEvent<{ data: Partial<Item> }>) {
-    const itemData = event.detail.data;
-    if (!editModeItem && folder_Id) {
-      itemData.folder_id = folder_Id;
-    }
     try {
-      if (editModeItem) {
-        // Cập nhật item theo ID
-        await apiFetch(`http://127.0.0.1:8000/api/items/${itemData.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'multipart/form-data' },
-          body: JSON.stringify(itemData) 
-        });
-      } else {
-        // Thêm mới item (sử dụng endpoint items)
-        await apiFetch(`http://127.0.0.1:8000/api/items`, {
+        const itemData = event.detail.data;
+        
+        const submitData = {
+            name: itemData.name?.trim(),
+            quantity: Number(itemData.quantity || 0),
+            stock_level: Number(itemData.stock_level || 0),
+            price: Number(itemData.price || 0),
+            images: null,
+            notes: itemData.notes || null,
+            qr: itemData.qr || `QR${Date.now()}`,
+            is_deleted: 0,
+            supplier_id: Number(itemData.supplier_id || 1),
+            folder_id: folder_Id || 0,
+            inventory_id: 2
+        };
 
-          method: 'POST',
-          headers: { 'Content-Type': 'multipart/form-data', 'Access-Control-Allow-Origin': '*' },
-          body: JSON.stringify(itemData) 
-        });
-      }
-      await fetchData(folder_Id || 0);
+        console.log("Submitting item:", submitData);
+
+        if (editModeItem && itemData.id) {
+            await apiFetch(`/items/${itemData.id}`, {
+                method: 'PUT',
+                body: submitData
+            });
+        } else {
+            await apiFetch('/items', {
+                method: 'POST',
+                body: submitData
+            });
+        }
+
+        await fetchData($page.params.id);
+        showItemModal = false;
     } catch (error) {
-      console.error("Error updating/creating item", error);
+        console.error("Lỗi khi xử lý mặt hàng:", error);
+        alert(error.message || "Có lỗi xảy ra khi lưu mặt hàng. Vui lòng thử lại.");
     }
-    showItemModal = false;
   }
 
   function handleFolderClose() {
@@ -291,14 +317,14 @@
   bind:folder={selectedFolder}
   bind:isEditMode={editModeFolder}
   on:submit={handleFolderSubmit}
-  on:close={handleFolderClose}
+  on:close={() => showFolderModal = false}
 />
 
 <ItemModal
   bind:showModal={showItemModal}
   bind:item={selectedItem}
   bind:isEditMode={editModeItem}
-  bind:folderId={folder_Id}
+  folderId={folder_Id}
   on:submit={handleItemSubmit}
-  on:close={handleItemClose}
+  on:close={() => showItemModal = false}
 />

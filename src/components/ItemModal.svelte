@@ -3,189 +3,242 @@
     import type { Item } from '../models/item';
     import { apiFetch } from "$lib/api";
 
+    const dispatch = createEventDispatcher();
+
     export let showModal: boolean;
     export let item: Partial<Item> = {};
     export let isEditMode: boolean = false;
     export let folderId: number | null = null;
 
+    let error: string | null = null;
+    let isLoading = false;
+    
+    // Khởi tạo formData với giá trị mặc định theo cấu trúc database
+    let formData = {
+        name: '',
+        quantity: 0,
+        stock_level: 0,
+        price: 0,
+        images: '[]',
+        notes: '',
+        qr: '',
+        is_deleted: 0,
+        supplier_id: 1,
+        folder_id: folderId || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+    };
 
-    const dispatch = createEventDispatcher();
+    // Reset form khi modal đóng
+    $: if (!showModal) {
+        resetForm();
+    }
 
-    let formData: Partial<Item> = {};
-    let initialized = false;
-
-    async function fetchInventoryId() {
-        try {
-            const data = await apiFetch("http://127.0.0.1:8000/api/me");
-            return data.id;
-        } catch (error) {
-            console.error("Error fetching inventory id:", error);
-            return null;
+    // Cập nhật formData khi edit hoặc khi folderId thay đổi
+    $: if (showModal) {
+        if (isEditMode && item) {
+            formData = {
+                ...formData,
+                ...item,
+                updated_at: new Date().toISOString()
+            };
+        } else {
+            formData = {
+                ...formData,
+                folder_id: folderId,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
         }
     }
 
-    async function loadDefaults() {
-        const inventoryId = await fetchInventoryId();
-        const currentDate = new Date().toISOString();
-        return {
+    function resetForm() {
+        formData = {
             name: '',
             quantity: 0,
             stock_level: 0,
             price: 0,
-            // images: [],
+            images: '[]',
             notes: '',
-            folder_id: folderId ?? null,
-            inventory_id: inventoryId,
-            created_at: currentDate,
-            updated_at: currentDate,
+            qr: '',
+            is_deleted: 0,
+            supplier_id: 1,
+            folder_id: folderId || null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
         };
+        error = null;
     }
 
-    async function initializeFormData() {
-        if (isEditMode) {
-            formData = { ...item, updated_at: new Date().toISOString() };
-            if (!formData.inventory_id) {
-                const id = await fetchInventoryId();
-                formData.inventory_id = id;
-                console.log("Updated inventory_id:", formData.inventory_id);
+    function validateForm() {
+        error = null;
+
+        if (!formData.name?.trim()) {
+            error = "Vui lòng nhập tên mặt hàng";
+            return false;
+        }
+
+        if (typeof formData.quantity !== 'number' || formData.quantity < 0) {
+            error = "Số lượng không hợp lệ";
+            return false;
+        }
+
+        if (typeof formData.price !== 'number' || formData.price < 0) {
+            error = "Giá không hợp lệ";
+            return false;
+        }
+
+        if (typeof formData.stock_level !== 'number' || formData.stock_level < 0) {
+            error = "Mức tồn kho không hợp lệ";
+            return false;
+        }
+
+        return true;
+    }
+
+    async function handleSubmit() {
+        if (!validateForm()) return;
+
+        isLoading = true;
+        try {
+            // Đảm bảo name không null và được trim
+            if (!formData.name?.trim()) {
+                error = "Tên mặt hàng không được để trống";
+                return;
             }
-        } else {
-            formData = await loadDefaults();
-            console.log("Loaded defaults:", formData);
+
+            const submitData = {
+                name: formData.name.trim(),
+                quantity: Number(formData.quantity) || 0,
+                stock_level: Number(formData.stock_level) || 0,
+                price: Number(formData.price) || 0,
+                images: null,
+                notes: formData.notes?.trim() || null,
+                qr: formData.qr || null,
+                is_deleted: 0,
+                supplier_id: Number(formData.supplier_id) || 1,
+                folder_id: formData.folder_id || null,
+                created_at: formData.created_at || new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+
+            // Log để debug
+            console.log('Submitting data:', submitData);
+
+            dispatch('submit', { data: submitData });
+        } catch (err) {
+            error = "Có lỗi xảy ra khi xử lý dữ liệu";
+            console.error(err);
+        } finally {
+            isLoading = false;
         }
-        initialized = true;
-    }
-
-    // Reactive statement để khởi tạo formData khi mở modal
-    $: if (showModal && !initialized) {
-        initializeFormData();
-    }
-
-    // Reactive statement để reset formData khi đóng modal
-    $: if (!showModal && initialized) {
-        formData = {};
-        initialized = false;
-    }
-
-    function handleSubmit() {
-        if (isEditMode) {
-            formData.updated_at = new Date().toISOString();
-        }
-        console.log("Submitting form data:", formData);
-        // Kiểm tra các trường bắt buộc
-        if (!formData.name || formData.quantity === undefined) {
-            console.error("Thiếu thông tin bắt buộc");
-            return;
-        }
-        dispatch('submit', { data: { ...formData } });
-    }
-
-    function handleClose() {
-        dispatch('close');
     }
 </script>
 
-{#if showModal}
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-[600px] max-w-full">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-6">
-                {isEditMode ? 'Edit Item' : 'Add Item'}
-            </h2>
+<!-- Template -->
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" class:hidden={!showModal}>
+    <div class="bg-white p-6 rounded-lg shadow-lg w-[600px] max-w-[95%] max-h-[90vh] overflow-y-auto">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+            {isEditMode ? 'Chỉnh sửa mặt hàng' : 'Thêm mặt hàng mới'}
+        </h2>
 
-            <form on:submit|preventDefault={handleSubmit} class="space-y-4">
-                {#if isEditMode}
-                    <div>
-                        <label for="id" class="block text-gray-600 font-medium">ID</label>
-                        <input
-                            id="id"
-                            type="number"
-                            class="border rounded p-2 w-full bg-gray-200 text-gray-500 cursor-not-allowed"
-                            bind:value={formData.id}
-                            disabled
-                        />
-                    </div>
-                {/if}
+        {#if error}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {error}
+            </div>
+        {/if}
 
-                <div>
-                    <label for="name" class="block text-gray-600 font-medium">Name</label>
-                    <input
-                        id="name"
-                        type="text"
-                        class="border rounded p-2 w-full bg-gray-100 text-gray-700 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                        bind:value={formData.name}
-                        required
-                    />
-                </div>
+        <form on:submit|preventDefault={handleSubmit} class="space-y-4">
+            <div>
+                <label for="name" class="block text-gray-600 font-medium">
+                    Tên mặt hàng <span class="text-red-500">*</span>
+                </label>
+                <input
+                    id="name"
+                    type="text"
+                    class="border rounded p-2 w-full"
+                    bind:value={formData.name}
+                    required
+                    disabled={isLoading}
+                />
+            </div>
 
-                <div>
-                    <label for="quantity" class="block text-gray-600 font-medium">Quantity</label>
-                    <input
-                        id="quantity"
-                        type="number"
-                        class="border rounded p-2 w-full bg-gray-100 text-gray-700 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                        bind:value={formData.quantity}
-                        required
-                    />
-                </div>
+            <div>
+                <label for="quantity" class="block text-gray-600 font-medium">
+                    Số lượng <span class="text-red-500">*</span>
+                </label>
+                <input
+                    id="quantity"
+                    type="number"
+                    min="0"
+                    class="border rounded p-2 w-full"
+                    bind:value={formData.quantity}
+                    required
+                    disabled={isLoading}
+                />
+            </div>
 
-                <div>
-                    <label for="stock_level" class="block text-gray-600 font-medium">Stock Level</label>
-                    <input
-                        id="stock_level"
-                        type="number"
-                        class="border rounded p-2 w-full bg-gray-100 text-gray-700 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                        bind:value={formData.stock_level}
-                    />
-                </div>
+            <div>
+                <label for="stock_level" class="block text-gray-600 font-medium">
+                    Mức tồn kho
+                </label>
+                <input
+                    id="stock_level"
+                    type="number"
+                    min="0"
+                    class="border rounded p-2 w-full"
+                    bind:value={formData.stock_level}
+                    disabled={isLoading}
+                />
+            </div>
 
-                <div>
-                    <label for="price" class="block text-gray-600 font-medium">Price</label>
-                    <input
-                        id="price"
-                        type="number"
-                        step="0.01"
-                        class="border rounded p-2 w-full bg-gray-100 text-gray-700 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                        bind:value={formData.price}
-                    />
-                </div>
+            <div>
+                <label for="price" class="block text-gray-600 font-medium">
+                    Giá <span class="text-red-500">*</span>
+                </label>
+                <input
+                    id="price"
+                    type="number"
+                    min="0"
+                    class="border rounded p-2 w-full"
+                    bind:value={formData.price}
+                    required
+                    disabled={isLoading}
+                />
+            </div>
 
-                <!-- <div>
-                    <label for="images" class="block text-gray-600 font-medium">Upload Images</label>
-                    <input
-                        id="images"
-                        type="file"
-                        multiple
-                        class="border rounded p-2 w-full bg-gray-100 text-gray-700 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                        on:change={(event) => {
-                            const files = (event.target as HTMLInputElement).files;
-                            formData.images = files ? Array.from(files) : [];
-                        }}
-                    />
-                </div> -->
-                
+            <div>
+                <label for="notes" class="block text-gray-600 font-medium">
+                    Ghi chú
+                </label>
+                <textarea
+                    id="notes"
+                    class="border rounded p-2 w-full"
+                    bind:value={formData.notes}
+                    disabled={isLoading}
+                ></textarea>
+            </div>
 
-                <div>
-                    <label for="notes" class="block text-gray-600 font-medium">Notes</label>
-                    <textarea
-                        id="notes"
-                        class="border rounded p-2 w-full bg-gray-100 text-gray-700 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                        bind:value={formData.notes}
-                    ></textarea>
-                </div>
-
-                <input type="hidden" bind:value={formData.inventory_id} />
-                <input type="hidden" bind:value={formData.created_at} />
-                <input type="hidden" bind:value={formData.updated_at} />
-
-                <div class="flex justify-end gap-3 mt-6">
-                    <button type="button" on:click={handleClose} class="px-5 py-2 bg-red-400 text-white rounded-lg hover:bg-gray-500 transition">
-                        Cancel
-                    </button>
-                    <button type="submit" class="px-5 py-2 bg-[#00205B] text-white rounded-lg hover:bg-blue-700 transition">
-                        {isEditMode ? 'Update' : 'Add'}
-                    </button>
-                </div>
-            </form>
-        </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button 
+                    type="button"
+                    on:click={() => dispatch('close')}
+                    class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition-colors"
+                    disabled={isLoading}
+                >
+                    Hủy
+                </button>
+                <button 
+                    type="submit"
+                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                    disabled={isLoading}
+                >
+                    {#if isLoading}
+                        <span class="inline-block animate-spin mr-2">⌛</span>
+                    {/if}
+                    {isEditMode ? 'Cập nhật' : 'Thêm mới'}
+                </button>
+            </div>
+        </form>
     </div>
-{/if}
+</div>

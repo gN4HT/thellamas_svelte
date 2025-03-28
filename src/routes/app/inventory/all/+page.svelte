@@ -1,52 +1,65 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import { apiFetch } from "$lib/api";
-    import type { Item } from "../../../../models/item";
-    import type { Folder } from "../../../../models/folder";
-    import Folders from "../../../../components/Folders.svelte";
-    import NotFoundData from "../../../../components/NotFoundData.svelte";
-    import Items from "../../../../components/Items.svelte";
-    import Paginations from "../../../../components/Paginations.svelte";
-    import FolderModal from "../../../../components/FolderModal.svelte";
-    import ItemModal from "../../../../components/ItemModal.svelte";
+  import { onMount } from "svelte";
+  import { page } from '$app/stores';
+  import { apiFetch } from "$lib/api";
+  import type { Item } from "../../../../models/item";
+  import type { Folder } from "../../../../models/folder";
+  import Folders from "../../../../components/Folders.svelte";
+  import NotFoundData from "../../../../components/NotFoundData.svelte";
+  import Items from "../../../../components/Items.svelte";
+  import Paginations from "../../../../components/Paginations.svelte";
+  import FolderModal from "../../../../components/FolderModal.svelte";
+  import ItemModal from "../../../../components/ItemModal.svelte";
 
-    let folders: Folder[] = [];
-    let items: Item[] = [];
+  // Constants
+  const ITEMS_PER_PAGE = 10;
+
+  // State Management
+  let folders: Folder[] = [];
+  let items: Item[] = [];
+  let isLoading = false;
+  let error: string | null = null;
+  let currentFolderId: number | null = null;
+  let currentFolderName: string = "Tất cả mặt hàng";
   
-    let folderPage = 1;
-    let itemPage = 1;
-    const itemsPerPage = 10;
-  
-    function paginatedFolders() {
-      const start = (folderPage - 1) * itemsPerPage;
-      return folders.slice(start, start + itemsPerPage);
+  let folderPage = 1;
+  let itemPage = 1;
+
+  // Subscribe to URL changes
+  $: {
+    const params = new URLSearchParams($page.url.search);
+    const folderId = params.get('folder');
+    
+    if (folderId) {
+        currentFolderId = Number(folderId);
+        console.log('URL changed, fetching data for folder:', currentFolderId);
+        fetchData(currentFolderId);
+    } else {
+        currentFolderId = null;
+        currentFolderName = "Tất cả mặt hàng";
+        console.log('URL changed, fetching root data');
+        fetchData(null);
     }
-  
-    function paginatedItems() {
-      const start = (itemPage - 1) * itemsPerPage;
-      return items.slice(start, start + itemsPerPage);
-    }
-  
-    async function fetchData() {
-      try {
-        const allFolders: Folder[] = await apiFetch("http://127.0.0.1:8000/api/folders");
-        // Lọc ra các thư mục có parent_id === null
-        folders = allFolders.filter(folder => folder.parent_id === null && folder.is_deleted !== 1);
-        items = await apiFetch("http://127.0.0.1:8000/api/items");
-      } catch (error) {
-        console.error("Lỗi khi tải dữ liệu:", error);
-      }
-    }
-  
-    function getTotalPrice() {
-      return items.reduce((total, item) => {
-        let price = +(String(item.price).replace(/\D/g, "")) || 0;
-        return total + price;
-      }, 0);
-    }
-  
- // Quản lý modal cho thư mục và mặt hàng
- let showFolderModal = false;
+  }
+
+  // Computed Properties
+  $: paginatedFolders = folders.slice(
+      (folderPage - 1) * ITEMS_PER_PAGE,
+      folderPage * ITEMS_PER_PAGE
+  );
+
+  $: paginatedItems = items.slice(
+      (itemPage - 1) * ITEMS_PER_PAGE,
+      itemPage * ITEMS_PER_PAGE
+  );
+
+  $: totalPrice = items.reduce((total, item) => {
+      const price = Number(String(item.price).replace(/[^\d.-]/g, "")) || 0;
+      return total + price;
+  }, 0);
+
+  // Modal State
+  let showFolderModal = false;
   let editModeFolder = false;
   let selectedFolder: Partial<Folder> = {};
 
@@ -54,15 +67,76 @@
   let editModeItem = false;
   let selectedItem: Partial<Item> = {};
 
+  // Data Fetching
+  async function fetchData(folderId: number | null = null) {
+    isLoading = true;
+    error = null;
+    try {
+        const [allFolders, allItems] = await Promise.all([
+            apiFetch("/folders"),
+            apiFetch("/items")
+        ]);
+
+        // Lọc folders và items dựa trên folderId
+        if (folderId) {
+            // Lọc folders có parent_id trùng với folderId hiện tại
+            folders = allFolders.filter(folder => 
+                folder.parent_id === folderId && 
+                folder.is_deleted !== 1
+            );
+
+            // Lọc items thuộc folder hiện tại
+            items = allItems.filter(item => 
+                item.folder_id === folderId && 
+                item.is_deleted !== 1
+            );
+            
+            // Cập nhật tên folder hiện tại
+            const currentFolder = allFolders.find(f => f.id === folderId);
+            if (currentFolder) {
+                currentFolderName = currentFolder.name;
+            }
+        } else {
+            // Hiển thị folders gốc (không có parent)
+            folders = allFolders.filter(folder => 
+                folder.parent_id === null && 
+                folder.is_deleted !== 1
+            );
+
+            // Hiển thị tất cả items khi ở trang chủ
+            items = allItems.filter(item => 
+                item.is_deleted !== 1
+            );
+            currentFolderName = "Tất cả mặt hàng";
+        }
+
+        console.log('Current Folder ID:', folderId);
+        console.log('Total Items:', items.length);
+
+    } catch (err) {
+        console.error("Lỗi khi tải dữ liệu:", err);
+        error = err.message || "Không thể tải dữ liệu. Vui lòng thử lại sau.";
+    } finally {
+        isLoading = false;
+    }
+  }
+
+  // Modal Handlers
   function handleAddFolder() {
     editModeFolder = false;
-    selectedFolder = {};
+    selectedFolder = {
+      parent_id: currentFolderId,
+      is_deleted: 0
+    };
     showFolderModal = true;
   }
 
   function handleAddItem() {
     editModeItem = false;
-    selectedItem = {};
+    selectedItem = {
+      folder_id: currentFolderId || 0,
+      is_deleted: 0
+    };
     showItemModal = true;
   }
 
@@ -78,197 +152,236 @@
     showItemModal = true;
   }
 
-  // Xử lý sự kiện submit từ FolderModal
+  // API Operations
   async function handleFolderSubmit(event: CustomEvent<{ data: Partial<Folder> }>) {
-    const folderData = event.detail.data;
+    const folderData = {
+      ...event.detail.data,
+      parent_id: currentFolderId
+    };
     try {
       if (editModeFolder) {
-        // Cập nhật folder theo ID
-        await apiFetch(`http://127.0.0.1:8000/api/folders/${folderData.id}`, {
+        await apiFetch(`/folders/${folderData.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(folderData)
+          body: folderData
         });
       } else {
-        // Thêm mới folder
-        await apiFetch(`http://127.0.0.1:8000/api/folders`, {
+        await apiFetch('/folders', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(folderData)
+          body: folderData
         });
       }
-      await fetchData();
+      
+      await fetchData(currentFolderId);
+      showFolderModal = false;
     } catch (error) {
-      console.error("Error updating/creating folder", error);
+      console.error("Lỗi khi xử lý thư mục:", error);
+      alert(error.message || "Có lỗi xảy ra khi lưu thư mục. Vui lòng thử lại.");
     }
-    showFolderModal = false;
   }
 
-  // Xử lý sự kiện submit từ ItemModal
   async function handleItemSubmit(event: CustomEvent<{ data: Partial<Item> }>) {
-    const itemData = event.detail.data;
-
     try {
-      if (editModeItem) {
-        // Cập nhật item theo ID
-        await apiFetch(`http://127.0.0.1:8000/api/items/${itemData.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(itemData) 
-        });
-      } else {
-        // Thêm mới item (sử dụng endpoint items)
-        await apiFetch(`http://127.0.0.1:8000/api/items`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(itemData) 
-        });
-      }
-      await fetchData();
+        const data = event.detail.data;
+        
+        // Kiểm tra name trước khi submit
+        if (!data.name?.trim()) {
+            throw new Error("Tên mặt hàng không được để trống");
+        }
+
+        // Đảm bảo dữ liệu đúng format theo PostgreSQL
+        const submitData = {
+            name: data.name.trim(),
+            quantity: Number(data.quantity) || 0,
+            stock_level: Number(data.stock_level) || 0,
+            price: Number(data.price) || 0,
+            images: '[]', // PostgreSQL JSON field cần string
+            notes: data.notes || '',
+            qr: data.qr || '',
+            is_deleted: 0,
+            supplier_id: Number(data.supplier_id) || 1,
+            folder_id: currentFolderId || null,
+            created_at: data.created_at || new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        };
+
+        // Log để debug
+        console.log('Submitting to API:', submitData);
+
+        if (editModeItem && data.id) {
+            const response = await apiFetch(`/items/${data.id}`, {
+                method: 'PUT',
+                body: JSON.stringify(submitData)
+            });
+            console.log('Update response:', response);
+        } else {
+            const response = await apiFetch('/items', {
+                method: 'POST',
+                body: JSON.stringify(submitData)
+            });
+            console.log('Create response:', response);
+        }
+        
+        await fetchData(currentFolderId);
+        showItemModal = false;
     } catch (error) {
-      console.error("Error updating/creating item", error);
+        console.error("Lỗi khi xử lý mặt hàng:", error);
+        alert(error.message || "Có lỗi xảy ra khi lưu mặt hàng. Vui lòng thử lại.");
     }
-    showItemModal = false;
   }
 
-  function handleFolderClose() {
-    showFolderModal = false;
-  }
-
-  function handleItemClose() {
-    showItemModal = false;
-  }
-
-  async function handleDeleteFolder(folderId: number) {
-    if (!confirm("Bạn có chắc chắn muốn xóa thư mục này không?")) {
+  async function handleDelete(type: 'folder' | 'item', id: number) {
+    if (!confirm(`Bạn có chắc chắn muốn xóa ${type === 'folder' ? 'thư mục' : 'mặt hàng'} này không?`)) {
       return;
     }
+
     try {
-      await apiFetch(`http://127.0.0.1:8000/api/folders/${folderId}/delete`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      await apiFetch(`/${type}s/${id}/delete`, {
+        method: 'PUT'
       });
       await fetchData();
     } catch (error) {
-      console.error("Lỗi khi xóa thư mục:", error);
+      console.error(`Lỗi khi xóa ${type}:`, error);
+      alert(error.message || `Có lỗi xảy ra khi xóa ${type === 'folder' ? 'thư mục' : 'mặt hàng'}. Vui lòng thử lại.`);
     }
   }
 
-  async function handleDeleteItem(itemId: number) {
-    if (!confirm("Bạn có chắc chắn muốn xóa mặt hàng này không?")) {
-      return;
-    }
-    try {
-      await apiFetch(`http://127.0.0.1:8000/api/items/${itemId}/delete`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      await fetchData();
-    } catch (error) {
-      console.error("Lỗi khi xóa mặt hàng:", error);
-    }
-  }
+  onMount(() => fetchData(null));
+</script>
 
+<!-- Loading State -->
+{#if isLoading}
+    <div class="flex justify-center items-center h-64">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00205b]"></div>
+    </div>
+{:else}
+    <!-- Error State -->
+    {#if error}
+        <div class="p-4 bg-red-100 text-red-700 rounded-lg mb-4">
+            {error}
+            <button 
+                class="ml-2 underline"
+                on:click={() => fetchData(currentFolderId)}
+            >
+                Thử lại
+            </button>
+        </div>
+    {/if}
 
-  
-    onMount(fetchData);
-  </script>
-  
-  <!-- Header -->
-  <div class="flex items-center justify-between border-b border-gray-500 p-4">
-    <h1 class="text-3xl font-bold text-gray-800">Tất cả mặt hàng</h1>
-    <div class="flex space-x-4">
-      <button on:click={handleAddItem} class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">
-        Thêm mặt hàng
-      </button>
-      <button on:click={handleAddFolder} class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639]">
-        Thêm thư mục
-      </button>
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-gray-500 p-4">
+        <h1 class="text-3xl font-bold text-gray-800">{currentFolderName}</h1>
+        <div class="flex space-x-4">
+            <button 
+                on:click={handleAddItem}
+                class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639] transition-colors"
+            >
+                Thêm mặt hàng
+            </button>
+            <button 
+                on:click={handleAddFolder}
+                class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639] transition-colors"
+            >
+                Thêm thư mục
+            </button>
+        </div>
     </div>
-  </div>
-  
-  <!-- Thống kê -->
-  <div class="p-4 mt-4 flex space-x-6 text-gray-700">
-    <span>Thư mục: <strong>{folders.length}</strong></span>
-    <span>Mặt hàng: <strong>{items.length}</strong></span>
-    <span>Tổng giá trị: <strong>₫{getTotalPrice().toLocaleString()}</strong></span>
-  </div>
-  
-  {#if folders.length > 0 || items.length > 0}
-    <div class="p-4">
-      <!-- Danh sách thư mục -->
-      <div class="flex flex-col gap-3">
-        <h2 class="text-[#00205B] text-2xl">Thư mục:</h2>
-        <div class="grid grid-cols-5 gap-4">
-          {#each paginatedFolders() as folder (folder.id)}
-          <div class="relative">
-            <Folders {folder} />
-            <button on:click={() => handleEditFolder(folder)} class="absolute top-[40px] right-2 p-2 bg-yellow-500 text-white rounded-full">
-              <!-- Icon chỉnh sửa -->
-              <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
-              </svg>
-            </button>
-            <button on:click={() => handleDeleteFolder(folder.id)} class="absolute top-[80px] right-2 p-2 bg-red-500 text-white rounded-full">
-              <!-- Icon xóa -->
-              <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
-              </svg>
-            </button>
-          </div>
-          {/each}
-        </div>
-        <div class="flex mt-5 justify-between">
-          <Paginations totalItems={folders.length} bind:currentPage={folderPage} />
-        </div>
-      </div>
-  
-      <!-- Danh sách mặt hàng -->
-      <div class="flex flex-col gap-3 mt-10">
-        <h2 class="text-[#00205B] text-2xl">Mặt hàng:</h2>
-        <div class="grid grid-cols-5 gap-4">
-          {#each paginatedItems() as item (item.id)}
-          <div class="relative">
-            <Items {...item} />
-            <button on:click={() => handleEditItem(item)} class="absolute top-[40px] right-2 p-2 bg-yellow-500 text-white rounded-full">
-              <!-- Icon chỉnh sửa -->
-              <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
-              </svg>
-            </button>
-            <button on:click={() => handleDeleteItem(item.id)} class="absolute top-[80px] right-2 p-2 bg-red-500 text-white rounded-full">
-              <!-- Icon xóa -->
-              <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
-              </svg>
-            </button>
-          </div>
-          {/each}
-        </div>
-        <div class="flex mt-5 justify-between">
-          <Paginations totalItems={items.length} bind:currentPage={itemPage} />
-        </div>
-      </div>
+
+    <!-- Statistics -->
+    <div class="p-4 mt-4 flex space-x-6 text-gray-700">
+        <span>Thư mục: <strong>{folders.length}</strong></span>
+        <span>Mặt hàng: <strong>{items.length}</strong></span>
+        <span>Tổng giá trị: <strong>₫{totalPrice.toLocaleString()}</strong></span>
     </div>
-  {:else}
-    <!-- Hiển thị nếu không có mặt hàng hoặc thư mục -->
-    <NotFoundData {fetchData} />
-  {/if}
-  
-  <FolderModal
-  bind:showModal={showFolderModal}
-  bind:folder={selectedFolder}
-  bind:isEditMode={editModeFolder}
-  on:submit={handleFolderSubmit}
-  on:close={handleFolderClose}
+
+    {#if folders.length > 0 || items.length > 0}
+        <div class="p-4">
+            <!-- Folders List -->
+            <div class="flex flex-col gap-3">
+                <h2 class="text-[#00205B] text-2xl">Thư mục:</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {#each paginatedFolders as folder (folder.id)}
+                        <div class="relative group">
+                            <Folders {folder} />
+                            <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                    on:click={() => handleEditFolder(folder)}
+                                    class="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors"
+                                >
+                                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
+                              </svg>
+                                </button>
+                                <button 
+                                    on:click={() => handleDelete('folder', folder.id)}
+                                    class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                                >
+                                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+                              </svg>
+                                </button>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+                <Paginations 
+                    totalItems={folders.length} 
+                    bind:currentPage={folderPage} 
+                />
+            </div>
+
+            <!-- Items List -->
+            <div class="flex flex-col gap-3 mt-10">
+                <h2 class="text-[#00205B] text-2xl">Mặt hàng:</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {#each paginatedItems as item (item.id)}
+                        <div class="relative group">
+                            <Items {...item} />
+                            <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                    on:click={() => handleEditItem(item)}
+                                    class="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors"
+                                >
+                                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
+                              </svg>
+                                </button>
+                                <button 
+                                    on:click={() => handleDelete('item', item.id)}
+                                    class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                                >
+                                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+                              </svg>
+                                </button>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+                <Paginations 
+                    totalItems={items.length} 
+                    bind:currentPage={itemPage} 
+                />
+            </div>
+        </div>
+    {:else}
+        <NotFoundData fetchData={() => fetchData(currentFolderId)} />
+    {/if}
+{/if}
+
+<FolderModal
+    bind:showModal={showFolderModal}
+    bind:folder={selectedFolder}
+    bind:isEditMode={editModeFolder}
+    parentId={currentFolderId}
+    on:submit={handleFolderSubmit}
+    on:close={() => showFolderModal = false}
 />
 
 <ItemModal
-  bind:showModal={showItemModal}
-  bind:item={selectedItem}
-  bind:isEditMode={editModeItem}
-  on:submit={handleItemSubmit}
-  on:close={handleItemClose}
+    bind:showModal={showItemModal}
+    bind:item={selectedItem}
+    bind:isEditMode={editModeItem}
+    folderId={currentFolderId}
+    on:submit={handleItemSubmit}
+    on:close={() => showItemModal = false}
 />
-
-  
