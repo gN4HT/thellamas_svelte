@@ -5,9 +5,9 @@
     let email = "";
     let password = "";
     let errorMessage = "";
+    export const login = async (event: SubmitEvent) => {
 
-
-    export const login = async (email: string, password: string) => {
+        event.preventDefault();
         try {
             const response = await fetch("http://127.0.0.1:8000/api/login", {
                 method: "POST",
@@ -15,18 +15,17 @@
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({email, password}),
-                credentials: "include", // ⬅️ Allows cookies to be stored!
+                credentials: "include", //Allows cookies to be stored!
             });
 
             if (!response.ok) {
                 const data = await response.json();
-                throw error(response.status, data.error || "Sai email hoặc mật khẩu!");
+                error(response.status, data.error || "Sai email hoặc mật khẩu!");
             }
 
             return {success: true};
         } catch (err) {
-            console.error("Login error:", err);
-            throw error(500, "Không thể kết nối đến server!");
+            error(500, "Không thể kết nối đến server!");
         }
     };
 
@@ -45,7 +44,7 @@
                 <p class="text-red-500 text-sm mb-4">{errorMessage}</p>
             {/if}
 
-            <form class="flex flex-col" on:submit|preventDefault={login}>
+            <form class="flex flex-col" onsubmit={login}>
                 <input type="email" bind:value={email} placeholder="Email" required
                        class="mb-4 p-2 border border-gray-300 rounded-lg text-base">
                 <input type="password" bind:value={password} placeholder="Mật khẩu" required

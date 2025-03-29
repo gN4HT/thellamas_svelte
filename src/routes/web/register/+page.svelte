@@ -1,24 +1,55 @@
 <script lang="ts">
 
-    export const register = async (name: string, email: string, password: string, password_confirmation: string) => {
+    import {error} from "@sveltejs/kit";
+
+    const formData = {
+        name: '', email: '', password: '', password_confirmation: ''
+    }
+    const formError: { passwordError: string | null, confirmPasswordError: string | null } = {
+        passwordError: null,
+        confirmPasswordError: null
+    };
+
+    function validatePassword() {
+        if (formData.password.length < 8) {
+            formError.passwordError = "Password must be at least 8 characters long.";
+        } else if (!/[A-Z]/.test(formData.password)) {
+            formError.passwordError = "Password must contain at least one uppercase letter.";
+        } else if (!/[0-9]/.test(formData.password)) {
+            formError.passwordError = "Password must contain at least one number.";
+        }
+    }
+
+    function validateConfirmPassword() {
+        formError.confirmPasswordError = formData.password_confirmation !== formData.password ? "Passwords do not match." : null;
+    }
+
+    export const register = async (e: SubmitEvent) => {
+        e.preventDefault();
         try {
+            validatePassword();
+            validateConfirmPassword();
+
+            if (formError.passwordError || formError.confirmPasswordError) {
+                return;
+            }
+
             const response = await fetch("http://127.0.0.1:8000/api/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 credentials: "include", // ⬅️ Ensures cookies are stored
-                body: JSON.stringify({name, email, password, password_confirmation}),
+                body: JSON.stringify(formData),
             });
 
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.message || "Đăng ký thất bại!");
+                error(data.message || "Đăng ký thất bại!");
             }
-
             return {success: true, message: data.message};
         } catch (error) {
-            console.error("Register error:", error);
+            error(`Register error: ${error.message}`);
             return {success: false, message: "Không thể kết nối đến server!"};
         }
     };
@@ -41,22 +72,27 @@
                 <span class="px-4">Hoặc</span>
                 <div class="flex-1 border-b border-gray-300"></div>
             </div>
-            <form class="flex flex-col w-full max-w-md p-6 bg-white shadow-lg rounded-md">
+            <form class="flex flex-col w-full max-w-md p-6 bg-white shadow-lg rounded-md" on:submit="{register}">
                 <h1 class="text-2xl font-bold mb-6 text-center">Tạo tài khoản</h1>
-                <input type="text" placeholder="Tên đầy đủ" required
+                <input type="text" placeholder="Tên đầy đủ" required bind:value={formData.name}
                        class="mb-4 p-2 border border-gray-300 rounded text-base">
-                <input type="email" placeholder="Email" required
+                <input type="email" placeholder="Email" required bind:value={formData.email}
                        class="mb-4 p-2 border border-gray-300 rounded text-base">
-                <input type="password" placeholder="Password" required
+                <input type="password" placeholder="Password" required bind:value={formData.password}
                        class="mb-4 p-2 border border-gray-300 rounded text-base">
-                <a href="#" class="p-3 text-lg text-white text-center bg-[#00205b] rounded hover:bg-[#001a48]">Tạo tài
-                    khoản</a>
+                <input type="password" placeholder="Password Confirmation" required
+                       bind:value={formData.password_confirmation}
+                       class="mb-4 p-2 border border-gray-300 rounded text-base">
+                <button type="submit"
+                        class="p-3 text-lg text-white text-center bg-[#00205b] rounded hover:bg-[#001a48]">Tạo tài
+                    khoản
+                </button>
             </form>
             <div class="flex flex-col items-center text-center mt-6 gap-2">
                 <p class="text-sm max-w-md">
                     Bằng cách nhấp "Tạo tài khoản", bạn sẽ đồng ý với The Llamas’s
-                    <a href="#" class="font-bold text-[#00205b] hover:underline">Điều khoản & Điều kiện</a> và
-                    <a href="#" class="font-bold text-[#00205b] hover:underline">Chính sách bảo mật</a>.
+                    <a href="/" class="font-bold text-[#00205b] hover:underline">Điều khoản & Điều kiện</a> và
+                    <a href="/" class="font-bold text-[#00205b] hover:underline">Chính sách bảo mật</a>.
                 </p>
                 <p class="text-sm">
                     Bạn đã có tài khoản? <a href="login" class="font-bold text-blue-700 hover:underline">Đăng nhập
@@ -79,7 +115,7 @@
                     “Dễ dàng thêm hàng tồn kho. Dễ dàng vận hành. Dễ dàng cá nhân hóa.
                     Nhóm của tôi đã áp dụng The Llamas ngay lập tức!”
                 </p>
-                <p class="text-sm font-bold text-black">Khâu Văn Nam<br><span
+                <p class="text-sm font-bold text-black">Khâu Vân Nam<br><span
                         class="text-xs text-gray-500">Leader</span></p>
             </div>
 
