@@ -13,59 +13,62 @@
     let error: string | null = null;
     let isLoading = false;
     
-    // Khởi tạo formData với giá trị mặc định theo cấu trúc database
+    // Khởi tạo formData
     let formData = {
+        id: null as number | null, // Thêm id để track item đang edit
         name: '',
-        quantity: 0,
-        stock_level: 0,
-        price: 0,
+        quantity: '0',
+        stock_level: '0',
+        price: '0',
         images: '[]',
         notes: '',
         qr: '',
         is_deleted: 0,
-        supplier_id: 1,
-        folder_id: folderId || null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        supplier_id: null,
+        folder_id: folderId || null
     };
 
-    // Reset form khi modal đóng
+    // Reset form khi đóng modal
     $: if (!showModal) {
         resetForm();
     }
 
-    // Cập nhật formData khi edit hoặc khi folderId thay đổi
+    // Cập nhật formData khi mở modal
     $: if (showModal) {
         if (isEditMode && item) {
+            // Nếu là edit mode, lấy data từ item hiện tại
             formData = {
-                ...formData,
-                ...item,
-                updated_at: new Date().toISOString()
+                id: item.id || null,
+                name: item.name || '',
+                quantity: String(item.quantity || '0'),
+                stock_level: String(item.stock_level || '0'),
+                price: String(item.price || '0'),
+                images: '[]',
+                notes: item.notes || '',
+                qr: item.qr || '',
+                is_deleted: 0,
+                supplier_id: null,
+                folder_id: item.folder_id || null
             };
         } else {
-            formData = {
-                ...formData,
-                folder_id: folderId,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            };
+            // Nếu là add mode, reset form
+            resetForm();
         }
     }
 
     function resetForm() {
         formData = {
+            id: null,
             name: '',
-            quantity: 0,
-            stock_level: 0,
-            price: 0,
+            quantity: '0',
+            stock_level: '0',
+            price: '0',
             images: '[]',
             notes: '',
             qr: '',
             is_deleted: 0,
-            supplier_id: 1,
-            folder_id: folderId || null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            supplier_id: null,
+            folder_id: folderId || null
         };
         error = null;
     }
@@ -78,17 +81,21 @@
             return false;
         }
 
-        if (typeof formData.quantity !== 'number' || formData.quantity < 0) {
+        const quantity = Number(formData.quantity);
+        const price = Number(formData.price);
+        const stock_level = Number(formData.stock_level);
+
+        if (isNaN(quantity) || quantity < 0) {
             error = "Số lượng không hợp lệ";
             return false;
         }
 
-        if (typeof formData.price !== 'number' || formData.price < 0) {
+        if (isNaN(price) || price < 0) {
             error = "Giá không hợp lệ";
             return false;
         }
 
-        if (typeof formData.stock_level !== 'number' || formData.stock_level < 0) {
+        if (isNaN(stock_level) || stock_level < 0) {
             error = "Mức tồn kho không hợp lệ";
             return false;
         }
@@ -101,30 +108,21 @@
 
         isLoading = true;
         try {
-            // Đảm bảo name không null và được trim
-            if (!formData.name?.trim()) {
-                error = "Tên mặt hàng không được để trống";
-                return;
-            }
-
             const submitData = {
+                ...(formData.id && { id: formData.id }), // Chỉ thêm id nếu có
                 name: formData.name.trim(),
-                quantity: Number(formData.quantity) || 0,
-                stock_level: Number(formData.stock_level) || 0,
-                price: Number(formData.price) || 0,
+                quantity: Number(formData.quantity),
+                stock_level: Number(formData.stock_level),
+                price: Number(formData.price),
                 images: null,
                 notes: formData.notes?.trim() || null,
                 qr: formData.qr || null,
                 is_deleted: 0,
-                supplier_id: Number(formData.supplier_id) || 1,
+                supplier_id: null,
                 folder_id: formData.folder_id || null,
-                created_at: formData.created_at || new Date().toISOString(),
-                updated_at: new Date().toISOString()
             };
 
-            // Log để debug
-            console.log('Submitting data:', submitData);
-
+            console.log('Submitting data:', submitData, 'isEditMode:', isEditMode);
             dispatch('submit', { data: submitData });
         } catch (err) {
             error = "Có lỗi xảy ra khi xử lý dữ liệu";

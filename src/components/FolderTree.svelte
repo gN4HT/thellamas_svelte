@@ -1,6 +1,7 @@
 <script lang="ts">
     import { page } from '$app/stores';
     import { goto } from '$app/navigation';
+    import { onMount, afterUpdate } from 'svelte';
     
     export let folders: { id: number; name: string; children?: any[] }[] = [];
     export let level: number = 1;
@@ -25,14 +26,49 @@
 
     // Kiểm tra folder hiện tại
     $: currentFolderId = new URLSearchParams($page.url.search).get('folder');
+
+    // Theo dõi thay đổi của folders để cập nhật expanded state
+    $: {
+        if (folders) {
+            // Tìm và mở folder cha của folder hiện tại
+            const findAndExpandParent = (items: typeof folders, targetId: string | null): boolean => {
+                for (const item of items) {
+                    if (item.id === Number(targetId)) {
+                        return true;
+                    }
+                    if (item.children?.length) {
+                        if (findAndExpandParent(item.children, targetId)) {
+                            expanded[item.id] = true;
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            };
+
+            if (currentFolderId) {
+                findAndExpandParent(folders, currentFolderId);
+            }
+        }
+    }
+
+    // Cập nhật expanded state khi component được mount
+    onMount(() => {
+        if (currentFolderId) {
+            const parts = currentFolderId.split('/');
+            parts.forEach(id => {
+                expanded[Number(id)] = true;
+            });
+        }
+    });
 </script>
   
-{#each folders as folder}
-    <div style="margin-left: {level === 1 ? '15px' : level * 10 + 'px'}" class="my-2">
+{#each folders as folder (folder.id)}
+    <div style="margin-left: {level === 1 ? '15px' : level * 15 + 'px'}" class="my-1">
         <div class="flex items-center">
             {#if folder.children && folder.children.length > 0}
                 <button 
-                    class="toggle-btn mr-2" 
+                    class="toggle-btn" 
                     on:click={() => toggleExpand(folder.id)}
                     aria-label="Toggle folder"
                 >

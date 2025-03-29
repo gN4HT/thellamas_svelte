@@ -31,51 +31,52 @@
         return true;
     };
 
-    // Handle login
-    const login = async () => {
+    // Handle input change
+    const handleInput = () => {
         errorMessage = "";
+    };
+
+    // Handle login
+    const handleSubmit = async (event: Event) => {
+        event.preventDefault();
         
         if (!validateForm()) return;
         
         isLoading = true;
+        errorMessage = "";
+
         try {
             const response = await fetch(`${API_URL}/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Accept": "application/json"
                 },
-                body: JSON.stringify({
-                    email: email.trim(),
-                    password: password
-                }),
+                body: JSON.stringify({ email, password }),
+                credentials: "include"
             });
 
             const data = await response.json();
 
-            if (response.ok) {
-                // Lưu token với thời gian hết hạn
-                const tokenData = {
-                    access_token: data.access_token,
-                    token_type: data.token_type,
-                    expires_at: new Date().getTime() + (data.expires_in * 1000)
-                };
-                
-                localStorage.setItem("auth", JSON.stringify(tokenData));
-                await goto('/app');
-            } else {
-                throw new Error(data.message || "Thông tin đăng nhập không chính xác");
+            if (!response.ok) {
+                throw new Error(data.message || "Sai email hoặc mật khẩu!");
             }
-        } catch (error) {
-            console.error("Lỗi đăng nhập:", error);
-            errorMessage = error.message || "Không thể kết nối đến máy chủ";
+
+            // Lưu token vào localStorage
+            localStorage.setItem('auth', JSON.stringify({
+                access_token: data.access_token,
+                user: data.user
+            }));
+
+            // Chuyển hướng sau khi đăng nhập thành công
+            await goto('/app/inventory/all');
+
+        } catch (err) {
+            console.error("Login error:", err);
+            errorMessage = err.message || "Không thể kết nối đến server!";
         } finally {
             isLoading = false;
         }
-    };
-
-    // Handle input changes
-    const handleInput = () => {
-        errorMessage = ""; // Clear error when user types
     };
 </script>
 
@@ -92,7 +93,7 @@
                 <p class="text-red-500 text-sm mb-4" role="alert">{errorMessage}</p>
             {/if}
 
-            <form class="flex flex-col" on:submit|preventDefault={login}>
+            <form class="flex flex-col" on:submit={handleSubmit}>
                 <input 
                     type="email" 
                     bind:value={email} 

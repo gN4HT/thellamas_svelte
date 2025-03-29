@@ -3,6 +3,7 @@ export const apiFetch = async (
   { method = "GET", body = null, headers = {} } = {}
 ) => {
   try {
+    // Lấy token từ localStorage
     const authData = localStorage.getItem("auth");
     let token = null;
 
@@ -11,12 +12,14 @@ export const apiFetch = async (
       token = auth.access_token;
     }
 
+    // Cấu hình headers
     const defaultHeaders = {
       "Content-Type": "application/json",
       Accept: "application/json",
       ...headers,
     };
 
+    // Thêm Authorization header nếu có token
     if (token) {
       defaultHeaders["Authorization"] = `Bearer ${token}`;
     }
@@ -27,26 +30,29 @@ export const apiFetch = async (
       ? url
       : `${baseUrl}/api${url.startsWith("/") ? url : `/${url}`}`;
 
+    // Cấu hình request options
     const options = {
       method,
       headers: defaultHeaders,
       credentials: "include", // Quan trọng cho CORS
     };
 
+    // Xử lý body request
     if (body && method !== "GET") {
       options.body = typeof body === "string" ? body : JSON.stringify(body);
     }
 
+    // Thực hiện request
     const response = await fetch(apiUrl, options);
 
-    // Kiểm tra response status
+    // Kiểm tra authentication
     if (response.status === 401) {
       localStorage.removeItem("auth");
-      window.location.href = "/login";
+      window.location.href = "/web/login";
       throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
     }
 
-    // Xử lý response
+    // Xử lý response theo content type
     const contentType = response.headers.get("content-type");
     let data;
 
@@ -56,6 +62,7 @@ export const apiFetch = async (
       data = await response.text();
     }
 
+    // Kiểm tra response status
     if (!response.ok) {
       throw new Error(
         typeof data === "object"
@@ -64,8 +71,17 @@ export const apiFetch = async (
       );
     }
 
+    // Log success response để debug
+    console.log("API Response:", {
+      url: apiUrl,
+      method,
+      status: response.status,
+      data,
+    });
+
     return data;
   } catch (error) {
+    // Xử lý network errors
     if (
       error.name === "TypeError" &&
       error.message.includes("Failed to fetch")
@@ -74,7 +90,14 @@ export const apiFetch = async (
       throw new Error("Lỗi kết nối: Vui lòng kiểm tra kết nối mạng");
     }
 
-    console.error("API Error:", error);
+    // Log error để debug
+    console.error("API Error:", {
+      url,
+      method,
+      body,
+      error: error.message,
+    });
+
     throw error;
   }
 };

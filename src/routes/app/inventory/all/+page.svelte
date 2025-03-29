@@ -10,6 +10,7 @@
   import Paginations from "../../../../components/Paginations.svelte";
   import FolderModal from "../../../../components/FolderModal.svelte";
   import ItemModal from "../../../../components/ItemModal.svelte";
+  import { folderStore } from '../../../../stores/folderStore';
 
   // Constants
   const ITEMS_PER_PAGE = 10;
@@ -159,18 +160,24 @@
       parent_id: currentFolderId
     };
     try {
+      let response;
       if (editModeFolder) {
-        await apiFetch(`/folders/${folderData.id}`, {
+        response = await apiFetch(`/folders/${folderData.id}`, {
           method: 'PUT',
           body: folderData
         });
       } else {
-        await apiFetch('/folders', {
+        response = await apiFetch('/folders', {
           method: 'POST',
           body: folderData
         });
       }
       
+      // Fetch lại toàn bộ folders và cập nhật store
+      const allFolders = await apiFetch("/folders");
+      folderStore.set(allFolders);
+      
+      // Cập nhật local data
       await fetchData(currentFolderId);
       showFolderModal = false;
     } catch (error) {
@@ -180,45 +187,43 @@
   }
 
   async function handleItemSubmit(event: CustomEvent<{ data: Partial<Item> }>) {
+    if (isLoading) return;
+    isLoading = true;
+
     try {
         const data = event.detail.data;
+        console.log('Received data:', data, 'Edit mode:', editModeItem);
         
-        // Kiểm tra name trước khi submit
         if (!data.name?.trim()) {
             throw new Error("Tên mặt hàng không được để trống");
         }
 
-        // Đảm bảo dữ liệu đúng format theo PostgreSQL
         const submitData = {
+            ...(data.id && { id: data.id }), // Chỉ thêm id nếu có
             name: data.name.trim(),
             quantity: Number(data.quantity) || 0,
             stock_level: Number(data.stock_level) || 0,
             price: Number(data.price) || 0,
-            images: '[]', // PostgreSQL JSON field cần string
+            images: '[]',
             notes: data.notes || '',
             qr: data.qr || '',
             is_deleted: 0,
-            supplier_id: Number(data.supplier_id) || 1,
+            supplier_id: null,
             folder_id: currentFolderId || null,
-            created_at: data.created_at || new Date().toISOString(),
-            updated_at: new Date().toISOString()
         };
 
-        // Log để debug
-        console.log('Submitting to API:', submitData);
+        console.log('Submitting to API:', submitData, 'Edit mode:', editModeItem);
 
         if (editModeItem && data.id) {
-            const response = await apiFetch(`/items/${data.id}`, {
+            await apiFetch(`/items/${data.id}`, {
                 method: 'PUT',
-                body: JSON.stringify(submitData)
+                body: submitData
             });
-            console.log('Update response:', response);
         } else {
-            const response = await apiFetch('/items', {
+            await apiFetch('/items', {
                 method: 'POST',
-                body: JSON.stringify(submitData)
+                body: submitData
             });
-            console.log('Create response:', response);
         }
         
         await fetchData(currentFolderId);
@@ -226,6 +231,8 @@
     } catch (error) {
         console.error("Lỗi khi xử lý mặt hàng:", error);
         alert(error.message || "Có lỗi xảy ra khi lưu mặt hàng. Vui lòng thử lại.");
+    } finally {
+        isLoading = false;
     }
   }
 
@@ -238,7 +245,14 @@
       await apiFetch(`/${type}s/${id}/delete`, {
         method: 'PUT'
       });
-      await fetchData();
+      
+      if (type === 'folder') {
+        // Cập nhật store khi xóa folder
+        const allFolders = await apiFetch("/folders");
+        folderStore.set(allFolders);
+      }
+      
+      await fetchData(currentFolderId);
     } catch (error) {
       console.error(`Lỗi khi xóa ${type}:`, error);
       alert(error.message || `Có lỗi xảy ra khi xóa ${type === 'folder' ? 'thư mục' : 'mặt hàng'}. Vui lòng thử lại.`);
