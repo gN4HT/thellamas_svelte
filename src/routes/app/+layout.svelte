@@ -8,7 +8,7 @@
 
     onMount(() => {
         if (!localStorage.getItem("token")) {
-            goto('/login');
+            goto('/web/login');
         }
     });
 </script>

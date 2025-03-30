@@ -1,22 +1,20 @@
 <script>
-    import { page } from '$app/stores';
-    import { goto } from "$app/navigation";
+    import {page} from '$app/stores';
+    import {goto} from "$app/navigation";
 
     // Danh sách menu
     const menuItems = [
-        { path: "/app/settings", icon: "fa-user", label: "Hồ sơ người dùng" },
-        { path: "/app/settings/preferences", icon: "fa-gear", label: "Cài đặt" },
-        { path: "/app/settings/company", icon: "fa-briefcase", label: "Thông tin công ty" },
-        { path: "/app/settings/planBill", icon: "fa-credit-card", label: "Kế hoạch & Thanh toán" },
+        {path: "/app/settings", icon: "fa-user", label: "Hồ sơ người dùng"},
+        {path: "/app/settings/preferences", icon: "fa-gear", label: "Cài đặt"},
+        {path: "/app/settings/company", icon: "fa-briefcase", label: "Thông tin công ty"},
+        {path: "/app/settings/planBill", icon: "fa-credit-card", label: "Kế hoạch & Thanh toán"},
 
     ];
 
-function logout() {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("token_type");
-    localStorage.removeItem("expires_in");
-    goto("/web/login");
-}
+    function logout() {
+        localStorage.removeItem("token");
+        goto("/web/login");
+    }
 </script>
 
 <div class="flex">
@@ -26,8 +24,8 @@ function logout() {
         <ul class="space-y-6 mt-8">
             {#each menuItems as item}
                 <li>
-                    <a href="{item.path}" 
-                        class="flex items-center space-x-2 text-gray-700 hover:text-[#00205b] text-base setting-item {($page.url.pathname === item.path) ? 'active' : ''}">
+                    <a href="{item.path}"
+                       class="flex items-center space-x-2 text-gray-700 hover:text-[#00205b] text-base setting-item {($page.url.pathname === item.path) ? 'active' : ''}">
                         <i class="fa-solid {item.icon}"></i>
                         <span>{item.label}</span>
                     </a>
@@ -43,12 +41,12 @@ function logout() {
 
     <!-- Nội dung -->
     <div class="ml-[250px] w-full p-6">
-        <slot />
+        <slot/>
     </div>
 </div>
 
 <style>
     .setting-item.active {
         color: #00205b;
-        }
+    }
 </style>

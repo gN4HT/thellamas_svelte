@@ -26,7 +26,6 @@
                 time: new Date(activity.created_at).toLocaleString()
             }));
 
-
             data.recent_items = result.items.map(item => ({
                 img: `/img/${item.image}`,
                 name: item.name,
@@ -34,7 +33,6 @@
                 unit: `${item.quantity} Đơn vị`,
                 price: `${item.price}K`
             }));
-
 
             data.stock_levels = result.low_stock_items.map(item => ({
                 img: `/img/${item.image}`,
@@ -132,9 +130,7 @@
                 <h2 class="text-lg font-semibold">Mức tồn kho</h2>
                 <div class="flex items-center gap-2">
                     <span class="text-gray-600 text-sm">Ở hoặc Dưới Mức Tối Thiểu</span>
-                    <a href="#"
-                    ><img src="/img/dashboard-icon.png" class="w-6 h-6"
-                    /></a>
+                    <div><img src="/img/dashboard-icon.png" class="w-6 h-6" alt=""/></div>
                 </div>
             </div>
             <div class="grid grid-cols-1 gap-4">
