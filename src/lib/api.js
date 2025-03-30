@@ -1,27 +1,28 @@
+// apiFetch.js
 export const apiFetch = async (
   url,
   { method = "GET", body = null, headers = {} } = {}
 ) => {
   try {
     // Lấy token từ localStorage
-    const authData = localStorage.getItem("auth");
-    let token = null;
-
-    if (authData) {
-      const auth = JSON.parse(authData);
-      token = auth.access_token;
+    const token = localStorage.getItem("auth");
+    if (!token) {
+      // Chưa đăng nhập -> chuyển trang
+      window.location.href = "/web/login";
+      // Dừng luôn hàm tại đây
+      return;
     }
 
     // Cấu hình headers
     const defaultHeaders = {
-      "Content-Type": "application/json",
       Accept: "application/json",
+      Authorization: `Bearer ${token.replace(/['"]+/g, "")}`,
       ...headers,
     };
 
-    // Thêm Authorization header nếu có token
-    if (token) {
-      defaultHeaders["Authorization"] = `Bearer ${token}`;
+    // Nếu body không phải FormData thì set Content-Type
+    if (!(body instanceof FormData)) {
+      defaultHeaders["Content-Type"] = "application/json";
     }
 
     // Đảm bảo URL đúng format
@@ -30,49 +31,70 @@ export const apiFetch = async (
       ? url
       : `${baseUrl}/api${url.startsWith("/") ? url : `/${url}`}`;
 
-    // Cấu hình request options
+    // Cấu hình request
     const options = {
       method,
       headers: defaultHeaders,
-      credentials: "include", // Quan trọng cho CORS
+      credentials: "include", // nếu cần gửi cookie, session
     };
 
-    // Xử lý body request
+    // Xử lý body
     if (body && method !== "GET") {
-      options.body = typeof body === "string" ? body : JSON.stringify(body);
+      if (body instanceof FormData) {
+        options.body = body;
+        // FormData thì xóa Content-Type để browser tự set boundary
+        delete options.headers["Content-Type"];
+      } else {
+        options.body = typeof body === "string" ? body : JSON.stringify(body);
+      }
     }
 
-    // Thực hiện request
+    console.log("API Request:", {
+      url: apiUrl,
+      method,
+      headers: options.headers,
+      body:
+        body instanceof FormData ? Object.fromEntries(body.entries()) : body,
+    });
+
+    // Thực hiện fetch
     const response = await fetch(apiUrl, options);
 
-    // Kiểm tra authentication
-    if (response.status === 401) {
-      localStorage.removeItem("auth");
-      window.location.href = "/web/login";
-      throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
-    }
-
-    // Xử lý response theo content type
+    // Lấy kiểu content
     const contentType = response.headers.get("content-type");
-    let data;
+    const data = contentType?.includes("application/json")
+      ? await response.json()
+      : await response.text();
 
-    if (contentType && contentType.includes("application/json")) {
-      data = await response.json();
-    } else {
-      data = await response.text();
-    }
-
-    // Kiểm tra response status
+    // Kiểm tra status code
     if (!response.ok) {
-      throw new Error(
-        typeof data === "object"
-          ? data.message
-          : `HTTP Error: ${response.status}`
-      );
+      switch (response.status) {
+        case 401:
+          localStorage.removeItem("auth");
+          window.location.href = "/web/login";
+          throw new Error("Phiên đăng nhập đã hết hạn");
+        case 400:
+          throw new Error(
+            typeof data === "object" ? data.message : "Bad Request"
+          );
+        case 403:
+          throw new Error("Không có quyền truy cập");
+        case 404:
+          throw new Error("Không tìm thấy tài nguyên");
+        case 422:
+          throw new Error(
+            typeof data === "object" ? data.message : "Dữ liệu không hợp lệ"
+          );
+        default:
+          throw new Error(
+            typeof data === "object"
+              ? data.message || JSON.stringify(data)
+              : `Lỗi server: ${response.status}`
+          );
+      }
     }
 
-    // Log success response để debug
-    console.log("API Response:", {
+    console.log("API Success:", {
       url: apiUrl,
       method,
       status: response.status,
@@ -80,24 +102,22 @@ export const apiFetch = async (
     });
 
     return data;
-  } catch (error) {
-    // Xử lý network errors
-    if (
-      error.name === "TypeError" &&
-      error.message.includes("Failed to fetch")
-    ) {
+  } catch (err) {
+    // Xử lý lỗi mạng
+    if (err.name === "TypeError" && err.message.includes("Failed to fetch")) {
       console.error("Lỗi kết nối: Vui lòng kiểm tra kết nối mạng");
       throw new Error("Lỗi kết nối: Vui lòng kiểm tra kết nối mạng");
     }
 
-    // Log error để debug
     console.error("API Error:", {
       url,
       method,
-      body,
-      error: error.message,
+      body:
+        body instanceof FormData ? Object.fromEntries(body.entries()) : body,
+      error: err.message,
     });
 
-    throw error;
+    // Ném tiếp cho nơi gọi xử lý
+    throw err;
   }
 };
