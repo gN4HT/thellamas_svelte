@@ -1,7 +1,7 @@
 <script lang="ts">
 
     import {goto} from "$app/navigation";
-    import {AccessToken} from "../../../models/auth/accessToken";
+    import type {AccessToken} from "../../../models/auth/accessToken";
 
     const formData = {
         name: '', email: '', password: '', password_confirmation: ''
@@ -41,6 +41,7 @@
             });
 
             const data: AccessToken = await response.json();
+
             if (!response.ok) {
                 return {message: data.message || "Đăng ký thất bại!"}
             }
