@@ -1,9 +1,12 @@
 <script lang="ts">
-    import { page } from "$app/state";
-    let { children } = $props();
-  </script>
-  
-  <div class="relative flex">
+    import {page} from "$app/state";
+
+    let {children} = $props();
+
+
+</script>
+
+<div class="relative flex">
     <!-- Sidebar -->
     <aside
       class="
@@ -73,11 +76,11 @@
       </a>
   
       <a
-        href="/app/workflows"
+        href="/app/suppliers"
         class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item transition-colors hover:bg-[#00307b]/50"
-        class:active={page.url.pathname === "/app/workflows"}
+        class:active={page.url.pathname === "/app/suppliers"}
       >
-        <img src="/img/Frame 87.png" alt="Workflows Icon" class="ml-1"/>
+        <img src="/img/Frame 87.png" alt="suppliers Icon" class="ml-1"/>    
         <span
           class="ml-3 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap"
         >
@@ -160,7 +163,7 @@
     <main
     class="
       flex-1                    
-      transition-all duration-300
+      transition-all duration-300 h-screen overflow-y-auto
     "
   >
     {@render children()}
@@ -168,8 +171,7 @@
 
     
   </div>
-  
-  
+
 
 <style>
     @import "tailwindcss";
