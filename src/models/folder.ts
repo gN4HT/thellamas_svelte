@@ -9,4 +9,5 @@ export interface Folder {
   inventory_id?: number;
   created_at?: string;
   updated_at?: string;
+  tags?: Array<{ id: number; name: string }>; // thêm định nghĩa tags
 }
