@@ -1,6 +1,7 @@
 <script lang="ts">
 
-    import {error} from "@sveltejs/kit";
+    import {goto} from "$app/navigation";
+    import {AccessToken} from "../../../models/auth/accessToken";
 
     const formData = {
         name: '', email: '', password: '', password_confirmation: ''
@@ -24,35 +25,35 @@
         formError.confirmPasswordError = formData.password_confirmation !== formData.password ? "Passwords do not match." : null;
     }
 
+
     export const register = async (e: SubmitEvent) => {
         e.preventDefault();
         try {
             validatePassword();
             validateConfirmPassword();
 
-            if (formError.passwordError || formError.confirmPasswordError) {
-                return;
-            }
-
             const response = await fetch("http://127.0.0.1:8000/api/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                credentials: "include", // ⬅️ Ensures cookies are stored
                 body: JSON.stringify(formData),
             });
 
-            const data = await response.json();
+            const data: AccessToken = await response.json();
             if (!response.ok) {
-                error(data.message || "Đăng ký thất bại!");
+                return {message: data.message || "Đăng ký thất bại!"}
             }
+            localStorage.setItem("token", data.access_token);
+            // Redirect on success
+            await goto("/app");
             return {success: true, message: data.message};
         } catch (error) {
-            error(`Register error: ${error.message}`);
+            console.log(`Register error: ${error.message}`);
             return {success: false, message: "Không thể kết nối đến server!"};
         }
     };
+
 </script>
 
 <div class="flex items-center justify-center min-h-screen font-sans py-20">

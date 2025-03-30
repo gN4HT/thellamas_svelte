@@ -1,6 +1,8 @@
 <script lang="ts">
 
     import {error} from "@sveltejs/kit";
+    import {goto} from "$app/navigation";
+    import type {AccessToken} from "../../../models/auth/accessToken";
 
     let email = "";
     let password = "";
@@ -18,11 +20,12 @@
                 credentials: "include", //Allows cookies to be stored!
             });
 
+            const data: AccessToken = await response.json();
             if (!response.ok) {
-                const data = await response.json();
-                error(response.status, data.error || "Sai email hoặc mật khẩu!");
+                return {message: data.message || "Đăng ký thất bại!"}
             }
-
+            localStorage.setItem("token", data.access_token);
+            await goto("/app");
             return {success: true};
         } catch (err) {
             error(500, "Không thể kết nối đến server!");
