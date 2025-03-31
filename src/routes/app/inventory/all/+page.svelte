@@ -226,19 +226,13 @@
   // Modal Handlers
   function handleAddFolder() {
     editModeFolder = false;
-    folderForEdit = {
-      parent_id: currentFolderId,
-      is_deleted: 0
-    };
+    folderForEdit = {};
     showFolderModal = true;
   }
 
   function handleAddItem() {
     editModeItem = false;
-    itemForEdit = {
-      folder_id: currentFolderId || 0,
-      is_deleted: 0
-    };
+    itemForEdit = {};
     showItemModal = true;
   }
 
@@ -285,87 +279,80 @@
   }
 
   // API Operations
-  async function handleFolderSubmit(event: CustomEvent<{ data: Partial<Folder> }>) {
-    const folderData = {
-      ...event.detail.data,
-      parent_id: currentFolderId
-    };
+  async function handleFolderSubmit(event: CustomEvent<{ formData: FormData, isEdit: boolean, folderId: number }>) {
     try {
-      let response;
-      if (editModeFolder) {
-        response = await apiFetch(`/folders/${folderData.id}`, {
-          method: 'PUT',
-          body: folderData
+        const { formData, isEdit, folderId } = event.detail;
+        
+        console.log('Processing folder submission:', {
+            isEdit,
+            folderId,
+            data: Object.fromEntries(formData)
         });
-      } else {
-        response = await apiFetch('/folders', {
-          method: 'POST',
-          body: folderData
-        });
-      }
-      
-      // Fetch lại toàn bộ folders và cập nhật store
-      const allFolders = await apiFetch("/folders");
-      folderStore.set(allFolders);
-      
-      // Cập nhật local data
-      await fetchData(currentFolderId);
-      showFolderModal = false;
-    } catch (error) {
-      console.error("Lỗi khi xử lý thư mục:", error);
-      alert(error.message || "Có lỗi xảy ra khi lưu thư mục. Vui lòng thử lại.");
-    }
-  }
 
-  async function handleItemSubmit(event: CustomEvent<{ data: Partial<Item> }>) {
+        let endpoint = '/folders';
+        if (isEdit && folderId) {
+            endpoint = `/folders/${folderId}`;
+        }
+
+        const response = await apiFetch(endpoint, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response) {
+            throw new Error('Failed to save folder');
+        }
+
+        const allFolders = await apiFetch("/folders");
+        folderStore.set(allFolders);
+        await fetchData(currentFolderId);
+        showFolderModal = false;
+    } catch (error) {
+        console.error("Lỗi khi xử lý thư mục:", error);
+        alert(error.message || "Có lỗi xảy ra khi lưu thư mục. Vui lòng thử lại.");
+    }
+}
+
+async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit: boolean, itemId: number }>) {
     if (isLoading) return;
     isLoading = true;
 
     try {
-        const data = event.detail.data;
-        console.log('Received data:', data, 'Edit mode:', editModeItem);
+        const { formData, isEdit, itemId } = event.detail;
         
-        if (!data.name?.trim()) {
-            throw new Error("Tên mặt hàng không được để trống");
-        }
-
-        const submitData = {
-            ...(data.id && { id: data.id }), // Chỉ thêm id nếu có
-            name: data.name.trim(),
-            quantity: Number(data.quantity) || 0,
-            stock_level: Number(data.stock_level) || 0,
-            price: Number(data.price) || 0,
-            images: '[]',
-            notes: data.notes || '',
-            qr: data.qr || '',
-            is_deleted: 0,
-            supplier_id: null,
-            folder_id: currentFolderId || null,
-        };
-
-        console.log('Submitting to API:', submitData, 'Edit mode:', editModeItem);
-
-        if (editModeItem && data.id) {
-            await apiFetch(`/items/${data.id}`, {
-          method: 'PUT',
-                body: submitData
+        console.log('Processing item submission:', {
+            isEdit,
+            itemId,
+            data: Object.fromEntries(formData)
         });
-      } else {
-            await apiFetch('/items', {
-          method: 'POST',
-                body: submitData
-            });
+
+        let endpoint = '/items';
+        if (isEdit && itemId) {
+            endpoint = `/items/${itemId}`;
         }
-        
+
+        const response = await apiFetch(endpoint, {
+            method: 'POST', // Luôn dùng POST, Laravel sẽ đọc _method để xác định là PUT
+            body: formData,
+        });
+
+        if (!response) {
+            throw new Error('Failed to save item');
+        }
+
+        // Refresh data sau khi lưu thành công
         await fetchData(currentFolderId);
-    showItemModal = false;
+        
+        // Đóng modal và reset form
+        showItemModal = false;
+        itemForEdit = {};
     } catch (error) {
         console.error("Lỗi khi xử lý mặt hàng:", error);
         alert(error.message || "Có lỗi xảy ra khi lưu mặt hàng. Vui lòng thử lại.");
     } finally {
         isLoading = false;
     }
-  }
+}
 
   async function handleDelete(type: 'folder' | 'item', id: number) {
     if (!confirm(`Bạn có chắc chắn muốn xóa ${type === 'folder' ? 'thư mục' : 'mặt hàng'} này không?`)) {

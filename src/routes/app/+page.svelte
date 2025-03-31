@@ -76,20 +76,18 @@
                 time: new Date(activity.created_at).toLocaleString('vi-VN')
             }));
 
-            // Xử lý dữ liệu recent items
-            data.recent_items = (result.items || []).map(item => ({
-                img: item.image ? `/img/${item.image}` : '/img/default-item.png',
-                name: item.name || 'Chưa có tên',
-                description: `Số lượng: ${item.quantity || 0}`,
-                unit: `${item.quantity || 0} Đơn vị`,
-                price: `${item.price || 0}K`
+            data.recent_items = result.items.map(item => ({
+                img: `/img/${item.image}`,
+                name: item.name,
+                description: `Số lượng: ${item.quantity}`,
+                unit: `${item.quantity} Đơn vị`,
+                price: `${item.price}K`
             }));
 
-            // Xử lý dữ liệu stock levels
-            data.stock_levels = (result.low_stock_items || []).map(item => ({
-                img: item.image ? `/img/${item.image}` : '/img/default-item.png',
-                name: item.name || 'Chưa có tên',
-                unit: `${item.quantity || 0} Đơn vị`
+            data.stock_levels = result.low_stock_items.map(item => ({
+                img: `/img/${item.image}`,
+                name: item.name,
+                unit: `${item.quantity} Đơn vị`
             }));
 
         } catch (err) {
@@ -191,6 +189,17 @@
                             </div>
                         </div>
                     {/each}
+                </div>
+            </div>
+        </div>
+
+        <!-- Stock Level -->
+        <div class="mt-6">
+            <div class="mb-6 flex justify-between items-center">
+                <h2 class="text-lg font-semibold">Mức tồn kho</h2>
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-600 text-sm">Ở hoặc Dưới Mức Tối Thiểu</span>
+                    <div><img src="/img/dashboard-icon.png" class="w-6 h-6" alt=""/></div>
                 </div>
             </div>
 

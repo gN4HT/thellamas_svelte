@@ -22,13 +22,21 @@
       tags = tagsData;
 
       // Fetch danh sách tag_id đã liên kết với item/folder này
-      const existingLinks = await apiFetch(`/${type}s/${id}`);
-      existingTagLinks = existingLinks.map(link => link.tag_id);
+      const response = await apiFetch(`/${type}s/${id}`);
+      
+      // Kiểm tra và xử lý dữ liệu tags từ response
+      if (response && response.tags && Array.isArray(response.tags)) {
+        existingTagLinks = response.tags.map(tag => tag.id);
+      } else {
+        existingTagLinks = [];
+        console.warn('No tags data or invalid format received');
+      }
       
       selectedTags = [...currentTags];
     } catch (err) {
       error = err.message;
       console.error('Error fetching data:', err);
+      existingTagLinks = [];
     }
   }
 
@@ -44,25 +52,33 @@
   async function handleSubmit() {
     isLoading = true;
     try {
-      const formData = new FormData();
-      
-      // Thêm mỗi tag_id vào form data với key là 'tags'
-      selectedTags.forEach(tagId => {
-        formData.append('tags', tagId.toString());
-      });
+        const formData = new FormData();
+        
+        
+        // Thêm từng tag_id riêng biệt
+        selectedTags.forEach(tagId => {
+            formData.append('tags[]', tagId.toString());
+        });
 
-      await apiFetch(`/${type}s/${id}`, {
-        method: 'PUT',
-        body: formData
-      });
+        console.log('Submitting tags:', {
+            url: `/${type}s/${id}`,
+            tags: selectedTags,
+            formData: Object.fromEntries(formData)
+        });
+        
+        // Sử dụng apiFetch với đúng endpoint
+        const response = await apiFetch(`/${type}s/${id}?_method=PUT`, {
+            method: 'PUT',
+            body: formData
+        });
 
-      dispatch('success');
-      showModal = false;
+        dispatch('success');
+        showModal = false;
     } catch (err) {
-      error = err.message;
-      console.error('Error submitting tags:', err);
+        error = "Lỗi khi lưu tags: " + (err.message || 'Unknown error');
+        console.error('Error submitting tags:', err);
     } finally {
-      isLoading = false;
+        isLoading = false;
     }
   }
 </script>

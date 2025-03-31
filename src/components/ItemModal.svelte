@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, onDestroy } from 'svelte';
     import type { Item } from '../models/item';
-    import { apiFetch } from "$lib/api";
+    import { apiFetch } from '../lib/api';
 
     const dispatch = createEventDispatcher();
 
@@ -12,95 +12,101 @@
 
     let error: string | null = null;
     let isLoading = false;
-    
-    // Khởi tạo formData
-    let formData = {
-        id: null as number | null, // Thêm id để track item đang edit
-        name: '',
-        quantity: '0',
-        stock_level: '0',
-        price: '0',
-        images: '[]',
-        notes: '',
-        qr: '',
-        is_deleted: 0,
-        supplier_id: null,
-        folder_id: folderId || null
-    };
+    let images: FileList | null = null;
+    let imageUrls: string[] = [];
+    let existingImages: string[] = [];
+    let fileInput: HTMLInputElement;
 
-    // Reset form khi đóng modal
+    // Các biến cho form binding
+    let name = '';
+    let quantity = '0';
+    let stock_level = '0';
+    let price = '0';
+    let notes = '';
+
+    // Function để reset form
+    function resetForm() {
+        name = '';
+        quantity = '0';
+        stock_level = '0';
+        price = '0';
+        notes = '';
+        images = null;
+        imageUrls = [];
+        existingImages = [];
+        error = null;
+
+        // Reset file input
+        if (fileInput) {
+            fileInput.value = '';
+        }
+    }
+
+    // Reset khi modal đóng
     $: if (!showModal) {
         resetForm();
     }
 
-    // Cập nhật formData khi mở modal
-    $: if (showModal) {
-        if (isEditMode && item) {
-            // Nếu là edit mode, lấy data từ item hiện tại
-            formData = {
-                id: item.id || null,
-                name: item.name || '',
-                quantity: String(item.quantity || '0'),
-                stock_level: String(item.stock_level || '0'),
-                price: String(item.price || '0'),
-                images: '[]',
-                notes: item.notes || '',
-                qr: item.qr || '',
-                is_deleted: 0,
-                supplier_id: null,
-                folder_id: item.folder_id || null
-            };
-        } else {
-            // Nếu là add mode, reset form
-            resetForm();
-        }
-    }
+    // Reset và set giá trị khi item thay đổi
+    $: {
+        if (item) {
+            // Cleanup old URLs
+            imageUrls.forEach(url => URL.revokeObjectURL(url));
+            imageUrls = [];
+            images = null;
+            
+            if (fileInput) {
+                fileInput.value = '';
+            }
 
-    function resetForm() {
-        formData = {
-            id: null,
-            name: '',
-            quantity: '0',
-            stock_level: '0',
-            price: '0',
-            images: '[]',
-            notes: '',
-            qr: '',
-            is_deleted: 0,
-            supplier_id: null,
-            folder_id: folderId || null
-        };
-        error = null;
+            if (isEditMode) {
+                name = item.name || '';
+                quantity = item.quantity?.toString() || '0';
+                stock_level = item.stock_level?.toString() || '0';
+                price = item.price?.toString() || '0';
+                notes = item.notes || '';
+                existingImages = item.images || [];
+            } else {
+                resetForm();
+            }
+        }
     }
 
     function validateForm() {
         error = null;
-
-        if (!formData.name?.trim()) {
+        if (!name.trim()) {
             error = "Vui lòng nhập tên mặt hàng";
             return false;
         }
-
-        const quantity = Number(formData.quantity);
-        const price = Number(formData.price);
-        const stock_level = Number(formData.stock_level);
-
-        if (isNaN(quantity) || quantity < 0) {
-            error = "Số lượng không hợp lệ";
-            return false;
-        }
-
-        if (isNaN(price) || price < 0) {
-            error = "Giá không hợp lệ";
-            return false;
-        }
-
-        if (isNaN(stock_level) || stock_level < 0) {
-            error = "Mức tồn kho không hợp lệ";
-            return false;
-        }
-
         return true;
+    }
+
+    function handleImageChange(event: Event) {
+        const input = event.target as HTMLInputElement;
+        fileInput = input;  // Store reference to file input
+
+        // Cleanup old URLs first
+        imageUrls.forEach(url => URL.revokeObjectURL(url));
+        imageUrls = [];
+        
+        if (input.files) {
+            images = input.files;
+            imageUrls = Array.from(images).map(file => URL.createObjectURL(file));
+        } else {
+            images = null;
+        }
+    }
+
+    function removeImage(index: number) {
+        imageUrls = imageUrls.filter((_, i) => i !== index);
+        const newImages = Array.from(images || []).filter((_, i) => i !== index);
+        const dt = new DataTransfer();
+        newImages.forEach(file => dt.items.add(file));
+        images = dt.files;
+    }
+
+    function removeExistingImage(index: number) {
+        existingImages = existingImages.filter((_, i) => i !== index);
     }
 
     async function handleSubmit() {
@@ -108,22 +114,49 @@
 
         isLoading = true;
         try {
-            const submitData = {
-                ...(formData.id && { id: formData.id }), // Chỉ thêm id nếu có
-                name: formData.name.trim(),
-                quantity: Number(formData.quantity),
-                stock_level: Number(formData.stock_level),
-                price: Number(formData.price),
-                images: null,
-                notes: formData.notes?.trim() || null,
-                qr: formData.qr || null,
-                is_deleted: 0,
-                supplier_id: null,
-                folder_id: formData.folder_id || null,
+            const formData = new FormData();
+            
+            const basicData = {
+                name: name.trim(),
+                quantity: parseInt(quantity) || 0,
+                stock_level: parseInt(stock_level) || 0,
+                price: parseInt(price) || 0,
+                notes: notes.trim(),
+                folder_id: folderId,
+                is_deleted: 0
             };
 
-            console.log('Submitting data:', submitData, 'isEditMode:', isEditMode);
-            dispatch('submit', { data: submitData });
+            // Thêm ID và _method nếu đang edit
+            if (isEditMode && item?.id) {
+                basicData.id = item.id;
+                formData.append('_method', 'PUT'); // Thêm _method cho Laravel
+            }
+
+            // Thêm dữ liệu cơ bản vào FormData
+            Object.entries(basicData).forEach(([key, value]) => {
+                formData.append(key, value?.toString() || '');
+            });
+
+            // Thêm các file ảnh mới
+            if (images) {
+                Array.from(images).forEach(file => {
+                    formData.append('images[]', file);
+                });
+            }
+
+            // Thêm danh sách ảnh đã tồn tại
+            if (existingImages && existingImages.length > 0) {
+                formData.append('existing_images', JSON.stringify(existingImages));
+            }
+
+            console.log('Submitting FormData:', {
+                isEdit: isEditMode,
+                data: Object.fromEntries(formData),
+                images: images ? Array.from(images).map(f => f.name) : [],
+                existingImages
+            });
+
+            dispatch('submit', { formData, isEdit: isEditMode });
         } catch (err) {
             error = "Có lỗi xảy ra khi xử lý dữ liệu";
             console.error(err);
@@ -131,6 +164,11 @@
             isLoading = false;
         }
     }
+
+    onDestroy(() => {
+        // Cleanup URLs when component is destroyed
+        imageUrls.forEach(url => URL.revokeObjectURL(url));
+    });
 </script>
 
 <!-- Template -->
@@ -155,7 +193,7 @@
                     id="name"
                     type="text"
                     class="border rounded p-2 w-full"
-                    bind:value={formData.name}
+                    bind:value={name}
                     required
                     disabled={isLoading}
                 />
@@ -170,7 +208,7 @@
                     type="number"
                     min="0"
                     class="border rounded p-2 w-full"
-                    bind:value={formData.quantity}
+                    bind:value={quantity}
                     required
                     disabled={isLoading}
                 />
@@ -185,7 +223,7 @@
                     type="number"
                     min="0"
                     class="border rounded p-2 w-full"
-                    bind:value={formData.stock_level}
+                    bind:value={stock_level}
                     disabled={isLoading}
                 />
             </div>
@@ -199,7 +237,7 @@
                     type="number"
                     min="0"
                     class="border rounded p-2 w-full"
-                    bind:value={formData.price}
+                    bind:value={price}
                     required
                     disabled={isLoading}
                 />
@@ -212,10 +250,61 @@
                 <textarea
                     id="notes"
                     class="border rounded p-2 w-full"
-                    bind:value={formData.notes}
+                    bind:value={notes}
                     disabled={isLoading}
                 ></textarea>
             </div>
+
+            <div>
+                <label class="block text-gray-600 font-medium">
+                    Hình ảnh
+                </label>
+                <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    on:change={handleImageChange}
+                    class="border rounded p-2 w-full"
+                    disabled={isLoading}
+                    bind:this={fileInput}
+                />
+            </div>
+
+            <!-- Preview ảnh đã tồn tại -->
+            {#if existingImages.length > 0}
+                <div class="grid grid-cols-3 gap-4 mt-4">
+                    {#each existingImages as image, index}
+                        <div class="relative">
+                            <img src={image} alt="Preview" class="w-full h-32 object-cover rounded"/>
+                            <button
+                                type="button"
+                                class="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full"
+                                on:click={() => removeExistingImage(index)}
+                            >
+                                ×
+                            </button>
+                        </div>
+                    {/each}
+                </div>
+            {/if}
+
+            <!-- Preview ảnh mới -->
+            {#if imageUrls.length > 0}
+                <div class="grid grid-cols-3 gap-4 mt-4">
+                    {#each imageUrls as url, index}
+                        <div class="relative">
+                            <img src={url} alt="Preview" class="w-full h-32 object-cover rounded"/>
+                            <button
+                                type="button"
+                                class="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full"
+                                on:click={() => removeImage(index)}
+                            >
+                                ×
+                            </button>
+                        </div>
+                    {/each}
+                </div>
+            {/if}
 
             <div class="flex justify-end gap-3 mt-6">
                 <button 

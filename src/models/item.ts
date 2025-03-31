@@ -10,8 +10,7 @@ export interface Item {
   is_deleted: number;
   supplier_id: number;
   folder_id: number | null;
-  inventory_id: number;
   created_at: string;
   updated_at: string;
-  tags?: Array<{ id: number; name: string }>; // thêm định nghĩa tags
+  tags?: Array<{ id: number; name: string }>;
 }

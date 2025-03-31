@@ -1,9 +1,16 @@
 <script lang="ts">
     import {page} from "$app/state";
+    import {onMount} from "svelte";
+
+    import {goto} from "$app/navigation";
 
     let {children} = $props();
 
-
+    onMount(() => {
+        if (!localStorage.getItem("token")) {
+            goto('/web/login');
+        }
+    });
 </script>
 
 <div class="relative flex">
