@@ -17,7 +17,6 @@
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({email, password}),
-                credentials: "include", //Allows cookies to be stored!
             });
 
             const data: AccessToken = await response.json();

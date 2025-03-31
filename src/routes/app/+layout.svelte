@@ -91,9 +91,23 @@
         <span
           class="ml-3 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap"
         >
-          Quy trình làm việc
+          Nhà cung cấp
         </span>
+
       </a>
+
+        <a
+                href="/app/suppliers"
+                class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item transition-colors hover:bg-[#00307b]/50"
+                class:active={page.url.pathname === "/app/suppliers"}
+        >
+          <img src="/img/Frame 87.png" alt="suppliers Icon" class="ml-1"/>
+          <span
+                  class="ml-3 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap"
+          >
+          Thuộc tính
+        </span>
+        </a>
   
       <a
         href="/app/reports/activeHistory"
