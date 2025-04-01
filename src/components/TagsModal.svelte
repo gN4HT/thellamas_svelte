@@ -9,7 +9,7 @@
   
   let tags: Array<{ id: number; name: string }> = [];
   let selectedTags: number[] = [];
-  let existingTagLinks: number[] = [];
+  let existingTagIds: number[] = [];
   let isLoading = false;
   let error: string | null = null;
 
@@ -21,22 +21,36 @@
       const tagsData = await apiFetch('/tags');
       tags = tagsData;
 
-      // Fetch danh sách tag_id đã liên kết với item/folder này
+      // Fetch chi tiết item/folder để lấy tags hiện tại
       const response = await apiFetch(`/${type}s/${id}`);
       
-      // Kiểm tra và xử lý dữ liệu tags từ response
+      console.log('Response data:', response);
+
+      // Lấy danh sách tag IDs từ response
       if (response && response.tags && Array.isArray(response.tags)) {
-        existingTagLinks = response.tags.map(tag => tag.id);
+        // Đảm bảo lấy id từ mỗi tag
+        existingTagIds = response.tags.map((tag: number | { id: number }) => 
+          typeof tag === 'number' ? tag : tag.id
+        );
+        
+        // Set selected tags từ existing tags
+        selectedTags = [...existingTagIds];
+        
+        console.log('Matching tags:', {
+          existingTagIds,
+          selectedTags,
+          matchedTags: tags.filter(tag => selectedTags.includes(tag.id))
+        });
       } else {
-        existingTagLinks = [];
+        existingTagIds = [];
+        selectedTags = [];
         console.warn('No tags data or invalid format received');
       }
-      
-      selectedTags = [...currentTags];
     } catch (err) {
       error = err.message;
       console.error('Error fetching data:', err);
-      existingTagLinks = [];
+      existingTagIds = [];
+      selectedTags = [];
     }
   }
 
@@ -46,32 +60,40 @@
 
   // Kiểm tra tag đã được liên kết chưa
   function isTagLinked(tagId: number) {
-    return existingTagLinks.includes(tagId);
+    return existingTagIds.includes(tagId);
   }
 
   async function handleSubmit() {
     isLoading = true;
     try {
         const formData = new FormData();
+        formData.append('_method', 'PUT');
         
-        
-        // Thêm từng tag_id riêng biệt
+        // Thêm từng tag_id vào formData
         selectedTags.forEach(tagId => {
-            formData.append('tags[]', tagId.toString());
+            formData.append('tags[]', String(tagId));
         });
 
         console.log('Submitting tags:', {
-            url: `/${type}s/${id}`,
-            tags: selectedTags,
-            formData: Object.fromEntries(formData)
+            endpoint: `/${type}s/${id}`,
+            method: 'POST',
+            selectedTags,
+            selectedTagDetails: tags
+              .filter(tag => selectedTags.includes(tag.id))
+              .map(tag => ({ id: tag.id, name: tag.name })),
+            formDataEntries: Object.fromEntries(formData)
         });
         
-        // Sử dụng apiFetch với đúng endpoint
-        const response = await apiFetch(`/${type}s/${id}?_method=PUT`, {
-            method: 'PUT',
+        const response = await apiFetch(`/${type}s/${id}`, {
+            method: 'POST',
             body: formData
         });
 
+        if (!response) {
+            throw new Error('Không nhận được phản hồi từ server');
+        }
+
+        console.log('Tags updated successfully:', response);
         dispatch('success');
         showModal = false;
     } catch (err) {
@@ -100,7 +122,7 @@
       </label>
       <div class="border rounded-md overflow-hidden max-h-[300px] overflow-y-auto">
         <!-- Tags đã liên kết -->
-        {#if existingTagLinks.length > 0}
+        {#if existingTagIds.length > 0}
           <div class="bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700">
             Tags đã liên kết
           </div>

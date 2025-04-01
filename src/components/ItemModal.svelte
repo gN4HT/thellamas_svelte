@@ -24,8 +24,30 @@
     let price = '0';
     let notes = '';
 
+    // Thêm BASE_URL cho ảnh
+    const IMAGE_BASE_URL = 'http://127.0.0.1:8000/storage/static/img/';
+
     // Function để reset form
     function resetForm() {
+        if (!isLoading) {
+            name = '';
+            quantity = '0';
+            stock_level = '0';
+            price = '0';
+            notes = '';
+            images = null;
+            imageUrls = [];
+            existingImages = [];
+            error = null;
+
+            if (fileInput) {
+                fileInput.value = '';
+            }
+        }
+    }
+
+    // Thêm hàm resetAll
+    function resetAll() {
         name = '';
         quantity = '0';
         stock_level = '0';
@@ -35,40 +57,31 @@
         imageUrls = [];
         existingImages = [];
         error = null;
+        isLoading = false;
 
         // Reset file input
         if (fileInput) {
             fileInput.value = '';
         }
-    }
 
-    // Reset khi modal đóng
-    $: if (!showModal) {
-        resetForm();
+        // Cleanup old URLs
+        imageUrls.forEach(url => URL.revokeObjectURL(url));
     }
 
     // Reset và set giá trị khi item thay đổi
-    $: {
-        if (item) {
-            // Cleanup old URLs
-            imageUrls.forEach(url => URL.revokeObjectURL(url));
-            imageUrls = [];
-            images = null;
-            
-            if (fileInput) {
-                fileInput.value = '';
-            }
-
-            if (isEditMode) {
-                name = item.name || '';
-                quantity = item.quantity?.toString() || '0';
-                stock_level = item.stock_level?.toString() || '0';
-                price = item.price?.toString() || '0';
-                notes = item.notes || '';
-                existingImages = item.images || [];
-            } else {
-                resetForm();
-            }
+    $: if (showModal) {
+        if (isEditMode && item) {
+            name = item.name || '';
+            quantity = item.quantity?.toString() || '0';
+            stock_level = item.stock_level?.toString() || '0';
+            price = item.price?.toString() || '0';
+            notes = item.notes || '';
+            existingImages = (item.images || []).map(img => 
+                img.startsWith('http') ? img : `${IMAGE_BASE_URL}${img}`
+            );
+            console.log(item)
+        } else {
+            resetAll(); // Sử dụng resetAll thay vì resetForm
         }
     }
 
@@ -82,18 +95,19 @@
     }
 
     function handleImageChange(event: Event) {
+        event.preventDefault();  // Ngăn chặn form submit
         const input = event.target as HTMLInputElement;
-        fileInput = input;  // Store reference to file input
+        fileInput = input;
 
-        // Cleanup old URLs first
-        imageUrls.forEach(url => URL.revokeObjectURL(url));
-        imageUrls = [];
-        
         if (input.files) {
+            // Chỉ xử lý ảnh mới, không động đến ảnh cũ
             images = input.files;
-            imageUrls = Array.from(images).map(file => URL.createObjectURL(file));
-        } else {
-            images = null;
+            // Tạo URLs mới cho preview
+            const newImageUrls = Array.from(images).map(file => URL.createObjectURL(file));
+            // Cleanup old preview URLs
+            imageUrls.forEach(url => URL.revokeObjectURL(url));
+            // Set URLs mới
+            imageUrls = newImageUrls;
         }
     }
 
@@ -116,50 +130,40 @@
         try {
             const formData = new FormData();
             
-            const basicData = {
-                name: name.trim(),
-                quantity: parseInt(quantity) || 0,
-                stock_level: parseInt(stock_level) || 0,
-                price: parseInt(price) || 0,
-                notes: notes.trim(),
-                folder_id: folderId,
-                is_deleted: 0
-            };
-
-            // Thêm ID và _method nếu đang edit
-            if (isEditMode && item?.id) {
-                basicData.id = item.id;
-                formData.append('_method', 'PUT'); // Thêm _method cho Laravel
+            // Thêm các trường cơ bản
+            formData.append('name', name.trim());
+            formData.append('quantity', quantity);
+            formData.append('stock_level', stock_level);
+            formData.append('price', price);
+            formData.append('notes', notes.trim());
+            if (folderId !== null) {
+                formData.append('folder_id', folderId.toString());
             }
+            formData.append('is_deleted', '0');
 
-            // Thêm dữ liệu cơ bản vào FormData
-            Object.entries(basicData).forEach(([key, value]) => {
-                formData.append(key, value?.toString() || '');
-            });
-
-            // Thêm các file ảnh mới
-            if (images) {
+            // Thêm ảnh mới - kiểm tra null
+            if (images && images.length > 0) {
                 Array.from(images).forEach(file => {
                     formData.append('images[]', file);
                 });
             }
 
-            // Thêm danh sách ảnh đã tồn tại
-            if (existingImages && existingImages.length > 0) {
-                formData.append('existing_images', JSON.stringify(existingImages));
-            }
-
-            console.log('Submitting FormData:', {
-                isEdit: isEditMode,
-                data: Object.fromEntries(formData),
-                images: images ? Array.from(images).map(f => f.name) : [],
-                existingImages
+            console.log('Submitting:', {
+                method: isEditMode ? 'PUT' : 'POST',
+                formData: Object.fromEntries(formData),
+                newImages: images ? Array.from(images).map(f => f.name) : []
             });
 
-            dispatch('submit', { formData, isEdit: isEditMode });
+            // Không gọi API ở đây, mà dispatch event để component cha xử lý
+            dispatch('submit', { 
+                formData, 
+                isEdit: isEditMode,
+                resetForm: resetAll  // Truyền hàm reset để component cha có thể gọi
+            });
+            
         } catch (err) {
-            error = "Có lỗi xảy ra khi xử lý dữ liệu";
-            console.error(err);
+            error = "Có lỗi xảy ra khi xử lý dữ liệu: " + (err.message || 'Unknown error');
+            console.error('Submit error:', err);
         } finally {
             isLoading = false;
         }
@@ -273,9 +277,9 @@
             <!-- Preview ảnh đã tồn tại -->
             {#if existingImages.length > 0}
                 <div class="grid grid-cols-3 gap-4 mt-4">
-                    {#each existingImages as image, index}
+                    {#each existingImages as imageUrl, index}
                         <div class="relative">
-                            <img src={image} alt="Preview" class="w-full h-32 object-cover rounded"/>
+                            <img src={imageUrl} alt="Preview" class="w-full h-32 object-cover rounded"/>
                             <button
                                 type="button"
                                 class="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full"

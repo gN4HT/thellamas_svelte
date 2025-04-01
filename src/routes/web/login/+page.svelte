@@ -11,11 +11,10 @@
 
         event.preventDefault();
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/login`, {
+            const response = await fetch("http://127.0.0.1:8000/api/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Accept": "application/json"
                 },
                 body: JSON.stringify({email, password}),
             });
@@ -31,19 +30,20 @@
             error(500, "Không thể kết nối đến server!");
         }
     };
+
 </script>
 
 <div class="flex items-center justify-center min-h-screen font-sans py-20">
     <div class="flex items-center justify-between bg-white rounded-lg shadow-md p-8">
         <!-- Login Box -->
         <div class="border-2 border-gray-300 p-8 w-96 rounded-lg">
-            <h1 class="text-xl font-bold text-black">CHÀO MỪNG BẠN!</h1>
+            <h1 class="text-xl font-bold text-black">CHÀO MỪNG BẠN !</h1>
             <div class="py-2 mb-6">
                 <span class="text-lg text-black">Đăng nhập vào tài khoản của bạn</span>
             </div>
 
             {#if errorMessage}
-                <p class="text-red-500 text-sm mb-4" role="alert">{errorMessage}</p>
+                <p class="text-red-500 text-sm mb-4">{errorMessage}</p>
             {/if}
 
             <form class="flex flex-col" onsubmit={login}>
@@ -62,21 +62,13 @@
             </div>
 
             <p class="text-center mt-4 text-gray-500 text-sm">
-                Bạn là người mới? 
-                <a href="register" class="text-blue-500 hover:underline transition-colors">
-                    Tạo tài khoản ngay
-                </a>
+                Bạn là người mới? <a href="register" class="text-blue-500 hover:underline">Tạo tài khoản ngay</a>
             </p>
         </div>
 
         <!-- Llama Image -->
         <div class="flex-1 flex items-center justify-center">
-            <img 
-                src="/img/ảnh tượng trưng.png" 
-                alt="Llama" 
-                class="max-w-full h-auto"
-                loading="lazy"
-            >
+            <img src="/img/ảnh tượng trưng.png" alt="Llama" class="max-w-full h-auto">
         </div>
     </div>
 </div>

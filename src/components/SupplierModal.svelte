@@ -15,12 +15,20 @@
 
   async function fetchData() {
     try {
+      // Fetch suppliers
       const suppliersData = await apiFetch('/suppliers');
       suppliers = suppliersData;
-      selectedSupplierId = currentSupplierId;
+
+      // Fetch item để lấy supplier_id hiện tại
+      const itemData = await apiFetch(`/items/${itemId}`);
+      console.log('Item data:', itemData);
+
+      // Set selected supplier từ item data
+      selectedSupplierId = itemData.supplier_id || null;
+      console.log('Selected supplier:', selectedSupplierId);
     } catch (err) {
       error = err.message;
-      console.error('Error fetching suppliers:', err);
+      console.error('Error fetching data:', err);
     }
   }
 
@@ -31,19 +39,41 @@
   async function handleSubmit() {
     isLoading = true;
     try {
-      await apiFetch(`/items/${itemId}`, {
-        method: 'PUT',
-        body: { supplier_id: selectedSupplierId }
+      const formData = new FormData();
+      formData.append('_method', 'PUT');
+      formData.append('supplier_id', selectedSupplierId ? String(selectedSupplierId) : '');
+
+      console.log('Submitting supplier:', {
+        itemId,
+        supplierId: selectedSupplierId,
+        formData: Object.fromEntries(formData)
       });
 
+      const response = await apiFetch(`/items/${itemId}`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response) {
+        throw new Error('Không nhận được phản hồi từ server');
+      }
+
+      console.log('Supplier updated successfully:', response);
       dispatch('success');
       showModal = false;
     } catch (err) {
-      error = err.message;
+      error = "Lỗi khi cập nhật supplier: " + (err.message || 'Unknown error');
       console.error('Error submitting supplier:', err);
     } finally {
       isLoading = false;
     }
+  }
+
+  // Lấy tên supplier từ ID
+  function getSupplierName(id: number | null): string {
+    if (!id) return '-- Chọn supplier --';
+    const supplier = suppliers.find(s => s.id === id);
+    return supplier ? supplier.name : '-- Chọn supplier --';
   }
 </script>
 
@@ -60,7 +90,7 @@
 
     <div class="mb-4">
       <label class="block text-sm font-medium text-gray-700 mb-2">
-        Supplier
+        Supplier {#if selectedSupplierId}(Hiện tại: {getSupplierName(selectedSupplierId)}){/if}
       </label>
       <select 
         bind:value={selectedSupplierId}
@@ -68,7 +98,12 @@
       >
         <option value={null}>-- Chọn supplier --</option>
         {#each suppliers as supplier}
-          <option value={supplier.id}>{supplier.name}</option>
+          <option 
+            value={supplier.id}
+            selected={supplier.id === selectedSupplierId}
+          >
+            {supplier.name}
+          </option>
         {/each}
       </select>
     </div>

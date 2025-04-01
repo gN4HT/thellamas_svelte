@@ -15,7 +15,7 @@
   import SupplierModal from "../../../../components/SupplierModal.svelte";
 
   // Constants
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 8;
 
   // State Management
     let folders: Folder[] = [];
@@ -38,7 +38,7 @@
     const params = new URLSearchParams($page.url.search);
     const folderId = params.get('folder');
     
-    if (folderId) {
+    if (folderId) { 
         currentFolderId = Number(folderId);
         console.log('URL changed, fetching data for folder:', currentFolderId);
         fetchData(currentFolderId);
@@ -328,11 +328,11 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
 
         let endpoint = '/items';
         if (isEdit && itemId) {
-            endpoint = `/items/${itemId}`;
+            endpoint = `/items/${itemId}?_method=PUT`;
         }
 
         const response = await apiFetch(endpoint, {
-            method: 'POST', // Luôn dùng POST, Laravel sẽ đọc _method để xác định là PUT
+            method: 'POST', 
             body: formData,
         });
 
@@ -453,7 +453,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                 {#if deletedFolders.length > 0}
                     <div class="mb-8">
                         <h2 class="text-[#00205B] text-2xl mb-4">Thư mục đã xóa:</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {#each deletedFolders as folder (folder.id)}
                                 <!-- Deleted Folder Item -->
                                 <div class="relative group">
@@ -487,7 +487,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                 {#if deletedItems.length > 0}
                     <div>
                         <h2 class="text-[#00205B] text-2xl mb-4">Mặt hàng đã xóa:</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {#each deletedItems as item (item.id)}
                                 <!-- Deleted Item -->
                                 <div class="relative group">
@@ -528,7 +528,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                 {#if folders.length > 0}
       <div class="flex flex-col gap-3">
         <h2 class="text-[#00205B] text-2xl">Thư mục:</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {#each paginatedFolders as folder (folder.id)}
                                 <!-- Normal Folder Item -->
                                 <div class="relative group">
@@ -573,7 +573,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                 {#if items.length > 0}
       <div class="flex flex-col gap-3 mt-10">
         <h2 class="text-[#00205B] text-2xl">Mặt hàng:</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {#each paginatedItems as item (item.id)}
                                 <!-- Normal Item -->
                                 <div class="relative group">

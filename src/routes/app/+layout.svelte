@@ -91,9 +91,23 @@
         <span
           class="ml-3 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap"
         >
-          Quy trình làm việc
+          Nhà cung cấp
         </span>
+
       </a>
+
+        <a
+                href="/app/fields"
+                class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item transition-colors hover:bg-[#00307b]/50"
+                class:active={page.url.pathname === "/app/fields"}
+        >
+          <img src="/img/Frame 87.png" alt="fields Icon" class="ml-1"/>
+          <span
+                  class="ml-3 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap"
+          >
+          Thuộc tính
+        </span>
+        </a>
   
       <a
         href="/app/reports/activeHistory"
@@ -108,7 +122,7 @@
         </span>
       </a>
   
-      <div class="pb-[180px]"></div>
+      <div class="pb-[120px]"></div>
   
       <a
         href="/app/productnews"
