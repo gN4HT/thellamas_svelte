@@ -97,11 +97,11 @@
       </a>
 
         <a
-                href="/app/suppliers"
+                href="/app/fields"
                 class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item transition-colors hover:bg-[#00307b]/50"
-                class:active={page.url.pathname === "/app/suppliers"}
+                class:active={page.url.pathname === "/app/fields"}
         >
-          <img src="/img/Frame 87.png" alt="suppliers Icon" class="ml-1"/>
+          <img src="/img/Frame 87.png" alt="fields Icon" class="ml-1"/>
           <span
                   class="ml-3 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap"
           >
