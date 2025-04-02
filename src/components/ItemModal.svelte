@@ -17,37 +17,62 @@
     let existingImages: string[] = [];
     let fileInput: HTMLInputElement;
 
-    // Các biến cho form binding
+    // Khai báo biến với giá trị mặc định
     let name = '';
     let quantity = '0';
     let stock_level = '0';
     let price = '0';
     let notes = '';
 
-    // Thêm BASE_URL cho ảnh
-    const IMAGE_BASE_URL = 'http://127.0.0.1:8000/storage/static/img/';
+    const IMAGE_BASE_URL = 'http://127.0.0.1:8000/storage/';
 
-    // Function để reset form
-    function resetForm() {
-        if (!isLoading) {
-            name = '';
-            quantity = '0';
-            stock_level = '0';
-            price = '0';
-            notes = '';
-            images = null;
-            imageUrls = [];
-            existingImages = [];
-            error = null;
+    // Thêm hàm để lấy dữ liệu item khi edit
+    async function fetchItemData() {
+        if (isEditMode && item.id) {
+            try {
+                const itemData = await apiFetch(`/items/${item.id}`);
+                console.log('Fetched item data:', itemData);
+                
+                // Gán giá trị từ API
+                name = itemData.name || '';
+                quantity = String(itemData.quantity || 0);
+                stock_level = String(itemData.stock_level || 0);
+                price = String(itemData.price || 0);
+                notes = itemData.notes || '';
+                
+                existingImages = Array.isArray(itemData.images) 
+                    ? itemData.images.map(img => 
+                        img.startsWith('http') ? img : `${IMAGE_BASE_URL}${img}`
+                    )
+                    : [];
 
-            if (fileInput) {
-                fileInput.value = '';
+                console.log('Set form values:', {
+                    name,
+                    quantity,
+                    stock_level,
+                    price,
+                    notes,
+                    existingImages,
+                    rawImages: itemData.images
+                });
+            } catch (err) {
+                console.error('Error fetching item:', err);
+                error = 'Không thể tải dữ liệu mặt hàng';
             }
         }
     }
 
-    // Thêm hàm resetAll
+    // Reactive statement khi modal mở
+    $: if (showModal) {
+        if (isEditMode && item.id) {
+            fetchItemData();
+        } else {
+            resetAll();
+        }
+    }
+
     function resetAll() {
+        console.log('Resetting form...');
         name = '';
         quantity = '0';
         stock_level = '0';
@@ -59,30 +84,19 @@
         error = null;
         isLoading = false;
 
-        // Reset file input
         if (fileInput) {
             fileInput.value = '';
         }
 
-        // Cleanup old URLs
         imageUrls.forEach(url => URL.revokeObjectURL(url));
-    }
-
-    // Reset và set giá trị khi item thay đổi
-    $: if (showModal) {
-        if (isEditMode && item) {
-            name = item.name || '';
-            quantity = item.quantity?.toString() || '0';
-            stock_level = item.stock_level?.toString() || '0';
-            price = item.price?.toString() || '0';
-            notes = item.notes || '';
-            existingImages = (item.images || []).map(img => 
-                img.startsWith('http') ? img : `${IMAGE_BASE_URL}${img}`
-            );
-            console.log(item)
-        } else {
-            resetAll(); // Sử dụng resetAll thay vì resetForm
-        }
+        
+        console.log('Form reset values:', {
+            name,
+            quantity,
+            stock_level,
+            price,
+            notes
+        });
     }
 
     function validateForm() {
@@ -130,35 +144,40 @@
         try {
             const formData = new FormData();
             
-            // Thêm các trường cơ bản
+            // Append all form fields
             formData.append('name', name.trim());
             formData.append('quantity', quantity);
             formData.append('stock_level', stock_level);
             formData.append('price', price);
-            formData.append('notes', notes.trim());
+            formData.append('notes', notes);
+            
             if (folderId !== null) {
-                formData.append('folder_id', folderId.toString());
+                formData.append('folder_id', String(folderId));
             }
-            formData.append('is_deleted', '0');
 
-            // Thêm ảnh mới - kiểm tra null
+            // Append images if any
             if (images && images.length > 0) {
                 Array.from(images).forEach(file => {
                     formData.append('images[]', file);
                 });
             }
 
-            console.log('Submitting:', {
-                method: isEditMode ? 'PUT' : 'POST',
-                formData: Object.fromEntries(formData),
-                newImages: images ? Array.from(images).map(f => f.name) : []
+            // Log form data before submission
+            console.log('Submitting form data:', {
+                name: name.trim(),
+                quantity,
+                stock_level,
+                price,
+                notes,
+                folderId,
+                isEditMode,
+                images: images ? Array.from(images).map(f => f.name) : []
             });
 
-            // Không gọi API ở đây, mà dispatch event để component cha xử lý
             dispatch('submit', { 
                 formData, 
                 isEdit: isEditMode,
-                resetForm: resetAll  // Truyền hàm reset để component cha có thể gọi
+                resetForm: resetAll
             });
             
         } catch (err) {
@@ -253,7 +272,7 @@
                 </label>
                 <textarea
                     id="notes"
-                    class="border rounded p-2 w-full"
+                    class="border rounded p-2 w-full h-24"
                     bind:value={notes}
                     disabled={isLoading}
                 ></textarea>

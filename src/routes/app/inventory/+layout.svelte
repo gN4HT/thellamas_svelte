@@ -81,7 +81,7 @@
 
 <div class="flex">
     <!-- Sidebar -->
-    <div class="w-64 bg-white shadow-md border-r p-4 overflow-auto min-h-[1260px] max-h-[1260px] custom-scrollbar">
+    <div class="w-64 bg-white shadow-md border-r p-4 overflow-auto min-h-[1300px] max-h-[1300px] custom-scrollbar">
         <!-- Thanh tìm kiếm -->
         <div class="mb-6 flex items-center p-2 border rounded-md hover:border-[#00205b] transition-colors duration-200">
             <i class="fa-solid fa-magnifying-glass text-gray-400 mr-2"></i>

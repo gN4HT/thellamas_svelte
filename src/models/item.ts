@@ -4,7 +4,7 @@ export interface Item {
   quantity: number;
   stock_level: number;
   price: number;
-  images: any;
+  images: string[] | string | null; // Có thể là array, JSON string, hoặc null
   notes: string;
   qr: string;
   is_deleted: number;

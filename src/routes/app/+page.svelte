@@ -12,7 +12,7 @@
 
     const fetchData = async () => {
         try {
-            const result = await apiFetch("http://127.0.0.1:8000/api/dashboard");
+            const result = await apiFetch("/dashboard");
             // Xử lý dữ liệu nhận được từ API
             data.inventory_summary = [
                 {icon: "/img/Frame 61.png", value: result.counts.items, label: "Mặt hàng"},

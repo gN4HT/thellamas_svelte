@@ -16,9 +16,12 @@ export const apiFetch = async (
     // Tạo URL đầy đủ bằng cách kết hợp BASE_URL và endpoint
     const fullUrl = `${BASE_URL}${normalizedEndpoint}`;
 
-    // Chỉ set Authorization header
+    // Set default headers including Content-Type for JSON
     const defaultHeaders = {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(body && !(body instanceof FormData)
+        ? { "Content-Type": "application/json" }
+        : {}),
       ...headers,
     };
 
@@ -45,7 +48,15 @@ export const apiFetch = async (
       throw new Error(errorData?.message || response.statusText);
     }
 
-    return await response.json();
+    // Check if there's content before trying to parse JSON
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      const text = await response.text();
+      return text ? JSON.parse(text) : null;
+    }
+
+    // Return null for empty responses (like DELETE operations)
+    return null;
   } catch (errors) {
     console.error("API Error:", errors.message);
     throw errors;

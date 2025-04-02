@@ -5,7 +5,7 @@
 </script>
 
 <div class="bg-white shadow rounded-lg overflow-hidden">
-    <a href="/app/inventory/folder/{props.folder.id}"
+    <a href="/app/inventory/all?folder={props.folder.id}"
        class="p-10 flex items-center justify-center relative" style="background-color: {props.folder.color || '#6A7282'}">
         <span class="text-4xl text-gray-300"><i class="fa-solid fa-folder-open"></i></span>
         {#if props.folder.isNew}
