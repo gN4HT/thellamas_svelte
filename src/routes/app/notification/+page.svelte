@@ -27,7 +27,7 @@
                 </li>
                 <li class="flex items-center gap-4 w-96">
                     <img src="/img/Group 45.png" alt="" class="w-6 h-6"/>
-                    <p class="text-lg">
+                 <p class="text-lg">
                         Thêm thông tin chi tiết về các mặt hàng và thư mục với các
                         trường tùy chỉnh.
                     </p>

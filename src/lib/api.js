@@ -1,14 +1,16 @@
-export const apiFetch = async (url, {method = "GET", body = null, headers = {}} = {}) => {
+export const apiFetch = async (url, {method = "GET", body = null, headers = {}} = {}, isExact = false) => {
     try {
         // Retrieve token from localStorage
         const token = localStorage.getItem("token");
-
         // Set default headers and include Authorization if token exists
+
         const defaultHeaders = {
             "Content-Type": "application/json",
+            ...(isExact ? {"Accept-Encoding": "gzip, deflate"} : {}),  // Fix applied
             ...(token ? {Authorization: `Bearer ${token}`} : {}),
             ...headers,
         };
+
 
         const options = {
             method,
