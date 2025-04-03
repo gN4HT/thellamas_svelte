@@ -1,1 +1,5 @@
-// place files you want to import through the `$lib` alias in this folder.
+var corsOptions = {
+  origin: "http://localhost:5173",
+};
+
+app.use(cors(corsOptions));

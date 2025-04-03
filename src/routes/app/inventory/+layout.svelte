@@ -1,118 +1,169 @@
-<script>
-    import {onMount} from "svelte";
-    import {page} from '$app/state';
-    import {apiFetch} from "$lib/api";
+<script lang="ts">
+    import { onMount } from "svelte";
+    import { page } from '$app/stores';
+    import { apiFetch } from "$lib/api";
+    import FolderTree from "../../../components/FolderTree.svelte";
+    import type { Folder } from "../../../models/folder";
+    import { folderStore } from '../../../stores/folderStore';
 
-    let folders = [];
+    let folders: Folder[] = [];
+    let searchQuery = "";
+    let allFoldersFlat: Folder[] = [];
 
-    // Hàm đệ quy để xây dựng cây thư mục nhiều cấp
-    function buildFolderTree(folders, parentId = null) {
+    // Giữ nguyên cấu trúc buildFolderTree với children
+    function buildFolderTree(folders: Folder[], parentId = null) {
         return folders
-            .filter(folder => folder.parent_id === parentId)
+            .filter(folder => folder.parent_id === parentId && folder.is_deleted !== 1)
             .map(folder => ({
                 ...folder,
-                children: buildFolderTree(folders, folder.id) // Đệ quy lấy danh sách con
+                children: buildFolderTree(folders, folder.id)
             }));
     }
 
-    const fetchFolders = async () => {
-        const result = await apiFetch("http://127.0.0.1:8000/api/folders");
-        if (result) {
-            folders = buildFolderTree(result);
+    // Hàm lọc folders và giữ cấu trúc parent-child
+    function filterFoldersWithStructure(folders: Folder[], query: string): Folder[] {
+        if (!query.trim()) return folders;
+
+        return folders.map(folder => {
+            // Tạo bản sao của folder để không ảnh hưởng đến dữ liệu gốc
+            const folderCopy = { ...folder };
+            
+            // Kiểm tra nếu folder name match với query
+            const nameMatches = folder.name.toLowerCase().includes(query.toLowerCase());
+            
+            // Nếu có children, đệ quy để lọc children
+            if (folder.children && folder.children.length > 0) {
+                folderCopy.children = filterFoldersWithStructure(folder.children, query);
+            }
+
+            // Giữ lại folder nếu tên match hoặc có children match
+            if (nameMatches || (folderCopy.children && folderCopy.children.length > 0)) {
+                return folderCopy;
+            }
+            
+            return null;
+        }).filter(Boolean); // Loại bỏ các null values
+    }
+
+    async function fetchData() {
+        try {
+            const allFolders = await apiFetch("/folders");
+            const treeData = buildFolderTree(allFolders);
+            folders = treeData;
+            allFoldersFlat = allFolders;
+            folderStore.set(allFolders);
+            console.log('Fetched folders:', folders);
+        } catch (error) {
+            console.error("Lỗi khi tải dữ liệu:", error);
         }
-        console.log(folders);
-    };
+    }
 
-    onMount(fetchFolders);
+    // Subscribe to folderStore changes
+    folderStore.subscribe(allFolders => {
+        if (allFolders.length > 0) {
+            folders = buildFolderTree(allFolders);
+            allFoldersFlat = allFolders;
+        }
+    });
+
+    // Reactive statement để lọc folders
+    $: displayFolders = searchQuery.trim() 
+        ? filterFoldersWithStructure(folders, searchQuery)
+        : folders;
+
+    $: currentPath = $page.url.pathname;
+    $: currentFolderId = new URLSearchParams($page.url.search).get('folder');
+
+    onMount(() => {
+        fetchData();
+    });
 </script>
-
 
 <div class="flex">
     <!-- Sidebar -->
-    <div class="w-64 bg-white shadow-md border-r p-4 h-screen fixed">
+    <div class="w-64 bg-white shadow-md border-r p-4 overflow-auto min-h-[1260px] max-h-[1260px] custom-scrollbar">
         <!-- Thanh tìm kiếm -->
-        <div class="mb-6 flex justify-between items-center p-2 border rounded-md">
-            <i class="fa-solid fa-magnifying-glass mr-2"></i>
-            <input type="text" placeholder="Tìm thư mục" class="w-full border-none outline-none"/>
+        <div class="mb-6 flex items-center p-2 border rounded-md hover:border-[#00205b] transition-colors duration-200">
+            <i class="fa-solid fa-magnifying-glass text-gray-400 mr-2"></i>
+            <input 
+                type="text" 
+                bind:value={searchQuery}
+                placeholder="Tìm thư mục" 
+                class="w-full border-none outline-none text-gray-600"
+            />
+            {#if searchQuery}
+                <button 
+                    on:click={() => searchQuery = ""}
+                    class="text-gray-400 hover:text-gray-600"
+                >
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            {/if}
         </div>
 
         <!-- Mục "Tất cả mặt hàng" -->
-        <div
-                class="folder-item flex items-center space-x-2 text-gray-600 hover:text-[#00205b] {(page.url.pathname === '/app/inventory/all') ? 'active' : ''}"
-        >
-            <a href="/app/inventory/all" class="flex items-center space-x-2 w-full">
+        <div class="folder-item flex items-center space-x-2 text-gray-600 hover:text-[#00205b] {currentPath === '/app/inventory/all' && !currentFolderId ? 'active' : ''}">
+            <a href="/app/inventory/all" class="flex items-center space-x-2 w-full p-1 rounded hover:bg-gray-100">
                 <span class="text-lg"><i class="fa-solid fa-box"></i></span>
                 <span>Tất cả mặt hàng</span>
             </a>
         </div>
 
-        <!-- Danh sách thư mục dạng bậc thang -->
-        {#each folders as folder}
-            <a href="/app/inventory/folder/{folder.id}"
-               class="folder-item flex items-center space-x-2 text-gray-600 hover:text-[#00205b] cursor-pointer block mt-2 ml-3
-        {(page.url.pathname === `/app/inventory/folder/${folder.id}`) ? 'active' : ''}">
-                <span class="text-lg"><i class="fa-solid fa-folder"></i></span>
-                <span>{folder.name}</span>
-            </a>
-
-            <!-- Hiển thị thư mục con -->
-            {#each folder.children as child}
-                <div class="ml-4">
-                    <a href="/app/inventory/folder/{child.id}"
-                       class="folder-item flex items-center space-x-2 text-gray-500 hover:text-[#00205b] cursor-pointer block pl-6 mt-1
-            {(page.url.pathname === `/app/inventory/folder/${child.id}`) ? 'active' : ''}">
-                        <span class="text-lg"><i class="fa-regular fa-folder"></i></span>
-                        <span>{child.name}</span>
-                    </a>
-
-                    <!-- Gọi lại chính nó để hiển thị các thư mục con sâu hơn -->
-                    {#if child.children.length > 0}
-                        <div class="ml-6">
-                            {#each child.children as subChild}
-                                <div class="ml-4">
-                                    <a href="/app/inventory/folder/{subChild.id}"
-                                       class="folder-item flex items-center space-x-2 text-gray-500 hover:text-[#00205b] cursor-pointer block pl-6 mt-1
-              {(page.url.pathname === `/app/inventory/folder/${subChild.id}`) ? 'active' : ''}"
-                                    >
-                                        <span class="text-lg"><i class="fa-regular fa-folder"></i></span>
-                                        <span>{subChild.name}</span>
-                                    </a>
-
-                                    <!-- Tiếp tục hiển thị thư mục con -->
-                                    {#if subChild.children.length > 0}
-                                        <div class="ml-6">
-                                            {#each subChild.children as deepChild}
-                                                <div class="ml-4">
-                                                    <a href="/app/inventory/folder/{deepChild.id}"
-                                                       class="folder-item flex items-center space-x-2 text-gray-500 hover:text-[#00205b] cursor-pointer block pl-6 mt-1{(page.url.pathname === `/app/inventory/folder/${deepChild.id}`) ? 'active' : ''}"
-                                                    >
-                                                        <span class="text-lg"><i
-                                                                class="fa-regular fa-folder"></i></span>
-                                                        <span>{deepChild.name}</span>
-                                                    </a>
-                                                </div>
-                                            {/each}
-                                        </div>
-                                    {/if}
-                                </div>
-                            {/each}
-                        </div>
-                    {/if}
+        <!-- Danh sách thư mục -->
+        {#if folders.length > 0}
+            {#if displayFolders.length > 0}
+                <FolderTree folders={displayFolders} />
+            {:else}
+                <div class="text-gray-500 text-center py-4">
+                    Không tìm thấy thư mục nào phù hợp
                 </div>
-            {/each}
-
-        {/each}
+            {/if}
+        {:else}
+            <div class="text-gray-500 text-center py-4">
+                Chưa có thư mục nào
+            </div>
+        {/if}
     </div>
 
     <!-- Nội dung chính -->
-    <div class="p-4 w-full ml-[250px]">
+    <div class="flex-1 p-4 bg-gray-50">
         <slot/>
     </div>
 </div>
 
 <style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 5px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
     .folder-item.active {
         color: #00205b;
         font-weight: bold;
+    }
+
+    .folder-item a {
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .folder-item a:hover {
+        background-color: rgba(0, 32, 91, 0.1);
+    }
+
+    input::placeholder {
+        color: #9CA3AF;
     }
 </style>

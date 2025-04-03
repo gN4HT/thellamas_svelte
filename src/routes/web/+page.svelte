@@ -1,22 +1,30 @@
 <div class="container mx-auto px-4 py-8">
     <!-- Hero Section -->
-    <section class="text-center bg-white p-8 rounded shadow-md">
-        <h1 class="text-4xl font-bold text-[#00205b] mb-4">Phần mềm quản lý hàng tồn kho đơn giản.</h1>
-        <p class="text-lg text-gray-600 mb-6">
-            Phần mềm quản lý kho tốt nhất dành cho các doanh nghiệp nhỏ để quản lý hàng tồn kho thực tế, bao gồm vật tư,
-            nguyên vật liệu, công cụ và thiết bị.
-        </p>
-        <div class="flex justify-center gap-4">
-            <a href="/" class="bg-[#00205b] text-white font-bold py-2 px-4 rounded">Hãy thử The Llamas miễn phí</a>
-            <a href="/" class="border border-[#00205b] text-[#00205b] font-bold py-2 px-4 rounded">Xem tất cả dịch vụ
-                &#8250;</a>
-        </div>
-    </section>
-
-    <!-- Video Section -->
-    <section class="my-8 bg-gray-50 p-8 rounded shadow-md">
-      <div class="h-72 bg-gray-300 flex justify-center items-center rounded">Video</div>
-    </section>
+    <section class="text-center bg-white p-8 rounded shadow-md text-sm sm:text-base">
+      <h1 class="text-4xl sm:text-10xl md:text-20xl font-bold text-[#00205b] mb-4">
+          Phần mềm quản lý hàng tồn kho đơn giản.
+      </h1>
+      <p class="text-lg sm:text-base md:text-sm text-gray-600 mb-6">
+          Phần mềm quản lý kho tốt nhất dành cho các doanh nghiệp nhỏ để quản lý hàng tồn kho thực tế, bao gồm vật tư,
+          nguyên vật liệu, công cụ và thiết bị.
+      </p>
+      <div class="flex justify-center gap-4">
+          <a href="/" class="bg-[#00205b] text-white font-bold py-2 px-4 sm:py-2 sm:px-3 md:py-1 md:px-2 rounded">
+              Hãy thử The Llamas miễn phí
+          </a>
+          <a href="/" class="border border-[#00205b] text-[#00205b] font-bold py-2 px-4 sm:py-2 sm:px-3 md:py-1 md:px-2 rounded">
+              Xem tất cả dịch vụ &#8250;
+          </a>
+      </div>
+  </section>
+  
+<!-- slide-->
+  <section class="my-8 bg-gray-50 p-8 rounded shadow-md">
+    <div class="h-72 bg-gray-300 flex justify-center items-center rounded overflow-hidden">
+      <img src="./img/slide.jpg" class="w-full h-full object-cover">
+    </div>
+  </section>
+  
 
     <!-- Description Section -->
     <section class="text-center bg-white p-8 rounded shadow-md">
@@ -139,3 +147,6 @@
       </div>
     </section>
   </div>
+
+  
+  

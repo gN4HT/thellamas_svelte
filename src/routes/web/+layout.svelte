@@ -38,7 +38,7 @@
       <!-- Hành động -->
       <div class="flex items-center space-x-4">
         <a href="/web/login" class="text-gray-700 font-medium hover:text-blue-600">Đăng nhập</a>
-        <a href="#" class="bg-[#00205b] text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-blue-700">Dùng thử miễn phí</a>
+        <a href="" class="bg-[#00205b] text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-blue-700">Dùng thử miễn phí</a>
       </div>
     </div>
   </nav>
