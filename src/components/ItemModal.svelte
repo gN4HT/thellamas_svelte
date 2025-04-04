@@ -1,7 +1,6 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
-    import type { Item } from '../models/item';
-    import { apiFetch } from "$lib/api";
+    import {createEventDispatcher} from 'svelte';
+    import type {Item} from '../models/item';
 
     const dispatch = createEventDispatcher();
 
@@ -12,7 +11,7 @@
 
     let error: string | null = null;
     let isLoading = false;
-    
+
     // Khởi tạo formData
     let formData = {
         id: null as number | null, // Thêm id để track item đang edit
@@ -109,7 +108,7 @@
         isLoading = true;
         try {
             const submitData = {
-                ...(formData.id && { id: formData.id }), // Chỉ thêm id nếu có
+                ...(formData.id && {id: formData.id}), // Chỉ thêm id nếu có
                 name: formData.name.trim(),
                 quantity: Number(formData.quantity),
                 stock_level: Number(formData.stock_level),
@@ -123,7 +122,7 @@
             };
 
             console.log('Submitting data:', submitData, 'isEditMode:', isEditMode);
-            dispatch('submit', { data: submitData });
+            dispatch('submit', {data: submitData});
         } catch (err) {
             error = "Có lỗi xảy ra khi xử lý dữ liệu";
             console.error(err);
@@ -146,18 +145,18 @@
             </div>
         {/if}
 
-        <form on:submit|preventDefault={handleSubmit} class="space-y-4">
+        <form onsubmit={handleSubmit} class="space-y-4">
             <div>
                 <label for="name" class="block text-gray-600 font-medium">
                     Tên mặt hàng <span class="text-red-500">*</span>
                 </label>
                 <input
-                    id="name"
-                    type="text"
-                    class="border rounded p-2 w-full"
-                    bind:value={formData.name}
-                    required
-                    disabled={isLoading}
+                        id="name"
+                        type="text"
+                        class="border rounded p-2 w-full"
+                        bind:value={formData.name}
+                        required
+                        disabled={isLoading}
                 />
             </div>
 
@@ -166,13 +165,13 @@
                     Số lượng <span class="text-red-500">*</span>
                 </label>
                 <input
-                    id="quantity"
-                    type="number"
-                    min="0"
-                    class="border rounded p-2 w-full"
-                    bind:value={formData.quantity}
-                    required
-                    disabled={isLoading}
+                        id="quantity"
+                        type="number"
+                        min="0"
+                        class="border rounded p-2 w-full"
+                        bind:value={formData.quantity}
+                        required
+                        disabled={isLoading}
                 />
             </div>
 
@@ -181,12 +180,12 @@
                     Mức tồn kho
                 </label>
                 <input
-                    id="stock_level"
-                    type="number"
-                    min="0"
-                    class="border rounded p-2 w-full"
-                    bind:value={formData.stock_level}
-                    disabled={isLoading}
+                        id="stock_level"
+                        type="number"
+                        min="0"
+                        class="border rounded p-2 w-full"
+                        bind:value={formData.stock_level}
+                        disabled={isLoading}
                 />
             </div>
 
@@ -195,13 +194,13 @@
                     Giá <span class="text-red-500">*</span>
                 </label>
                 <input
-                    id="price"
-                    type="number"
-                    min="0"
-                    class="border rounded p-2 w-full"
-                    bind:value={formData.price}
-                    required
-                    disabled={isLoading}
+                        id="price"
+                        type="number"
+                        min="0"
+                        class="border rounded p-2 w-full"
+                        bind:value={formData.price}
+                        required
+                        disabled={isLoading}
                 />
             </div>
 
@@ -210,26 +209,26 @@
                     Ghi chú
                 </label>
                 <textarea
-                    id="notes"
-                    class="border rounded p-2 w-full"
-                    bind:value={formData.notes}
-                    disabled={isLoading}
+                        id="notes"
+                        class="border rounded p-2 w-full"
+                        bind:value={formData.notes}
+                        disabled={isLoading}
                 ></textarea>
             </div>
 
             <div class="flex justify-end gap-3 mt-6">
-                <button 
-                    type="button"
-                    on:click={() => dispatch('close')}
-                    class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition-colors"
-                    disabled={isLoading}
+                <button
+                        type="button"
+                        onclick={() => dispatch('close')}
+                        class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition-colors"
+                        disabled={isLoading}
                 >
                     Hủy
                 </button>
-                <button 
-                    type="submit"
-                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                    disabled={isLoading}
+                <button
+                        type="submit"
+                        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                        disabled={isLoading}
                 >
                     {#if isLoading}
                         <span class="inline-block animate-spin mr-2">⌛</span>
