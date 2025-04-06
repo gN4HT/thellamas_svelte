@@ -5,51 +5,46 @@
   let limitRows = 3;
   let errorMessage = "";
 
+  async function fetchHistory() {
+    try {
+      // Lấy token từ localStorage thay vì sessionStorage
+      const token = localStorage.getItem("access_token");
 
+      if (!token) {
+        throw new Error("Không tìm thấy token, vui lòng đăng nhập lại.");
+      }
 
+      // Gửi request với Bearer Token trong Authorization header
+      const response = await fetch("http://127.0.0.1:8000/api/userHistory", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,  // Bearer token
+          "Accept": "application/json"
+        },
+      });
 
-async function fetchHistory() {
-  try {
-    // Lấy token từ localStorage thay vì sessionStorage
-    const token = localStorage.getItem("access_token");
+      // Kiểm tra phản hồi của API
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Lỗi API: ${response.status} - ${errorData.message || response.statusText}`);
+      }
 
-    if (!token) {
-      throw new Error("Không tìm thấy token, vui lòng đăng nhập lại.");
+      const data = await response.json();
+      console.log("Dữ liệu API:", data);
+
+      if (!Array.isArray(data)) {
+        throw new Error("Dữ liệu không phải là một mảng!");
+      }
+
+      // Cập nhật dữ liệu lịch sử
+      historyData = data;
+      errorMessage = ""; // Clear any previous error message
+    } catch (error) {
+      console.error("Lỗi khi tải lịch sử:", error.message);
+      errorMessage = error.message; // Ghi lại thông báo lỗi
     }
-
-    // Gửi request với Bearer Token trong Authorization header
-    const response = await fetch("http://127.0.0.1:8000/api/userHistory", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,  // Bearer token
-        "Accept": "application/json"
-      },
-    });
-
-    // Kiểm tra phản hồi của API
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Lỗi API: ${response.status} - ${errorData.message || response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log("Dữ liệu API:", data);
-
-    if (!Array.isArray(data)) {
-      throw new Error("Dữ liệu không phải là một mảng!");
-    }
-
-    // Cập nhật dữ liệu lịch sử
-    historyData = data;
-    errorMessage = ""; // Clear any previous error message
-  } catch (error) {
-    console.error("Lỗi khi tải lịch sử:", error.message);
-    errorMessage = error.message; // Ghi lại thông báo lỗi
   }
-}
-
-
 
   onMount(fetchHistory);
 </script>
@@ -101,14 +96,14 @@ async function fetchHistory() {
           <td class="py-2 px-4 border">{item.activity_type}</td>
           <td class="py-2 px-4 border">{item.activity}</td>
           <td class="py-2 px-4 border">{item.user_name}</td>
-          <td class="py-2 px-4 border">{item.item_id}</td>
-          <td class="py-2 px-4 border">{item.folder_id}</td>
+          <td class="py-2 px-4 border">{item.item_name ?? "-"}</td>
+          <td class="py-2 px-4 border">{item.folder_name ?? "-"}</td>
           <td class="py-2 px-4 border">{item.old_quantity ?? "-"}</td>
           <td class="py-2 px-4 border">{item.new_quantity ?? "-"}</td>
-          <td class="py-2 px-4 border">{item.old_price ?? "-"}</td>
-          <td class="py-2 px-4 border">{item.new_price ?? "-"}</td>
-          <td class="py-2 px-4 border">{item.old_folder ?? "-"}</td>
-          <td class="py-2 px-4 border">{item.new_folder ?? "-"}</td>
+          <td class="py-2 px-4 border">{item.old_price ? item.old_price.toLocaleString() + '₫' : "-"}</td>
+          <td class="py-2 px-4 border">{item.new_price ? item.new_price.toLocaleString() + '₫' : "-"}</td>
+          <td class="py-2 px-4 border">{item.old_folder_name ?? "-"}</td>
+          <td class="py-2 px-4 border">{item.new_folder_name ?? "-"}</td>
         </tr>
       {/each}
     </tbody>
