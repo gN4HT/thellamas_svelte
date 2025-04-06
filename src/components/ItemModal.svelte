@@ -30,6 +30,14 @@
     async function fetchItemData() {
         if (isEditMode && item.id) {
             try {
+                // Reset images first
+                images = null;
+                imageUrls = [];
+                existingImages = [];
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+                
                 const itemData = await apiFetch(`/items/${item.id}`);
                 console.log('Fetched item data:', itemData);
                 
@@ -40,11 +48,9 @@
                 price = String(itemData.price || 0);
                 notes = itemData.notes || '';
                 
-                existingImages = Array.isArray(itemData.images) 
-                    ? itemData.images.map(img => 
-                        img.startsWith('http') ? img : `${IMAGE_BASE_URL}${img}`
-                    )
-                    : [];
+                // Cập nhật cách lưu existingImages - lưu trữ tên file gốc
+                existingImages = Array.isArray(itemData.images) ? [...itemData.images] : [];
+                console.log('Initial existing images:', existingImages);
 
                 console.log('Set form values:', {
                     name,
@@ -109,32 +115,58 @@
     }
 
     function handleImageChange(event: Event) {
-        event.preventDefault();  // Ngăn chặn form submit
+        event.preventDefault();
         const input = event.target as HTMLInputElement;
         fileInput = input;
 
         if (input.files) {
-            // Chỉ xử lý ảnh mới, không động đến ảnh cũ
-            images = input.files;
-            // Tạo URLs mới cho preview
-            const newImageUrls = Array.from(images).map(file => URL.createObjectURL(file));
-            // Cleanup old preview URLs
-            imageUrls.forEach(url => URL.revokeObjectURL(url));
-            // Set URLs mới
-            imageUrls = newImageUrls;
+            const totalImages = existingImages.length + (input.files?.length || 0);
+            if (totalImages > 4) {
+                error = "Chỉ được phép tải lên tối đa 4 ảnh";
+                input.value = '';
+                return;
+            }
+
+            // Tạo DataTransfer mới để giữ cả ảnh cũ và mới
+            const dt = new DataTransfer();
+            
+            // Thêm các ảnh hiện tại (nếu có)
+            if (images) {
+                Array.from(images).forEach(file => dt.items.add(file));
+            }
+            
+            // Thêm các ảnh mới
+            Array.from(input.files).forEach(file => dt.items.add(file));
+            
+            // Cập nhật images với tất cả các file
+            images = dt.files;
+
+            // Tạo URLs cho preview, giữ lại URLs cũ
+            const newUrls = Array.from(input.files).map(file => URL.createObjectURL(file));
+            imageUrls = [...imageUrls, ...newUrls];
+            
+            // Reset input để có thể chọn cùng file lại nếu muốn
+            input.value = '';
+            error = null;
         }
     }
 
-    function removeImage(index: number) {
-        imageUrls = imageUrls.filter((_, i) => i !== index);
-        const newImages = Array.from(images || []).filter((_, i) => i !== index);
-        const dt = new DataTransfer();
-        newImages.forEach(file => dt.items.add(file));
-        images = dt.files;
-    }
+    function removeImage(index: number, isExisting: boolean) {
+        if (isExisting) {
+            // Xóa ảnh cũ
+            existingImages = existingImages.filter((_, i) => i !== index);
+        } else {
+            // Xóa URL tại index
+            const removedUrl = imageUrls[index];
+            URL.revokeObjectURL(removedUrl);
+            imageUrls = imageUrls.filter((_, i) => i !== index);
 
-    function removeExistingImage(index: number) {
-        existingImages = existingImages.filter((_, i) => i !== index);
+            // Xóa file tương ứng từ images
+            const newImages = Array.from(images || []).filter((_, i) => i !== index);
+            const dt = new DataTransfer();
+            newImages.forEach(file => dt.items.add(file));
+            images = dt.files;
+        }
     }
 
     async function handleSubmit() {
@@ -155,16 +187,19 @@
                 formData.append('folder_id', String(folderId));
             }
 
-            // Append existing images that weren't removed
-            if (existingImages.length > 0) {
-                formData.append('existing_images', JSON.stringify(existingImages));
-            }
+            // Append both existing and new images to images[]
+            // First append existing images
+            existingImages.forEach(image => {
+                formData.append('images[]', image);
+            });
 
-            // Append new images if any
+            // Then append new images as FormData
             if (images && images.length > 0) {
-                Array.from(images).forEach(file => {
-                    formData.append('images[]', file);
-                });
+                const newImages = Array.from(images);
+                for (let i = 0; i < newImages.length; i++) {
+                    const file = newImages[i];
+                    formData.append('images[]', file, file.name);
+                }
             }
 
             // Log form data before submission
@@ -180,6 +215,11 @@
                 existingImages,
                 newImages: images ? Array.from(images).map(f => f.name) : []
             });
+
+            // Log the actual FormData content
+            for (let pair of formData.entries()) {
+                console.log(pair[0], pair[1]);
+            }
 
             dispatch('submit', { 
                 formData, 
@@ -197,13 +237,13 @@
     }
 
     onDestroy(() => {
-        // Cleanup URLs when component is destroyed
+        // Cleanup tất cả URLs khi component bị hủy
         imageUrls.forEach(url => URL.revokeObjectURL(url));
     });
 </script>
 
 <!-- Template -->
-<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" class:hidden={!showModal}>
+<div class="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50" class:hidden={!showModal}>
     <div class="bg-white p-6 rounded-lg shadow-lg w-[600px] max-w-[95%] max-h-[90vh] overflow-y-auto">
         <h2 class="text-2xl font-semibold text-gray-800 mb-6">
             {isEditMode ? 'Chỉnh sửa mặt hàng' : 'Thêm mặt hàng mới'}
@@ -223,7 +263,7 @@
                 <input
                     id="name"
                     type="text"
-                    class="border rounded p-2 w-full"
+                    class="border border-[#DADCFF] rounded p-2 w-full"
                     bind:value={name}
                     required
                     disabled={isLoading}
@@ -238,7 +278,7 @@
                     id="quantity"
                     type="number"
                     min="0"
-                    class="border rounded p-2 w-full"
+                    class="border border-[#DADCFF] rounded p-2 w-full"
                     bind:value={quantity}
                     required
                     disabled={isLoading}
@@ -253,7 +293,7 @@
                     id="stock_level"
                     type="number"
                     min="0"
-                    class="border rounded p-2 w-full"
+                    class="border border-[#DADCFF] rounded p-2 w-full"
                     bind:value={stock_level}
                     disabled={isLoading}
                 />
@@ -267,7 +307,7 @@
                     id="price"
                     type="number"
                     min="0"
-                    class="border rounded p-2 w-full"
+                    class="border border-[#DADCFF] rounded p-2 w-full"
                     bind:value={price}
                     required
                     disabled={isLoading}
@@ -280,7 +320,7 @@
                 </label>
                 <textarea
                     id="notes"
-                    class="border rounded p-2 w-full h-24"
+                    class="border border-[#DADCFF] rounded p-2 w-full h-24"
                     bind:value={notes}
                     disabled={isLoading}
                 ></textarea>
@@ -288,54 +328,47 @@
 
             <div>
                 <label class="block text-gray-600 font-medium">
-                    Hình ảnh
+                    Hình ảnh ({4 - (existingImages.length + (images?.length || 0))} ảnh còn lại)
                 </label>
                 <input
                     type="file"
                     accept="image/*"
                     multiple
                     on:change={handleImageChange}
-                    class="border rounded p-2 w-full"
-                    disabled={isLoading}
+                    class="border border-[#DADCFF] rounded p-2 w-full"
+                    disabled={isLoading || existingImages.length + (images?.length || 0) >= 4}
                     bind:this={fileInput}
                 />
             </div>
 
-            <!-- Preview ảnh đã tồn tại -->
-            {#if existingImages.length > 0}
-                <div class="grid grid-cols-3 gap-4 mt-4">
-                    {#each existingImages as imageUrl, index}
-                        <div class="relative">
-                            <img src={imageUrl} alt="Preview" class="w-full h-32 object-cover rounded"/>
-                            <button
-                                type="button"
-                                class="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full"
-                                on:click={() => removeExistingImage(index)}
-                            >
-                                ×
-                            </button>
-                        </div>
-                    {/each}
-                </div>
-            {/if}
+            <!-- Preview tất cả ảnh -->
+            <div class="grid grid-cols-3 gap-4 mt-4">
+                {#each existingImages as image, index}
+                    <div class="relative">
+                        <img src={`${IMAGE_BASE_URL}${image}`} alt="Preview" class="w-full h-32 object-cover rounded"/>
+                        <button
+                            type="button"
+                            class="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full"
+                            on:click={() => removeImage(index, true)}
+                        >
+                            ×
+                        </button>
+                    </div>
+                {/each}
 
-            <!-- Preview ảnh mới -->
-            {#if imageUrls.length > 0}
-                <div class="grid grid-cols-3 gap-4 mt-4">
-                    {#each imageUrls as url, index}
-                        <div class="relative">
-                            <img src={url} alt="Preview" class="w-full h-32 object-cover rounded"/>
-                            <button
-                                type="button"
-                                class="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full"
-                                on:click={() => removeImage(index)}
-                            >
-                                ×
-                            </button>
-                        </div>
-                    {/each}
-                </div>
-            {/if}
+                {#each imageUrls as url, index}
+                    <div class="relative">
+                        <img src={url} alt="Preview" class="w-full h-32 object-cover rounded"/>
+                        <button
+                            type="button"
+                            class="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full"
+                            on:click={() => removeImage(index, false)}
+                        >
+                            ×
+                        </button>
+                    </div>
+                {/each}
+            </div>
 
             <div class="flex justify-end gap-3 mt-6">
                 <button 
@@ -348,7 +381,7 @@
                 </button>
                 <button 
                     type="submit"
-                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                    class="px-4 py-2 bg-[#00205B] border border-[#00205B] text-white rounded hover:bg-transparent hover:text-[#00205B] transition"
                     disabled={isLoading}
                 >
                     {#if isLoading}

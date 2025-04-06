@@ -83,7 +83,7 @@
     }
 </script>
 
-<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" class:hidden={!showModal}>
+<div class="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50" class:hidden={!showModal}>
     <div class="bg-white p-6 rounded-lg shadow-lg w-[600px] max-w-[95%] max-h-[90vh] overflow-y-auto">
         <h2 class="text-2xl font-semibold text-gray-800 mb-6">
             {isEditMode ? 'Chỉnh sửa thư mục' : 'Thêm thư mục mới'}
@@ -103,7 +103,7 @@
                 <input
                     id="name"
                     type="text"
-                    class="border rounded p-2 w-full"
+                    class="border border-[#DADCFF] rounded p-2 w-full"
                     bind:value={name}
                     required
                     disabled={isLoading}
@@ -117,22 +117,23 @@
                 <input
                     id="description"
                     type="text"
-                    class="border rounded p-2 w-full"
+                    class="border border-[#DADCFF] rounded p-2 w-full"
                     bind:value={description}
                     disabled={isLoading}
                 />
             </div>
 
             <div>
-                <label for="color" class="block text-gray-600 font-medium">
+                <label for="color" class="block text-gray-700 font-semibold mb-2">
                     Màu sắc
                 </label>
                 <input
                     id="color"
                     type="color"
-                    class="border rounded p-2 w-full h-12"
                     bind:value={color}
                     disabled={isLoading}
+                        class="w-full h-12 shadow-sm border border-none transition-all duration-200 ease-in-out p-2 disabled:opacity-50"
+                    style="appearance: none; padding: 0; border: none; background: none;"
                 />
             </div>
 
@@ -147,7 +148,7 @@
                 </button>
                 <button 
                     type="submit"
-                    class="px-4 py-2 bg-[#00205B] text-white rounded hover:bg-blue-700 transition-colors"
+                    class="px-4 py-2 bg-[#00205B] border border-[#00205B] text-white rounded hover:bg-transparent hover:text-[#00205B] transition cursor-pointer"
                     disabled={isLoading}
                 >
                     {#if isLoading}
@@ -159,4 +160,10 @@
         </form>
     </div>
 </div>
+
+<style>
+    input[type="color"]::-webkit-color-swatch {
+  border: none;
+}
+</style>
   

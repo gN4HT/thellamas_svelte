@@ -108,7 +108,7 @@
 {#if showModal}
 <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
   <div class="bg-white rounded-lg p-6 w-96 max-w-lg">
-    <h2 class="text-xl font-bold mb-4">Chọn Tags</h2>
+    <h2 class="text-xl font-bold mb-4">Chọn Thẻ</h2>
     
     {#if error}
       <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
@@ -118,13 +118,13 @@
 
     <div class="mb-4">
       <label class="block text-sm font-medium text-gray-700 mb-2">
-        Tags
+        Thẻ
       </label>
       <div class="border rounded-md overflow-hidden max-h-[300px] overflow-y-auto">
-        <!-- Tags đã liên kết -->
+        <!-- Thẻ đã liên kết -->
         {#if existingTagIds.length > 0}
           <div class="bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700">
-            Tags đã liên kết
+            Thẻ đã liên kết
           </div>
           {#each tags.filter(tag => isTagLinked(tag.id)) as tag}
             <label 
@@ -141,9 +141,9 @@
           {/each}
         {/if}
 
-        <!-- Tags chưa liên kết -->
+        <!-- Thẻ chưa liên kết -->
         <div class="bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700">
-          Tags khả dụng
+          Thẻ khả dụng
         </div>
         {#each tags.filter(tag => !isTagLinked(tag.id)) as tag}
           <label 
