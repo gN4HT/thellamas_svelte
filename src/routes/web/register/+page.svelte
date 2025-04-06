@@ -1,8 +1,14 @@
 <script lang="ts">
-
     import {goto} from "$app/navigation";
     import type {AccessToken} from "../../../models/auth/accessToken";
+    import VerifyPopup from "../../../components/VerifyPopup.svelte";
+    import LoadingButton from "../../../components/LoadingButton.svelte";
 
+    // State management
+    let isLoading = false;
+    let showVerifyPopup = false;
+    let verifyEmail = '';
+    let successMessage = '';
     const formData = {
         name: '', email: '', password: '', password_confirmation: ''
     }
@@ -25,9 +31,9 @@
         formError.confirmPasswordError = formData.password_confirmation !== formData.password ? "Passwords do not match." : null;
     }
 
-
     export const register = async (e: SubmitEvent) => {
         e.preventDefault();
+        isLoading = true;
         try {
             validatePassword();
             validateConfirmPassword();
@@ -45,16 +51,26 @@
             if (!response.ok) {
                 return {message: data.message || "Đăng ký thất bại!"}
             }
-            localStorage.setItem("token", data.access_token);
-            // Redirect on success
-            await goto("/app");
+            
+            // Show success message
+            successMessage = `Mã xác thực đã được gửi đến email ${formData.email}. Vui lòng kiểm tra email của bạn.`;
+            
+            // Show verify popup instead of redirecting
+            verifyEmail = formData.email;
+            showVerifyPopup = true;
             return {success: true, message: data.message};
         } catch (error) {
             console.log(`Register error: ${error.message}`);
             return {success: false, message: "Không thể kết nối đến server!"};
+        } finally {
+            isLoading = false;
         }
     };
 
+    function handleVerifySuccess() {
+        showVerifyPopup = false;
+        goto("/app");
+    }
 </script>
 
 <div class="flex items-center justify-center min-h-screen font-sans py-20">
@@ -85,14 +101,17 @@
                 <input type="password" placeholder="Password Confirmation" required
                        bind:value={formData.password_confirmation}
                        class="mb-4 p-2 border border-gray-300 rounded text-base">
-                <button type="submit"
-                        class="p-3 text-lg text-white text-center bg-[#00205b] rounded hover:bg-[#001a48]">Tạo tài
-                    khoản
-                </button>
+                <LoadingButton 
+                    type="submit"
+                    loading={isLoading}
+                    size="lg"
+                >
+                    {isLoading ? 'Đang xử lý...' : 'Tạo tài khoản'}
+                </LoadingButton>
             </form>
             <div class="flex flex-col items-center text-center mt-6 gap-2">
                 <p class="text-sm max-w-md">
-                    Bằng cách nhấp "Tạo tài khoản", bạn sẽ đồng ý với The Llamas’s
+                    Bằng cách nhấp "Tạo tài khoản", bạn sẽ đồng ý với The Llamas's
                     <a href="/" class="font-bold text-[#00205b] hover:underline">Điều khoản & Điều kiện</a> và
                     <a href="/" class="font-bold text-[#00205b] hover:underline">Chính sách bảo mật</a>.
                 </p>
@@ -114,8 +133,8 @@
                     <img src="/img/Star 1.png" alt="" class="h-5 w-5">
                 </div>
                 <p class="italic text-gray-600 text-base mb-2">
-                    “Dễ dàng thêm hàng tồn kho. Dễ dàng vận hành. Dễ dàng cá nhân hóa.
-                    Nhóm của tôi đã áp dụng The Llamas ngay lập tức!”
+                    "Dễ dàng thêm hàng tồn kho. Dễ dàng vận hành. Dễ dàng cá nhân hóa.
+                    Nhóm của tôi đã áp dụng The Llamas ngay lập tức!"
                 </p>
                 <p class="text-sm font-bold text-black">Khâu Vân Nam<br><span
                         class="text-xs text-gray-500">Leader</span></p>
@@ -138,3 +157,21 @@
         </div>
     </div>
 </div>
+
+{#if showVerifyPopup}
+    <VerifyPopup 
+        email={verifyEmail} 
+        isOpen={showVerifyPopup}
+        on:close={() => showVerifyPopup = false}
+        on:success={handleVerifySuccess}
+    />
+{/if}
+
+{#if successMessage}
+    <div class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        <span>{successMessage}</span>
+    </div>
+{/if}

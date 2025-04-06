@@ -2,7 +2,7 @@
     export let totalItems: number;
     export let currentPage: number = 1;
 
-    const itemsPerPage = 10;
+    const itemsPerPage = 8;
 
     function goToPage(event: Event): void {
         const input = event.target as HTMLInputElement;

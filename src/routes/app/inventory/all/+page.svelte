@@ -52,9 +52,9 @@
 
   // Computed Properties
   $: paginatedFolders = folders.slice(
-      (folderPage - 1) * ITEMS_PER_PAGE,
+      (folderPage - 1) * ITEMS_PER_PAGE,  
       folderPage * ITEMS_PER_PAGE
-  );
+  );  
 
   $: paginatedItems = items.slice(
       (itemPage - 1) * ITEMS_PER_PAGE,
@@ -170,7 +170,6 @@
     if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn ${type === 'folder' ? 'thư mục' : 'mặt hàng'} này không?`)) {
       return;
     }
-
     try {
       await apiFetch(`/${type}s/${id}`, {
         method: 'DELETE'
@@ -327,12 +326,18 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
         });
 
         let endpoint = '/items';
+        let method = 'POST';
+
         if (isEdit && itemId) {
-            endpoint = `/items/${itemId}?_method=PUT`;
+            endpoint = `/items/${itemId}`;
+            method = 'PUT';
+            
+            // Thêm _method=PUT vào formData
+            formData.append('_method', 'PUT');
         }
 
         const response = await apiFetch(endpoint, {
-            method: 'POST', 
+            method: 'POST', // Luôn dùng POST vì đang gửi FormData
             body: formData,
         });
 

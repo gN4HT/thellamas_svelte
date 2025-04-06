@@ -155,7 +155,12 @@
                 formData.append('folder_id', String(folderId));
             }
 
-            // Append images if any
+            // Append existing images that weren't removed
+            if (existingImages.length > 0) {
+                formData.append('existing_images', JSON.stringify(existingImages));
+            }
+
+            // Append new images if any
             if (images && images.length > 0) {
                 Array.from(images).forEach(file => {
                     formData.append('images[]', file);
@@ -171,12 +176,15 @@
                 notes,
                 folderId,
                 isEditMode,
-                images: images ? Array.from(images).map(f => f.name) : []
+                itemId: item.id,
+                existingImages,
+                newImages: images ? Array.from(images).map(f => f.name) : []
             });
 
             dispatch('submit', { 
                 formData, 
                 isEdit: isEditMode,
+                itemId: isEditMode ? item.id : null,
                 resetForm: resetAll
             });
             
