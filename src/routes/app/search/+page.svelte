@@ -1,7 +1,8 @@
-<script>
+<script lang="ts">
     import { apiFetch } from '$lib/api';
     import { onMount } from 'svelte';
-    import ItemResource from "../../../components/ItemResource.svelte";
+    import Items from "../../../components/Items.svelte";
+    import type { Folder } from "../../../models/folder";
 
     let filters = {
         folder_name: '',
@@ -13,7 +14,15 @@
         stock_level: '', // 'below' | 'above'
     };
 
-    let toggles = {
+    const labels = {
+        folder: 'Thư mục',
+        name: 'Tên mặt hàng',
+        quantity: 'Số lượng',
+        price: 'Giá',
+        stock: 'Tồn kho',
+    };
+
+    let toggleStates = {
         folder: true,
         name: true,
         quantity: true,
@@ -21,24 +30,36 @@
         stock: true,
     };
 
+    let folders: Folder[] = [];
     let isLoading = false;
     let error = null;
     let results = [];
 
-    const ICONS = [
-        { icon: 'fa-folder', title: 'Thư mục', desc: 'Lọc các mục trong thư mục cụ thể' },
-        { icon: 'fa-sort-amount-up', title: 'Số lượng', desc: 'Lọc dựa theo tồn kho' },
-        { icon: 'fa-balance-scale', title: 'Mức tối thiểu', desc: 'Lọc theo ngưỡng tồn kho' },
-        { icon: 'fa-tag', title: 'Giá', desc: 'Lọc theo khoảng giá' },
-        { icon: 'fa-qrcode', title: 'Mã vạch / QR', desc: 'Tìm theo mã cụ thể' },
-        { icon: 'fa-filter', title: 'Bộ lọc tuỳ chỉnh', desc: 'Thêm điều kiện lọc nâng cao' }
-    ];
+    // Add function to check if any filter has value
+    function hasAnyFilter() {
+        return Object.values(filters).some(value => {
+            // Check for non-empty strings and non-zero numbers
+            if (typeof value === 'string') {
+                return value.trim() !== '';
+            }
+            return !!value;
+        });
+    }
 
     function toggle(section) {
-        toggles[section] = !toggles[section];
+        toggleStates[section] = !toggleStates[section];
     }
-    const getToken = () => localStorage.getItem("token");
 
+    // Fetch folders on mount
+    onMount(async () => {
+        try {
+            const response = await apiFetch("/folders");
+            folders = response.filter(folder => folder.is_deleted !== 1);
+        } catch (err) {
+            console.error("Error fetching folders:", err);
+            error = err.message;
+        }
+    });
 
     async function search() {
         isLoading = true;
@@ -46,15 +67,20 @@
 
         try {
             const params = new URLSearchParams();
+            
+            // Add all non-empty filters
             Object.entries(filters).forEach(([key, value]) => {
-                if (value) params.append(key, value);
+                if (value) {
+                    params.append(key, value);
+                }
             });
-            const headers = { Authorization: `Bearer ${getToken()}` };
-            const res = await apiFetch(`http://127.0.0.1:8000/api/item_search?${params}`, { headers });
-            results = res.data || [];
-        } catch (e) {
-            error = e.message;
-            console.error(e);
+
+            const response = await apiFetch(`/item_search?${params.toString()}`);
+            results = response || [];
+            console.log('Search results:', results);
+        } catch (err) {
+            error = err.message;
+            console.error("Search error:", err);
         } finally {
             isLoading = false;
         }
@@ -67,70 +93,138 @@
     }
 </style>
 
-<div class="flex w-full">
-    <aside class="w-[300px] fixed h-screen bg-white border-r p-4 shadow-md overflow-y-auto">
-        <h2 class="text-lg font-bold mb-4">Bộ lọc</h2>
-        <!-- Filter Sections -->
-        {#each Object.keys(toggles) as key}
-            <div class="mb-4 border-b pb-4">
-                <div class="flex justify-between items-center cursor-pointer" on:click={() => toggle(key)}>
+<div class="flex w-full min-h-screen bg-gray-50">
+    <!-- Sidebar Filter -->
+    <aside class="w-[300px] fixed h-full bg-white border-r border-gray-200 p-6 shadow-lg overflow-y-auto">
+        <h2 class="text-xl font-semibold mb-6 text-gray-800">Bộ lọc</h2>
+
+        {#each Object.keys(labels) as key}
+            <div class="mb-6 border-b border-gray-200 pb-4">
+                <!-- Toggle Header -->
+                <div 
+                    class="flex justify-between items-center cursor-pointer group" 
+                    on:click={() => toggle(key)}
+                >
                     <div class="flex items-center">
-                        <i class="fas fa-chevron-down mr-2 transition-transform" class:rotate-180={!toggles[key]}></i>
-                        <span class="font-semibold">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+                        <i 
+                            class="fas fa-chevron-down mr-2 transform transition-transform duration-300 group-hover:scale-110" 
+                            class:rotate-180={!toggleStates[key]}
+                        ></i>
+                        <span class="font-medium text-gray-700">{labels[key]}</span>
                     </div>
                 </div>
-                {#if toggles[key]}
+
+                <!-- Toggle Body -->
+                {#if toggleStates[key]}
+                    <!-- Quantity & Price -->
                     {#if key === 'quantity' || key === 'price'}
-                        <div class="flex gap-2 mt-2">
-                            <input type="number" class="w-1/2 p-2 border rounded" bind:value={filters[`min_${key}`]} placeholder={`Tối thiểu ${key}`} />
-                            <input type="number" class="w-1/2 p-2 border rounded" bind:value={filters[`max_${key}`]} placeholder={`Tối đa ${key}`} />
+                        <div class="flex gap-3 mt-4">
+                            <input 
+                                type="number" 
+                                class="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
+                                bind:value={filters[`min_${key}`]} 
+                                placeholder={`Tối thiểu`} 
+                            />
+                            <input 
+                                type="number" 
+                                class="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
+                                bind:value={filters[`max_${key}`]} 
+                                placeholder={`Tối đa`} 
+                            />
                         </div>
+
+                    <!-- Stock -->
                     {:else if key === 'stock'}
-                        <select class="w-full mt-2 p-2 border rounded" bind:value={filters.stock_level}>
-                            <option value="">Bất kỳ</option>
-                            <option value="below">Dưới mức tối thiểu</option>
-                            <option value="above">Trên mức tối thiểu</option>
+                        <select 
+                            class="w-full mt-4 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            bind:value={filters.stock_level}
+                        >
+                            <option value="">Tất cả</option>
+                            <option value="low">Dưới mức tồn kho tối thiểu</option>
+                            <option value="high">Trên mức tồn kho tối thiểu</option>
                         </select>
+
+                    <!-- Folder Radio -->
+                    {:else if key === 'folder'}
+                        <div class="mt-4 space-y-3">
+                            <label class="flex items-center space-x-2">
+                                <input
+                                    type="radio"
+                                    name="folder"
+                                    value=""
+                                    bind:group={filters.folder_name}
+                                    class="text-blue-600 focus:ring-blue-500"
+                                />
+                                <span class="text-gray-700 text-sm">Tất cả thư mục</span>
+                            </label>
+
+                            {#each folders as folder}
+                                <label class="flex items-center space-x-2">
+                                    <input
+                                        type="radio"
+                                        name="folder"
+                                        value={folder.name}
+                                        bind:group={filters.folder_name}
+                                        class="text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span class="text-gray-700 text-sm">{folder.name}</span>
+                                </label>
+                            {/each}
+                        </div>
+
+                    <!-- Default Input -->
                     {:else}
-                        <input class="w-full mt-2 p-2 border rounded" bind:value={filters[key]} placeholder={`Nhập ${key}`} />
+                        <input 
+                            class="w-full mt-4 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
+                            bind:value={filters[key]} 
+                            placeholder={`Nhập ${labels[key].toLowerCase()}`} 
+                        />
                     {/if}
                 {/if}
             </div>
         {/each}
 
-        <button on:click={search} class="w-full mt-4 bg-[#00205b] text-white py-2 rounded hover:bg-white hover:text-[#00205b] border transition-colors duration-200">
-            Áp dụng bộ lọc
+        <!-- Apply Filter Button -->
+        <button 
+            on:click={search} 
+            class="w-full mt-6 bg-blue-900 text-white py-2.5 rounded-lg font-semibold hover:bg-white hover:text-blue-900 border border-blue-900 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading || !hasAnyFilter()}
+        >
+            {#if isLoading}
+                Đang tìm kiếm...
+            {:else if !hasAnyFilter()}
+                Vui lòng chọn bộ lọc
+            {:else}
+                Áp dụng bộ lọc
+            {/if}
         </button>
     </aside>
 
-    <main class="ml-[300px] w-full p-6">
-        <h1 class="text-2xl font-bold mb-6 border-b pb-4">Kết quả tìm kiếm</h1>
+    <!-- Main Content -->
+    <main class="ml-[300px] flex-1 p-8">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6 border-b border-gray-200 pb-4">Kết quả tìm kiếm</h1>
 
         {#if isLoading}
-            <div class="flex justify-center items-center">
+            <div class="flex justify-center items-center h-40">
                 <div class="animate-spin h-10 w-10 rounded-full border-4 border-blue-500 border-t-transparent"></div>
             </div>
         {:else if error}
-            <div class="text-red-600 bg-red-100 border border-red-300 p-4 rounded">{error}</div>
+            <div class="bg-red-100 text-red-700 border border-red-300 p-4 rounded-md">
+                {error}
+            </div>
         {:else if results.length === 0}
-            <div class="text-center mt-10">
-                <h2 class="text-xl font-semibold mb-4">Không có kết quả</h2>
-                <div class="grid grid-cols-3 gap-6 max-w-[800px] mx-auto">
-                    {#each ICONS as icon}
-                        <div class="bg-white p-4 rounded-lg shadow text-center">
-                            <i class="fas {icon.icon} text-blue-500 text-xl bg-blue-100 p-3 rounded-full"></i>
-                            <h3 class="mt-2 font-semibold">{icon.title}</h3>
-                            <p class="text-sm text-gray-600">{icon.desc}</p>
-                        </div>
-                    {/each}
-                </div>
+            <div class="text-center mt-16">
+                <h2 class="text-xl font-semibold text-gray-600 mb-2">Không có kết quả</h2>
             </div>
         {:else}
-            <div class="grid grid-cols-1 gap-6">
-                {#each results as item}
-                    <ItemResource {item} />
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {#each results as item (item.id)}
+                    
+                        <Items {...item} />
+                    
                 {/each}
             </div>
         {/if}
     </main>
 </div>
+

@@ -6,6 +6,7 @@
     let showModal = false;
     let selectedSupplier = null;
     let isEditMode = false;
+    let searchQuery = "";
 
     let supplierForm = {
         name: "",
@@ -15,9 +16,6 @@
         description: ""
     };
 
-<<<<<<< HEAD
-    const getToken = () => localStorage.getItem("token");
-=======
     // Pagination
     let itemPage = 1;
     const itemsPerPage = 10;
@@ -31,7 +29,6 @@
         let pageValue = Math.max(1, Math.min(maxPage, value));
         itemPage = pageValue;
     }
->>>>>>> origin/tringuyen
 
     const fetchSuppliers = async () => {
         try {
@@ -109,14 +106,6 @@
     onMount(fetchSuppliers);
 </script>
 
-<<<<<<< HEAD
-<div class="flex flex-col items-center min-h-screen bg-white p-4">
-    <div class="w-full max-w-5xl">
-        <div class="border-b-2 border-gray-300 pb-4 mb-6 flex justify-between items-center">
-            <h1 class="text-2xl font-bold">Danh sách Nhà cung cấp</h1>
-            <button on:click={() => openModal()} class="bg-blue-500 text-white px-4 py-2 rounded">
-                + Thêm Nhà cung cấp
-=======
 {#if suppliers.length > 0}
 <div class="bg-gray-100 h-screen flex w-full">
     <div class="bg-white p-4 border-r border-gray-300 overflow-y-auto small-scrollbar w-[300px]">
@@ -140,7 +129,7 @@
                     <div class="flex items-center gap-1">
                         <span class="mr-2 text-xl"><i class="fa-solid fa-box"></i></span>
                         <span title={supplier.name}>
-                    {supplier.name.length > 15 ? ${supplier.name.slice(0, 15)}... : supplier.name}
+                    {supplier.name.length > 15 ? supplier.name.slice(0, 15) + '...' : supplier.name}
                 </span>
                     </div>
                     <div class="flex items-center gap-1">
@@ -167,7 +156,6 @@
             </h2>
             <button class="px-4 py-2 bg-[#00205b] text-white rounded flex items-center" on:click={() => openModal(false)}>
                 <span class="text-xl mr-2 bg-white/10 px-2 rounded">+</span>Thêm supplier
->>>>>>> origin/tringuyen
             </button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -186,6 +174,7 @@
         </div>
     </div>
 </div>
+{/if}
 
 {#if showModal}
     <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
