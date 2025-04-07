@@ -1,9 +1,0 @@
-{
-    "require": {
-<<<<<<< HEAD
-        "fruitcake/laravel-cors": "^3.0"
-=======
-        "nelmio/cors-bundle": "^2.5"
->>>>>>> f5a9b6e1bcf9d32b02b02e92d0539274ebfbbf0f
-    }
-}

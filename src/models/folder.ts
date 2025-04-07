@@ -12,4 +12,5 @@ export interface Folder {
   has_next: boolean;
   has_previous: boolean;
   last_id: number | null;
+  children?: Folder[];
 }

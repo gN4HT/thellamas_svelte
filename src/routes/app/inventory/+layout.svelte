@@ -96,6 +96,7 @@
                 <button 
                     on:click={() => searchQuery = ""}
                     class="text-gray-400 hover:text-gray-600"
+                    aria-label="Xóa tìm kiếm"
                 >
                     <i class="fa-solid fa-times"></i>
                 </button>

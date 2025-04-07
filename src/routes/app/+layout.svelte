@@ -10,7 +10,7 @@
     let showInventoryMenu = $state(false);
     let inventories = $state([]);
     let isLoading = $state(true);
-    let error: string | null = null;
+    let error = $state<string | null>(null);
 
     function getRoleInVietnamese(role: string): string {
         switch (role) {
