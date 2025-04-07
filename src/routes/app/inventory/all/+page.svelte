@@ -523,278 +523,278 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
 <!-- Main Layout -->
 <div class="flex flex-col min-h-screen">
   <!-- Header -->
-  <div class="flex items-center justify-between border-b border-gray-500 p-4">
-        <div class="flex items-center gap-4">
-            <h1 class="text-3xl font-bold text-gray-800">
-                {isTrashMode ? "Thùng rác" : currentFolderName}
-            </h1>
-            <button 
-                on:click={toggleTrashMode}
-                class="flex items-center gap-2 px-3 py-2 rounded-lg {isTrashMode ? 'bg-gray-600' : 'bg-gray-100'} hover:bg-gray-200 transition-colors"
-                title={isTrashMode ? "Quay lại" : "Xem thùng rác"}
-            >
-                <svg class="w-5 h-5 {isTrashMode ? 'text-white' : 'text-gray-600'}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
-                </svg>
-                <span class={isTrashMode ? "text-white" : "text-gray-600"}>
-                    {isTrashMode ? "Quay lại" : "Thùng rác"}
-                </span>
-            </button>
-        </div>
-        
-        {#if !isTrashMode && canEdit}
-    <div class="flex space-x-4">
-                <button 
-                    on:click={handleAddItem}
-                    class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639] transition-colors"
-                >
-        Thêm mặt hàng
-      </button>
-                <button 
-                    on:click={handleAddFolder}
-                    class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639] transition-colors"
-                >
-        Thêm thư mục
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-gray-500 p-4 gap-4">
+    <div class="flex items-center gap-4">
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">
+        {isTrashMode ? "Thùng rác" : currentFolderName}
+      </h1>
+      <button 
+        on:click={toggleTrashMode}
+        class="flex items-center gap-2 px-3 py-2 rounded-lg {isTrashMode ? 'bg-gray-600' : 'bg-gray-100'} hover:bg-gray-200 transition-colors"
+        title={isTrashMode ? "Quay lại" : "Xem thùng rác"}
+      >
+        <svg class="w-5 h-5 {isTrashMode ? 'text-white' : 'text-gray-600'}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+        </svg>
+        <span class={isTrashMode ? "text-white" : "text-gray-600"}>
+          {isTrashMode ? "Quay lại" : "Thùng rác"}
+        </span>
       </button>
     </div>
-        {/if}
+    
+    {#if !isTrashMode && canEdit}
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
+        <button 
+          on:click={handleAddItem}
+          class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639] transition-colors w-full sm:w-auto"
+        >
+          Thêm mặt hàng
+        </button>
+        <button 
+          on:click={handleAddFolder}
+          class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639] transition-colors w-full sm:w-auto"
+        >
+          Thêm thư mục
+        </button>
+      </div>
+    {/if}
   </div>
   
-    <!-- Statistics -->
-  <div class="p-4 mt-4 flex space-x-6 text-gray-700">
+  <!-- Statistics -->
+  <div class="p-4 mt-4 flex flex-wrap gap-4 sm:gap-6 text-gray-700">
     <span>Thư mục: <strong>{folders.length}</strong></span>
     <span>Mặt hàng: <strong>{items.length}</strong></span>
-        <span>Tổng giá trị: <strong>₫{totalPrice.toLocaleString()}</strong></span>
+    <span>Tổng giá trị: <strong>₫{totalPrice.toLocaleString()}</strong></span>
   </div>
   
-    <!-- Main Content -->
-    {#if isLoading}
-        <div class="flex justify-center items-center h-64">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00205b]"></div>
-        </div>
-    {:else if error}
-        <div class="p-4 bg-red-100 text-red-700 rounded-lg mb-4">
-            {error}
-            <button 
-                class="ml-2 underline"
-                on:click={() => fetchData(currentFolderId)}
-            >
-                Thử lại
-            </button>
-        </div>
-    {:else if isTrashMode}
-        <!-- Trash Mode Content -->
-        <div class="p-4">
-            {#if deletedFolders.length === 0 && deletedItems.length === 0}
-                <div class="text-center text-gray-500 py-8">
-                    Không có mục nào trong thùng rác
-                </div>
-            {:else}
-                {#if deletedFolders.length > 0}
-                    <div class="mb-8">
-                        <h2 class="text-[#00205B] text-2xl mb-4">Thư mục đã xóa:</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {#each deletedFolders as folder (folder.id)}
-                                <!-- Deleted Folder Item -->
-                                <div class="relative group">
-                                    <Folders {folder} />
-                                    <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button 
-                                            on:click={() => handleRestore('folder', folder.id)}
-                                            class="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
-                                            title="Khôi phục"
-                                        >
-                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v13m0-13 4 4m-4-4-4 4"/>
-                                            </svg>
-                                        </button>
-                                        <button 
-                                            on:click={() => handlePermanentDelete('folder', folder.id)}
-                                            class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                                            title="Xóa vĩnh viễn"
-                                        >
-                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            {/each}
-                        </div>
-                    </div>
-                {/if}
-
-                {#if deletedItems.length > 0}
-                    <div>
-                        <h2 class="text-[#00205B] text-2xl mb-4">Mặt hàng đã xóa:</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {#each deletedItems as item (item.id)}
-                                <!-- Deleted Item -->
-                                <div class="relative group">
-                                    <Items {...item} />
-                                    <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button 
-                                            on:click={() => handleRestore('item', item.id)}
-                                            class="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
-                                            title="Khôi phục"
-                                        >
-                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v13m0-13 4 4m-4-4-4 4"/>
-                                            </svg>
-                                        </button>
-                                        <button 
-                                            on:click={() => handlePermanentDelete('item', item.id)}
-                                            class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                                            title="Xóa vĩnh viễn"
-                                        >
-                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            {/each}
-                        </div>
-                    </div>
-                {/if}
-            {/if}
-        </div>
-    {:else}
-        <!-- Normal Mode Content -->
-        {#if folders.length === 0 && items.length === 0}
-            <NotFoundData fetchData={() => fetchData(currentFolderId)} />
-        {:else}
-    <div class="p-4">
-                {#if folders.length > 0}
-      <div class="flex flex-col gap-3">
-        <h2 class="text-[#00205B] text-2xl">Thư mục:</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {#each folders as folder (folder.id)}
-                                <!-- Normal Folder Item -->
-                                <div class="relative group">
-            <Folders {folder} />
-                                    {#if canEdit}
-                                    <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button 
-                                            on:click={() => handleEditFolder(folder)}
-                                            class="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors"
-                                        >
-              <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
-              </svg>
-            </button>
-                                        <button 
-                                            on:click={() => handleOpenTags('folder', folder)}
-                                            class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
-                                            title="Quản lý tags"
-                                        >
-                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8v11a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V8M3 8l8.2-7.6a1 1 0 0 1 1.6 0L21 8M3 8h18"/>
-                                            </svg>
-                                        </button>
-                                        <button 
-                                            on:click={() => handleDelete('folder', folder.id)}
-                                            class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                                        >
-              <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
-              </svg>
-            </button>
-                                        <button 
-                                            on:click={() => handleMoveFolder(folder)}
-                                            class="p-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition-colors"
-                                            title="Di chuyển thư mục"
-                                        >
-                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0-4-4m4 4-4 4m0 6H4m0 0 4 4m-4-4 4-4"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    {/if}
-          </div>
-          {/each}
-        </div>
-                        <Paginations 
-                            totalItems={folders.length} 
-                            bind:currentPage={folderPage}
-                            latestId={lastFolderId}
-                            on:next={() => handlePageChange('folder', 'next')}
-                            on:prev={() => handlePageChange('folder', 'prev')}
-                        />
-        </div>
-                {/if}
-  
-                {#if items.length > 0}
-      <div class="flex flex-col gap-3 mt-10">
-        <h2 class="text-[#00205B] text-2xl">Mặt hàng:</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {#each items as item (item.id)}
-                                <!-- Normal Item -->
-                                <div class="relative group">
-            <Items {...item} />
-                                    {#if canEdit}
-                                    <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button 
-                                            on:click={() => handleEditItem(item)}
-                                            class="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors"
-                                        >
-              <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
-              </svg>
-            </button>
-                                        <button 
-                                            on:click={() => handleOpenTags('item', item)}
-                                            class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
-                                            title="Quản lý tags"
-                                        >
-                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8v11a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V8M3 8l8.2-7.6a1 1 0 0 1 1.6 0L21 8M3 8h18"/>
-                                            </svg>
-                                        </button>
-                                        <button 
-                                            on:click={() => handleOpenSupplier(item)}
-                                            class="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
-                                            title="Chọn supplier"
-                                        >
-                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v13m0-13 4 4m-4-4-4 4"/>
-                                            </svg>
-                                        </button>
-                                        <button 
-                                            on:click={() => handleMoveItem(item)}
-                                            class="p-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition-colors"
-                                            title="Di chuyển mặt hàng"
-                                        >
-                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0-4-4m4 4-4 4m0 6H4m0 0 4 4m-4-4 4-4"/>
-                                            </svg>
-                                        </button>
-                                        <button 
-                                            on:click={() => handleDelete('item', item.id)}
-                                            class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                                        >
-              <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
-              </svg>
-            </button>
-                                    </div>
-                                    {/if}
-          </div>
-          {/each}
-        </div>
-                        <Paginations 
-                            totalItems={items.length} 
-                            bind:currentPage={itemPage}
-                            latestId={lastItemId}
-                            on:next={() => handlePageChange('item', 'next')}
-                            on:prev={() => handlePageChange('item', 'prev')}
-                        />
-        </div>
-                {/if}
-      </div>
-        {/if}
-    {/if}
+  <!-- Main Content -->
+  {#if isLoading}
+    <div class="flex justify-center items-center h-64">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00205b]"></div>
     </div>
+  {:else if error}
+    <div class="p-4 bg-red-100 text-red-700 rounded-lg mb-4 mx-4">
+      {error}
+      <button 
+        class="ml-2 underline"
+        on:click={() => fetchData(currentFolderId)}
+      >
+        Thử lại
+      </button>
+    </div>
+  {:else if isTrashMode}
+    <!-- Trash Mode Content -->
+    <div class="p-4">
+      {#if deletedFolders.length === 0 && deletedItems.length === 0}
+        <div class="text-center text-gray-500 py-8">
+          Không có mục nào trong thùng rác
+        </div>
+      {:else}
+        {#if deletedFolders.length > 0}
+          <div class="mb-8">
+            <h2 class="text-[#00205B] text-xl sm:text-2xl mb-4">Thư mục đã xóa:</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {#each deletedFolders as folder (folder.id)}
+                <!-- Deleted Folder Item -->
+                <div class="relative group">
+                  <Folders {folder} />
+                  <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      on:click={() => handleRestore('folder', folder.id)}
+                      class="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
+                      title="Khôi phục"
+                    >
+                      <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v13m0-13 4 4m-4-4-4 4"/>
+                      </svg>
+                    </button>
+                    <button 
+                      on:click={() => handlePermanentDelete('folder', folder.id)}
+                      class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      title="Xóa vĩnh viễn"
+                    >
+                      <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+
+        {#if deletedItems.length > 0}
+          <div>
+            <h2 class="text-[#00205B] text-xl sm:text-2xl mb-4">Mặt hàng đã xóa:</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {#each deletedItems as item (item.id)}
+                <!-- Deleted Item -->
+                <div class="relative group">
+                  <Items {...item} />
+                  <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      on:click={() => handleRestore('item', item.id)}
+                      class="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
+                      title="Khôi phục"
+                    >
+                      <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v13m0-13 4 4m-4-4-4 4"/>
+                      </svg>
+                    </button>
+                    <button 
+                      on:click={() => handlePermanentDelete('item', item.id)}
+                      class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      title="Xóa vĩnh viễn"
+                    >
+                      <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+      {/if}
+    </div>
+  {:else}
+    <!-- Normal Mode Content -->
+    {#if folders.length === 0 && items.length === 0}
+      <NotFoundData fetchData={() => fetchData(currentFolderId)} />
+    {:else}
+      <div class="p-4">
+        {#if folders.length > 0}
+          <div class="flex flex-col gap-3">
+            <h2 class="text-[#00205B] text-xl sm:text-2xl">Thư mục:</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {#each folders as folder (folder.id)}
+                <!-- Normal Folder Item -->
+                <div class="relative group">
+                  <Folders {folder} />
+                  {#if canEdit}
+                    <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        on:click={() => handleEditFolder(folder)}
+                        class="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors"
+                      >
+                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
+                        </svg>
+                      </button>
+                      <button 
+                        on:click={() => handleOpenTags('folder', folder)}
+                        class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+                        title="Quản lý tags"
+                      >
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8v11a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V8M3 8l8.2-7.6a1 1 0 0 1 1.6 0L21 8M3 8h18"/>
+                        </svg>
+                      </button>
+                      <button 
+                        on:click={() => handleDelete('folder', folder.id)}
+                        class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      >
+                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+                        </svg>
+                      </button>
+                      <button 
+                        on:click={() => handleMoveFolder(folder)}
+                        class="p-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition-colors"
+                        title="Di chuyển thư mục"
+                      >
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0-4-4m4 4-4 4m0 6H4m0 0 4 4m-4-4 4-4"/>
+                        </svg>
+                      </button>
+                    </div>
+                  {/if}
+                </div>
+              {/each}
+            </div>
+            <Paginations 
+              totalItems={folders.length} 
+              bind:currentPage={folderPage}
+              latestId={lastFolderId}
+              on:next={() => handlePageChange('folder', 'next')}
+              on:prev={() => handlePageChange('folder', 'prev')}
+            />
+          </div>
+        {/if}
+  
+        {#if items.length > 0}
+          <div class="flex flex-col gap-3 mt-6 sm:mt-10">
+            <h2 class="text-[#00205B] text-xl sm:text-2xl">Mặt hàng:</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {#each items as item (item.id)}
+                <!-- Normal Item -->
+                <div class="relative group">
+                  <Items {...item} />
+                  {#if canEdit}
+                    <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        on:click={() => handleEditItem(item)}
+                        class="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors"
+                      >
+                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
+                        </svg>
+                      </button>
+                      <button 
+                        on:click={() => handleOpenTags('item', item)}
+                        class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+                        title="Quản lý tags"
+                      >
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8v11a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V8M3 8l8.2-7.6a1 1 0 0 1 1.6 0L21 8M3 8h18"/>
+                        </svg>
+                      </button>
+                      <button 
+                        on:click={() => handleOpenSupplier(item)}
+                        class="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
+                        title="Chọn supplier"
+                      >
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v13m0-13 4 4m-4-4-4 4"/>
+                        </svg>
+                      </button>
+                      <button 
+                        on:click={() => handleMoveItem(item)}
+                        class="p-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition-colors"
+                        title="Di chuyển mặt hàng"
+                      >
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0-4-4m4 4-4 4m0 6H4m0 0 4 4m-4-4 4-4"/>
+                        </svg>
+                      </button>
+                      <button 
+                        on:click={() => handleDelete('item', item.id)}
+                        class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      >
+                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  {/if}
+                </div>
+              {/each}
+            </div>
+            <Paginations 
+              totalItems={items.length} 
+              bind:currentPage={itemPage}
+              latestId={lastItemId}
+              on:next={() => handlePageChange('item', 'next')}
+              on:prev={() => handlePageChange('item', 'prev')}
+            />
+          </div>
+        {/if}
+      </div>
+    {/if}
+  {/if}
+</div>
   
 <!-- Modals -->
 {#if canEdit}

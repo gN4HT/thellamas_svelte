@@ -79,9 +79,10 @@
     });
 </script>
 
-<div class="flex">
+<div class="flex flex-col md:flex-row min-h-screen">
     <!-- Sidebar -->
-    <div class="w-64 bg-white shadow-md border-r p-4 overflow-auto min-h-[1300px] max-h-[1300px] custom-scrollbar">
+    <div class="w-full md:w-48 lg:w-64 bg-white shadow-md border-r p-4 overflow-auto 
+                min-h-[300px] md:min-h-[1300px] max-h-[90vh] custom-scrollbar">
         <!-- Thanh tìm kiếm -->
         <div class="mb-6 flex items-center p-2 border rounded-md hover:border-[#00205b] transition-colors duration-200">
             <i class="fa-solid fa-magnifying-glass text-gray-400 mr-2"></i>
@@ -130,6 +131,7 @@
         <slot/>
     </div>
 </div>
+
 
 <style>
     .custom-scrollbar::-webkit-scrollbar {
