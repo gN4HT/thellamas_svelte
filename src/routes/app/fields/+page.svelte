@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { apiFetch } from '$lib/api';
 
-  // State variables
+  // Biến trạng thái
   let fields = [];
   let showModal = false;
   let selectedField = null;
@@ -10,88 +10,96 @@
   let fieldForm = {
     name: "",
     is_hidden: false,
-    value: [],
-    type: "text",
-    inventory_id: null
+    value: [], // Đối với checkbox, value sẽ là mảng các tùy chọn (sẽ chuyển thành HTML khi lưu)
+    type: "text"
   };
 
-  // Suggested field types
+  // Các loại trường gợi ý (đã thêm Checkbox)
   const suggestedTypes = [
     { name: "Văn bản", type: "text" },
     { name: "Email", type: "email" },
     { name: "Số điện thoại", type: "tel" },
     { name: "URL", type: "url" },
-    { name: "Ngày tháng", type: "date" }
+    { name: "Ngày tháng", type: "date" },
+    { name: "Checkbox", type: "checkbox" }
   ];
 
   const getToken = () => localStorage.getItem("token");
 
-  // Fetch fields from API
+  // Lấy danh sách trường từ API
   const fetchFields = async () => {
     try {
       const headers = { Authorization: `Bearer ${getToken()}` };
-      const result = await apiFetch("http://127.0.0.1:8000/api/fields", { headers });
+      const result = await apiFetch("/fields", { headers });
       fields = result.map(field => ({
         id: field.id,
         name: field.name,
         is_hidden: field.is_hidden === 1,
         value: field.value || [],
-        type: field.type || "text",
-        inventory_id: field.inventory_id
+        type: field.type || "text"
       }));
     } catch (error) {
       console.error("Lỗi khi fetch API fields:", error);
     }
   };
 
-  // Handle form submission
+  // Hàm tạo HTML cho trường checkbox từ mảng các tùy chọn
+  function generateCheckboxHTML(options) {
+    return options
+            .map(option => `<label><input type="checkbox" value="${option}"> ${option}</label>`)
+            .join(' ');
+  }
+
+  // Xử lý tạo mới hoặc cập nhật trường
   const handleSubmit = async () => {
     try {
       const url = isEditMode && selectedField
-              ? `http://127.0.0.1:8000/api/fields/${selectedField.id}`
-              : "http://127.0.0.1:8000/api/fields";
+              ? `/fields/${selectedField.id}`
+              : "/fields";
       const method = isEditMode ? "PUT" : "POST";
-      const headers = {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getToken()}`,
-      };
-      // Convert is_hidden từ boolean sang 0/1 cho API
-      const formData = {
+      // Chuyển is_hidden từ boolean sang số (1/0)
+      let formData = {
         ...fieldForm,
         is_hidden: fieldForm.is_hidden ? 1 : 0
       };
-      const body = JSON.stringify(formData);
-      const response = await fetch(url, { method, headers, body });
-      if (response.ok) {
-        closeModal();
-        fetchFields();
-      } else {
-        console.error("Lỗi:", await response.json());
+
+      // Nếu loại trường là checkbox, chuyển mảng giá trị thành chuỗi HTML
+      if (formData.type === 'checkbox' && Array.isArray(formData.value)) {
+        formData.value = generateCheckboxHTML(formData.value);
       }
+
+      await apiFetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`
+        },
+        body: JSON.stringify(formData)
+      });
+      closeModal();
+      fetchFields();
     } catch (error) {
       console.error("Lỗi khi gửi form:", error);
     }
   };
 
-  // Handle field deletion
+  // Xử lý xóa trường
   const handleDelete = async (field) => {
     const confirmDelete = confirm(`Bạn có chắc muốn xóa trường: ${field.name}?`);
     if (!confirmDelete) return;
     try {
-      const url = `http://127.0.0.1:8000/api/fields/${field.id}`;
-      const headers = { Authorization: `Bearer ${getToken()}` };
-      const response = await fetch(url, { method: "DELETE", headers });
-      if (response.ok) {
-        fetchFields();
-      } else {
-        console.error("Lỗi khi xóa:", await response.json());
-      }
+      const url = `/fields/${field.id}`;
+      await apiFetch(url, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      fetchFields();
     } catch (error) {
       console.error("Lỗi khi xóa trường:", error);
     }
   };
 
-  // Modal control functions
+  // Các hàm điều khiển modal
   function openModal(field = null) {
     isEditMode = !!field;
     selectedField = field;
@@ -100,16 +108,14 @@
         name: field.name,
         is_hidden: field.is_hidden,
         value: field.value,
-        type: field.type,
-        inventory_id: field.inventory_id
+        type: field.type
       };
     } else {
       fieldForm = {
         name: "",
         is_hidden: false,
-        value: [],
-        type: "text",
-        inventory_id: null
+        value: fieldForm.type === 'checkbox' ? [] : [],
+        type: "text"
       };
     }
     showModal = true;
@@ -120,7 +126,7 @@
     selectedField = null;
   }
 
-  // Add/Remove value options for select/checkbox fields
+  // Thêm / xoá và cập nhật tùy chọn cho các trường có giá trị kiểu select/checkbox
   function addValueOption() {
     if (!Array.isArray(fieldForm.value)) {
       fieldForm.value = [];
@@ -138,14 +144,12 @@
     fieldForm.value = newValues;
   }
 
-  // Validation for field values
+  // Validation cho các giá trị nhập vào
   let errorMessage = '';
 
   function validateField(value) {
     errorMessage = '';
-
     if (!value) return;
-
     if (fieldForm.type === 'email') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(value)) {
@@ -165,21 +169,23 @@
     }
   }
 
+  // Khi chọn loại trường, cập nhật type (và giá trị mặc định nếu cần)
   function handleFieldTypeSelect(type) {
     fieldForm.type = type;
+    // Nếu là checkbox, khởi tạo value là mảng rỗng để nhập các tùy chọn
+    if (type === 'checkbox') {
+      fieldForm.value = [];
+    } else {
+      fieldForm.value = [];
+    }
   }
 
-  // For tel input - only allow numbers
+  // Chỉ cho phép nhập số trong trường SĐT
   function handleKeyPress(event) {
     const keyCode = event.which || event.keyCode;
     if (keyCode < 48 || keyCode > 57) {
       event.preventDefault();
     }
-  }
-
-  // Check if value is boolean
-  function isBoolean(value) {
-    return typeof value === 'boolean';
   }
 
   onMount(fetchFields);
@@ -200,7 +206,7 @@
       </button>
     </div>
 
-    <!-- Table Header -->
+    <!-- Tiêu đề bảng -->
     <div class="grid grid-cols-4 gap-4 py-3 border-b text-sm font-medium text-gray-500">
       <div>TÊN</div>
       <div class="flex items-center gap-1">
@@ -213,7 +219,7 @@
       <div>THAO TÁC</div>
     </div>
 
-    <!-- Table Content -->
+    <!-- Nội dung bảng -->
     {#each fields as field}
       <div class="grid grid-cols-4 gap-4 py-4 border-b items-center hover:bg-gray-50 transition-colors duration-150">
         <div class="flex items-center gap-3">
@@ -232,9 +238,9 @@
                     checked={!field.is_hidden}
                     class="sr-only peer"
                     on:change={() => {
-                const updatedField = {...field, is_hidden: !field.is_hidden};
+                const updatedField = { ...field, is_hidden: !field.is_hidden };
                 selectedField = updatedField;
-                fieldForm = {...updatedField};
+                fieldForm = { ...updatedField };
                 handleSubmit();
               }}
             >
@@ -273,7 +279,7 @@
   </div>
 </div>
 
-<!-- Add/Edit Field Modal -->
+<!-- Modal thêm/chỉnh sửa trường -->
 {#if showModal}
   <div class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto m-6">
@@ -293,7 +299,7 @@
         </div>
 
         <div class="flex gap-12">
-          <!-- Left side - Field type selection -->
+          <!-- Bên trái: Lựa chọn loại trường (chỉ khi tạo mới) -->
           <div class="flex-1">
             {#if !isEditMode}
               <div class="flex items-center bg-blue-50 text-[#00307b] p-4 rounded-lg mb-6">
@@ -305,12 +311,11 @@
               </div>
 
               <h3 class="text-gray-600 font-medium mb-4">LOẠI TRƯỜNG</h3>
-
               <div class="space-y-3">
                 {#each suggestedTypes as type}
                   <div class="flex items-center">
                     <button
-                            class="flex-1 p-4 border rounded-lg text-left hover:border-[#00307b] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00307b] transition-all duration-200 {fieldForm.type === type.type ? 'border-[#00307b] bg-blue-50' : 'hover:bg-gray-50'}"
+                            class="flex-1 p-4 border rounded-lg text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00307b] {fieldForm.type === type.type ? 'border-[#00307b] bg-blue-50' : 'hover:border-[#00307b] hover:bg-gray-50'}"
                             on:click={() => handleFieldTypeSelect(type.type)}
                     >
                       <div class="flex items-center">
@@ -329,7 +334,7 @@
             {/if}
           </div>
 
-          <!-- Right side - Field configuration -->
+          <!-- Bên phải: Cấu hình trường -->
           <div class="w-96 border-l pl-8 space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Tên trường</label>
@@ -348,15 +353,13 @@
                         type="checkbox"
                         checked={!fieldForm.is_hidden}
                         class="sr-only peer"
-                        on:change={() => {
-                    fieldForm.is_hidden = !fieldForm.is_hidden;
-                  }}
-                />
+                        on:change={() => fieldForm.is_hidden = !fieldForm.is_hidden}
+                >
                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00307b]"></div>
               </label>
             </div>
 
-            <!-- Field options for select/dropdown/checkbox type fields -->
+            <!-- Các tùy chọn cho trường kiểu select/checkbox -->
             {#if fieldForm.type === 'select' || fieldForm.type === 'checkbox'}
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Tùy chọn</label>
@@ -391,11 +394,10 @@
               </div>
             {/if}
 
-            <!-- Preview for different field types -->
+            <!-- Xem trước giao diện trường -->
             {#if fieldForm.type && !isEditMode}
               <div class="mt-6 border-t pt-6">
                 <h3 class="text-lg font-medium mb-2">Xem trước</h3>
-
                 {#if fieldForm.type === 'text'}
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Văn bản'}</label>
@@ -406,7 +408,6 @@
                     />
                   </div>
                 {/if}
-
                 {#if fieldForm.type === 'tel'}
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Số điện thoại'}</label>
@@ -420,7 +421,6 @@
                     />
                   </div>
                 {/if}
-
                 {#if fieldForm.type === 'email'}
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Email'}</label>
@@ -431,7 +431,6 @@
                     />
                   </div>
                 {/if}
-
                 {#if fieldForm.type === 'url'}
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Website'}</label>
@@ -442,7 +441,6 @@
                     />
                   </div>
                 {/if}
-
                 {#if fieldForm.type === 'date'}
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Ngày tháng'}</label>
@@ -460,7 +458,6 @@
                     </div>
                   </div>
                 {/if}
-
                 {#if fieldForm.type === 'select'}
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Lựa chọn'}</label>
@@ -472,7 +469,6 @@
                     </select>
                   </div>
                 {/if}
-
                 {#if fieldForm.type === 'checkbox'}
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Tùy chọn'}</label>
@@ -492,7 +488,7 @@
             {#if errorMessage}
               <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                 </svg>
                 {errorMessage}
               </p>
@@ -512,7 +508,7 @@
                   on:click={handleSubmit}
                   disabled={!fieldForm.name || errorMessage}
           >
-            {isEditMode ? 'LƯU ': 'TẠO'}
+            {isEditMode ? 'LƯU' : 'TẠO'}
           </button>
         </div>
       </div>
