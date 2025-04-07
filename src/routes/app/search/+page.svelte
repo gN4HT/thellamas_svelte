@@ -101,7 +101,8 @@
         {#each Object.keys(labels) as key}
             <div class="mb-6 border-b border-gray-200 pb-4">
                 <!-- Toggle Header -->
-                <div 
+                <button
+                    aria-label="Tắt/Mở bộ lọc"
                     class="flex justify-between items-center cursor-pointer group" 
                     on:click={() => toggle(key)}
                 >
@@ -112,7 +113,7 @@
                         ></i>
                         <span class="font-medium text-gray-700">{labels[key]}</span>
                     </div>
-                </div>
+                </button>
 
                 <!-- Toggle Body -->
                 {#if toggleStates[key]}

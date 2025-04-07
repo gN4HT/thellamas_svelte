@@ -3,7 +3,7 @@
     import LoadingButton from './LoadingButton.svelte';
 
     export let email: string;
-    export let isOpen = false;
+    export let isOpen: boolean;
 
     const dispatch = createEventDispatcher();
 
@@ -194,6 +194,7 @@
     });
 </script>
 
+{#if isOpen}
 <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center popup-overlay" on:click={handleClickOutside}>
     <div class="bg-white rounded-lg p-6 w-full max-w-md relative">
         <button 
@@ -262,4 +263,5 @@
             </p>
         </div>
     </div>
-</div> 
+</div>
+{/if} 

@@ -83,7 +83,8 @@ async function fetchCategories() {
       <div class="text-center text-gray-500">Không có bài viết nào.</div>
     {:else}
       {#each displayedPosts as post}
-        <div 
+        <button
+          aria-label="Xem chi tiết"
           class="bg-white p-4 shadow-md rounded-lg mb-4 cursor-pointer hover:bg-gray-100"
           on:click={() => fetchPostDetail(post.id)}
         >
@@ -97,7 +98,7 @@ async function fetchCategories() {
 
         <a href={`post/${post.id}`}><h2 class="text-lg font-semibold text-gray-700">{post.title}</h2></a>
           <p class="text-gray-600 mt-2">{post.content.substring(0, 100)}...</p>
-        </div>
+        </button>
       {/each}
 
       <div class="flex justify-between items-center mt-6">

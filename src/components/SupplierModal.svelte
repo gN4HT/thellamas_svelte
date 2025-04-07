@@ -108,7 +108,7 @@
     {/if}
 
     <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-2">
+      <label for="supplier" class="block text-sm font-medium text-gray-700 mb-2">
         Supplier {#if existingSupplierId}(Hiện tại: {getSupplierName(existingSupplierId)}){/if}
       </label>
       <select 
@@ -146,18 +146,3 @@
   </div>
 </div>
 {/if}
-
-<style>
-  input[type="radio"] {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    border: 2px solid #d1d5db;
-    cursor: pointer;
-  }
-
-  input[type="radio"]:checked {
-    background-color: #00205b;
-    border-color: #00205b;
-  }
-</style>

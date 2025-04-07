@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^4.0.0",
+    "@sveltejs/adapter-node": "^5.2.12",
     "@sveltejs/kit": "^2.16.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "autoprefixer": "^10.4.20",
@@ -20,6 +21,8 @@
     "vite": "^6.0.0"
   },
   "dependencies": {
+    "@oslojs/crypto": "^1.0.1",
+    "@oslojs/encoding": "^1.1.0",
     "@tailwindcss/vite": "^4.0.8",
     "@tiptap/core": "^2.11.5",
     "@tiptap/extension-bold": "^2.11.5",
@@ -28,6 +31,7 @@
     "@tiptap/extension-paragraph": "^2.11.5",
     "@tiptap/extension-placeholder": "^2.11.5",
     "@tiptap/extension-text": "^2.11.5",
-    "@tiptap/starter-kit": "^2.11.5"
+    "@tiptap/starter-kit": "^2.11.5",
+    "drizzle-orm": "^0.41.0"
   }
 }

@@ -74,7 +74,7 @@
             <div class="grid grid-cols-4 gap-4">
                 {#each data.inventory_summary as item}
                     <div class="flex flex-col items-center p-8 shadow-md rounded-md bg-white">
-                        <img src={item.icon} class="w-10 h-10"/>
+                        <img alt="cc" src={item.icon} class="w-10 h-10"/>
                         <p class="text-2xl font-bold">{item.value}</p>
                         <span>{item.label}</span>
                     </div>
@@ -88,8 +88,8 @@
                 <h2 class="text-lg font-semibold">Hoạt động gần đây</h2>
                 <div class="flex items-center gap-2">
                     <span class="text-gray-600 text-sm">Tất cả hoạt động</span>
-                    <a href="#"
-                    ><img src="/img/dashboard-icon.png" class="w-6 h-6"
+                    <a href="/"
+                    ><img alt="cc" src="/img/dashboard-icon.png" class="w-6 h-6"
                     /></a>
                 </div>
             </div>
@@ -109,7 +109,7 @@
             <div class="grid grid-cols-3 gap-6">
                 {#each data.recent_items as item}
                     <div class="shadow-md rounded-lg overflow-hidden bg-white">
-                        <a href="#"><img src={item.img} alt={item.name} class="w-full h-80"/></a>
+                        <a href="/"><img src={item.img} alt={item.name} class="w-full h-80"/></a>
                         <div class="p-4">
                             <h3 class="font-semibold">{item.name}</h3>
                             <p class="text-gray-500 py-2">{item.description}</p>
@@ -130,14 +130,14 @@
                 <h2 class="text-lg font-semibold">Mức tồn kho</h2>
                 <div class="flex items-center gap-2">
                     <span class="text-gray-600 text-sm">Ở hoặc Dưới Mức Tối Thiểu</span>
-                    <div><img src="/img/dashboard-icon.png" class="w-6 h-6" alt=""/></div>
+                    <div><img alt="cc" src="/img/dashboard-icon.png" class="w-6 h-6"/></div>
                 </div>
             </div>
             <div class="grid grid-cols-1 gap-4">
                 {#each data.stock_levels as item}
                     <div class="flex items-center shadow-md p-4 bg-white rounded-lg">
-                        <a href="#" class="w-10 h-10 flex justify-center items-center bg-gray-400">
-                            <img src={item.img} class="w-10 h-10"/>
+                        <a href="/" class="w-10 h-10 flex justify-center items-center bg-gray-400">
+                            <img alt="cc" src={item.img} class="w-10 h-10"/>
                         </a>
                         <div class="flex justify-between flex-1 pl-4">
                             <p class="text-lg font-medium">{item.name}</p>

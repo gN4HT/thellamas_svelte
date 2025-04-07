@@ -140,7 +140,8 @@
 
             <div>
                 {#each filteredSuppliers as supplier (supplier.id)}
-                    <div
+                    <button
+                        aria-label="Chọn supplier"
                         class="flex items-center justify-between p-2 cursor-pointer rounded
                         {selectedSupplier?.id === supplier.id ? 'text-[#00205b] bg-blue-50' : 'text-gray-500 hover:bg-gray-100'}"
                         on:click={() => handleSelectSupplier(supplier)}
@@ -154,6 +155,7 @@
                         <div class="flex items-center gap-1">
                             {#if canEdit}
                                 <button 
+                                    aria-label="Chỉnh sửa"
                                     class="text-blue-600 hover:text-blue-800" 
                                     on:click={(e) => handleOpenModal(e, supplier)}
                                 >
@@ -161,7 +163,9 @@
                                         <path d="M6.41421 15.89L16.5563 5.74785L15.1421 4.33363L5 14.4758V15.89H6.41421ZM7.24264 17.89H3V13.6473L14.435 2.21231C14.8256 1.82179 15.4587 1.82179 15.8492 2.21231L18.6777 5.04074C19.0682 5.43126 19.0682 6.06443 18.6777 6.45495L7.24264 17.89ZM3 19.89H21V21.89H3V19.89Z"></path>
                                     </svg>
                                 </button>
-                                <button 
+                                
+                                <button
+                                    aria-label="Xóa"
                                     class="text-red-500 hover:text-red-700 ml-2" 
                                     on:click={(e) => handleDelete(e, supplier.id)}
                                 >
@@ -169,9 +173,10 @@
                                         <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z"></path>
                                     </svg>
                                 </button>
+                                
                             {/if}
                         </div>
-                    </div>
+                    </button>
                 {/each}
             </div>
         </div>
@@ -248,7 +253,7 @@
             <form on:submit={handleSubmit}>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Tên</label>
+                        <label for="name" class="block text-sm font-medium text-gray-700">Tên</label>
                         <input
                             type="text"
                             name="name"
@@ -258,7 +263,7 @@
                         />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                         <input
                             type="email"
                             name="email"
@@ -267,7 +272,7 @@
                         />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                        <label for="phone" class="block text-sm font-medium text-gray-700">Số điện thoại</label>
                         <input
                             type="tel"
                             name="phone"
@@ -276,7 +281,7 @@
                         />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Địa chỉ</label>
+                        <label for="address" class="block text-sm font-medium text-gray-700">Địa chỉ</label>
                         <input
                             type="text"
                             name="address"
@@ -285,7 +290,7 @@
                         />
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Mô tả</label>
+                        <label for="description" class="block text-sm font-medium text-gray-700">Mô tả</label>
                         <textarea
                             name="description"
                             value={selectedSupplier?.description || ''}

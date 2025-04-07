@@ -265,7 +265,8 @@
     <!-- Tags List -->
     <div class="space-y-1">
       {#each filteredTags as tag (tag.id)}
-        <div
+        <button
+          aria-label="Chọn tag"
           class="flex items-center p-2 rounded hover:bg-gray-100 cursor-pointer {selectedTag?.id === tag.id ? 'bg-gray-100 text-[#00205b]' : 'text-gray-500'}"
           on:click={() => selectTag(tag)}
         >
@@ -274,15 +275,18 @@
             {tag.name}
           </span>
           {#if canEdit}
+          <div>
             <button
+              aria-label="Xóa tag"
               class="opacity-0 group-hover:opacity-100 text-red-500 p-1 hover:bg-red-50 rounded"
               on:click|stopPropagation={() => deleteTag(tag)}
               title="Xóa tag"
             >
               <i class="fa-solid fa-trash-can text-sm"></i>
             </button>
+          </div>
           {/if}
-        </div>
+        </button>
       {/each}
     </div>
   </div>
@@ -387,6 +391,7 @@
       <div class="flex justify-between items-center p-4 border-b">
         <h2 class="text-lg font-semibold">Thêm Tag Mới</h2>
         <button 
+          aria-label="Đóng"
           on:click={() => showModal = false}
           class="text-gray-400 hover:text-gray-600"
         >
@@ -395,9 +400,10 @@
       </div>
       
       <div class="p-4">
-        <label class="block text-sm font-medium mb-2">Tên tag</label>
+        <label for="newTag" class="block text-sm font-medium mb-2">Tên tag</label>
         <input
           type="text"
+          name="newTag"
           bind:value={newTag}
           placeholder="Nhập tên tag"
           class="w-full p-2 border rounded focus:border-[#00205b] outline-none"
@@ -406,12 +412,14 @@
 
       <div class="flex justify-end gap-2 p-4 bg-gray-50 rounded-b-lg">
         <button
+          aria-label="Hủy"
           on:click={() => showModal = false}
           class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
         >
           Hủy
         </button>
         <button
+          aria-label="Thêm tag"
           on:click={addTag}
           disabled={newTag.trim().length < 2 || isLoading}
           class="px-4 py-2 bg-[#00205b] text-white rounded hover:bg-[#001639] disabled:opacity-50"

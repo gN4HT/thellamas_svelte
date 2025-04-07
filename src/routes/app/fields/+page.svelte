@@ -243,7 +243,9 @@
         </div>
         <div class="text-gray-700">{field.type}</div>
         <div class="flex items-center gap-2">
+        
           <button
+                  aria-label="Chỉnh sửa"
                   class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-150"
                   title="Chỉnh sửa"
                   on:click={() => openModal(field)}
@@ -253,6 +255,7 @@
             </svg>
           </button>
           <button
+                  aria-label="Xóa"
                   class="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-150"
                   title="Xóa"
                   on:click={() => handleDelete(field)}
@@ -283,6 +286,7 @@
             {isEditMode ? 'Chỉnh sửa trường tùy chỉnh' : 'Tạo trường tùy chỉnh'}
           </h2>
           <button
+                  aria-label="Đóng"
                   class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-150"
                   on:click={closeModal}
           >
@@ -301,7 +305,7 @@
                   <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                 </svg>
                 <span class="text-sm">Bạn có thể thêm 1 trường tùy chỉnh trong gói Miễn phí.</span>
-                <a href="#" class="text-[#00307b] ml-2 hover:underline text-sm font-medium">Xem các gói</a>
+                <a href="/" class="text-[#00307b] ml-2 hover:underline text-sm font-medium">Xem các gói</a>
               </div>
 
               <h3 class="text-gray-600 font-medium mb-4">LOẠI TRƯỜNG</h3>
@@ -332,8 +336,9 @@
           <!-- Right side - Field configuration -->
           <div class="w-96 border-l pl-8 space-y-6">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Tên trường</label>
+              <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Tên trường</label>
               <input
+                      name="name"
                       type="text"
                       bind:value={fieldForm.name}
                       placeholder="Nhập tên trường..."
@@ -342,9 +347,10 @@
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Hiển thị trong danh sách</label>
+              <label for="is_hidden" class="block text-sm font-medium text-gray-700 mb-2">Hiển thị trong danh sách</label>
               <label class="relative inline-flex items-center cursor-pointer">
                 <input
+                        name="is_hidden"
                         type="checkbox"
                         checked={!fieldForm.is_hidden}
                         class="sr-only peer"
@@ -359,10 +365,11 @@
             <!-- Field options for select/dropdown/checkbox type fields -->
             {#if fieldForm.type === 'select' || fieldForm.type === 'checkbox'}
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Tùy chọn</label>
+                <label for="value" class="block text-sm font-medium text-gray-700 mb-2">Tùy chọn</label>
                 {#each fieldForm.value as option, index}
                   <div class="flex items-center mb-2">
                     <input
+                            name="value"
                             type="text"
                             value={option}
                             on:input={(e) => updateValueOption(index, e.target.value)}
@@ -370,6 +377,8 @@
                             class="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200"
                     />
                     <button
+                            aria-label="Xóa tùy chọn"
+                            name="remove_value"
                             class="ml-2 p-2 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50"
                             on:click={() => removeValueOption(index)}
                     >
@@ -398,8 +407,9 @@
 
                 {#if fieldForm.type === 'text'}
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Văn bản'}</label>
+                    <label for="text" class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Văn bản'}</label>
                     <input
+                            name="text"
                             type="text"
                             placeholder="Nhập văn bản..."
                             class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200"
@@ -409,8 +419,9 @@
 
                 {#if fieldForm.type === 'tel'}
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Số điện thoại'}</label>
+                    <label for="tel" class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Số điện thoại'}</label>
                     <input
+                            name="tel"
                             type="tel"
                             placeholder="Nhập số điện thoại..."
                             on:keypress={handleKeyPress}
@@ -423,8 +434,9 @@
 
                 {#if fieldForm.type === 'email'}
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Email'}</label>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Email'}</label>
                     <input
+                            name="email"
                             type="email"
                             placeholder="example@email.com"
                             class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200"
@@ -434,8 +446,9 @@
 
                 {#if fieldForm.type === 'url'}
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Website'}</label>
+                    <label for="url" class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Website'}</label>
                     <input
+                            name="url"
                             type="url"
                             placeholder="https://example.com"
                             class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200"
@@ -445,13 +458,14 @@
 
                 {#if fieldForm.type === 'date'}
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Ngày tháng'}</label>
+                    <label for="date" class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Ngày tháng'}</label>
                     <div class="flex items-center">
                       <input
                               type="date"
+                              name="date"
                               class="flex-1 p-3 border rounded-lg mr-2 focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200"
                       />
-                      <button class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-150">
+                      <button aria-label="Chọn ngày" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-150">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10" />
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -463,8 +477,11 @@
 
                 {#if fieldForm.type === 'select'}
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Lựa chọn'}</label>
-                    <select class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200">
+                    <label for="select" class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Lựa chọn'}</label>
+                    <select
+                            name="select"
+                            class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200"
+                    >
                       <option value="" disabled selected>Chọn một tùy chọn...</option>
                       {#each fieldForm.value as option}
                         <option value={option}>{option}</option>
@@ -475,12 +492,16 @@
 
                 {#if fieldForm.type === 'checkbox'}
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Tùy chọn'}</label>
+                    <label for="checkbox" class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Tùy chọn'}</label>
                     <div class="space-y-2">
                       {#each fieldForm.value as option}
                         <div class="flex items-center">
-                          <input type="checkbox" class="h-4 w-4 text-[#00307b] focus:ring-[#00307b] border-gray-300 rounded" />
-                          <label class="ml-2 text-gray-700">{option}</label>
+                          <input
+                                  type="checkbox"
+                                  name="checkbox"
+                                  class="h-4 w-4 text-[#00307b] focus:ring-[#00307b] border-gray-300 rounded"
+                          />
+                          <label for="checkbox" class="ml-2 text-gray-700">{option}</label>
                         </div>
                       {/each}
                     </div>

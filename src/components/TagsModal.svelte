@@ -117,7 +117,7 @@
     {/if}
 
     <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 mb-2">
+      <label for="tags" class="block text-sm font-medium text-gray-700 mb-2">
         Thẻ
       </label>
       <div class="border border-[#DADCFF] rounded-md overflow-hidden max-h-[300px] overflow-y-auto">

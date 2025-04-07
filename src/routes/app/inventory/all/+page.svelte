@@ -600,6 +600,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                   <Folders {folder} />
                   <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
+                      aria-label="Khôi phục"
                       on:click={() => handleRestore('folder', folder.id)}
                       class="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
                       title="Khôi phục"
@@ -609,6 +610,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                       </svg>
                     </button>
                     <button 
+                      aria-label="Xóa vĩnh viễn"
                       on:click={() => handlePermanentDelete('folder', folder.id)}
                       class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                       title="Xóa vĩnh viễn"
@@ -634,6 +636,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                   <Items {...item} />
                   <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
+                      aria-label="Khôi phục"
                       on:click={() => handleRestore('item', item.id)}
                       class="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
                       title="Khôi phục"
@@ -643,6 +646,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                       </svg>
                     </button>
                     <button 
+                      aria-label="Xóa vĩnh viễn"
                       on:click={() => handlePermanentDelete('item', item.id)}
                       class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                       title="Xóa vĩnh viễn"
@@ -676,6 +680,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                   {#if canEdit}
                     <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
+                        aria-label="Chỉnh sửa"
                         on:click={() => handleEditFolder(folder)}
                         class="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors"
                       >
@@ -684,6 +689,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                         </svg>
                       </button>
                       <button 
+                        aria-label="Quản lý tags"
                         on:click={() => handleOpenTags('folder', folder)}
                         class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
                         title="Quản lý tags"
@@ -693,6 +699,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                         </svg>
                       </button>
                       <button 
+                        aria-label="Xóa"
                         on:click={() => handleDelete('folder', folder.id)}
                         class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                       >
@@ -701,6 +708,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                         </svg>
                       </button>
                       <button 
+                        aria-label="Di chuyển thư mục"
                         on:click={() => handleMoveFolder(folder)}
                         class="p-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition-colors"
                         title="Di chuyển thư mục"
@@ -735,6 +743,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                   {#if canEdit}
                     <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
+                        aria-label="Chỉnh sửa"
                         on:click={() => handleEditItem(item)}
                         class="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors"
                       >
@@ -743,6 +752,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                         </svg>
                       </button>
                       <button 
+                        aria-label="Quản lý tags"
                         on:click={() => handleOpenTags('item', item)}
                         class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
                         title="Quản lý tags"
@@ -752,6 +762,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                         </svg>
                       </button>
                       <button 
+                        aria-label="Chọn supplier"
                         on:click={() => handleOpenSupplier(item)}
                         class="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
                         title="Chọn supplier"
@@ -761,6 +772,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                         </svg>
                       </button>
                       <button 
+                        aria-label="Di chuyển mặt hàng"
                         on:click={() => handleMoveItem(item)}
                         class="p-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition-colors"
                         title="Di chuyển mặt hàng"
@@ -770,6 +782,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                         </svg>
                       </button>
                       <button 
+                        aria-label="Xóa"
                         on:click={() => handleDelete('item', item.id)}
                         class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                       >
