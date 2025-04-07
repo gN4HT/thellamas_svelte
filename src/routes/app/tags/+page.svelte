@@ -7,6 +7,8 @@
   import Folders from "../../../components/Folders.svelte";
   import Items from "../../../components/Items.svelte";
   import type { Tag } from "../../../models/tag";
+  import { userStore } from "../../../stores/userStore";
+
   interface ApiResponse<T> {
     data: T;
     message: string;
@@ -32,6 +34,10 @@
   let folderPage = 1;
   let itemPage = 1;
   const ITEMS_PER_PAGE = 10;
+
+  // Subscribe to user store
+  let canEdit = false;
+  $: canEdit = $userStore ? userStore.hasPermission($userStore) : false;
 
   // Computed Properties
   $: filteredTags = tags.filter(tag => 
@@ -197,7 +203,7 @@
   }
 
   function startEditingTag() {
-    if (selectedTag) {
+    if (selectedTag && canEdit) {
       isEditingTag = true;
       editedTagName = selectedTag.name;
     }
@@ -205,9 +211,9 @@
 
   function handleKeyPress(event: KeyboardEvent) {
     if (event.key === 'Enter') {
-      if (isEditingTag) {
+      if (isEditingTag && canEdit) {
         updateTagName();
-      } else if (showModal) {
+      } else if (showModal && canEdit) {
         addTag();
       }
     } else if (event.key === 'Escape') {
@@ -267,13 +273,15 @@
           <span class="truncate flex-1" title={tag.name}>
             {tag.name}
           </span>
-          <button
-            class="opacity-0 group-hover:opacity-100 text-red-500 p-1 hover:bg-red-50 rounded"
-            on:click|stopPropagation={() => deleteTag(tag)}
-            title="Xóa tag"
-          >
-            <i class="fa-solid fa-trash-can text-sm"></i>
-          </button>
+          {#if canEdit}
+            <button
+              class="opacity-0 group-hover:opacity-100 text-red-500 p-1 hover:bg-red-50 rounded"
+              on:click|stopPropagation={() => deleteTag(tag)}
+              title="Xóa tag"
+            >
+              <i class="fa-solid fa-trash-can text-sm"></i>
+            </button>
+          {/if}
         </div>
       {/each}
     </div>
@@ -283,7 +291,7 @@
   <div class="flex-1 overflow-y-auto">
     <!-- Header -->
     <div class="flex justify-between items-center p-4 border-b bg-white sticky top-0 z-10">
-      {#if isEditingTag}
+      {#if isEditingTag && canEdit}
         <input
           type="text"
           bind:value={editedTagName}
@@ -293,23 +301,25 @@
         />
       {:else}
         <h1 
-          class="text-2xl font-semibold flex items-center gap-2 cursor-pointer"
+          class="text-2xl font-semibold flex items-center gap-2 {canEdit ? 'cursor-pointer' : ''}"
           on:click={startEditingTag}
         >
           {selectedTag?.name || "Chọn tag"}
-          {#if selectedTag}
+          {#if selectedTag && canEdit}
             <i class="fa-solid fa-pen text-sm text-gray-400"></i>
           {/if}
         </h1>
       {/if}
 
-      <button
-        on:click={() => showModal = true}
-        class="bg-[#00205b] text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-[#001639]"
-      >
-        <i class="fa-solid fa-plus"></i>
-        Thêm Tag
-      </button>
+      {#if canEdit}
+        <button
+          on:click={() => showModal = true}
+          class="bg-[#00205b] text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-[#001639]"
+        >
+          <i class="fa-solid fa-plus"></i>
+          Thêm Tag
+        </button>
+      {/if}
     </div>
 
     <!-- Content -->

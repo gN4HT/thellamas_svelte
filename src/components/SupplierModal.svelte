@@ -8,6 +8,7 @@
   
   let suppliers: Array<{ id: number; name: string }> = [];
   let selectedSupplierId: number | null = null;
+  let existingSupplierId: number | null = null;
   let isLoading = false;
   let error: string | null = null;
 
@@ -19,21 +20,45 @@
       const suppliersData = await apiFetch('/suppliers');
       suppliers = suppliersData;
 
-      // Fetch item để lấy supplier_id hiện tại
+      // Fetch item để lấy supplier hiện tại
       const itemData = await apiFetch(`/items/${itemId}`);
       console.log('Item data:', itemData);
 
-      // Set selected supplier từ item data
-      selectedSupplierId = itemData.supplier_id || null;
-      console.log('Selected supplier:', selectedSupplierId);
+      // Set existing supplier từ item data
+      existingSupplierId = itemData.supplier_id || null;
+      
+      // Set selected supplier từ existing supplier
+      selectedSupplierId = existingSupplierId;
+      
+      // Kiểm tra xem supplier có tồn tại trong danh sách không
+      if (selectedSupplierId && !suppliers.some(s => s.id === selectedSupplierId)) {
+        console.warn('Selected supplier not found in suppliers list');
+        selectedSupplierId = null;
+        existingSupplierId = null;
+      }
+
+      console.log('Supplier state:', {
+        existingSupplierId,
+        selectedSupplierId,
+        matchedSupplier: suppliers.find(s => s.id === selectedSupplierId)
+      });
     } catch (err) {
       error = err.message;
       console.error('Error fetching data:', err);
+      selectedSupplierId = null;
+      existingSupplierId = null;
     }
   }
 
   $: if (showModal) {
     fetchData();
+  }
+
+  // Lấy tên supplier từ ID
+  function getSupplierName(id: number | null): string {
+    if (!id) return '-- Chọn supplier --';
+    const supplier = suppliers.find(s => s.id === id);
+    return supplier ? supplier.name : '-- Chọn supplier --';
   }
 
   async function handleSubmit() {
@@ -46,6 +71,7 @@
       console.log('Submitting supplier:', {
         itemId,
         supplierId: selectedSupplierId,
+        selectedSupplierDetails: suppliers.find(s => s.id === selectedSupplierId),
         formData: Object.fromEntries(formData)
       });
 
@@ -68,19 +94,12 @@
       isLoading = false;
     }
   }
-
-  // Lấy tên supplier từ ID
-  function getSupplierName(id: number | null): string {
-    if (!id) return '-- Chọn supplier --';
-    const supplier = suppliers.find(s => s.id === id);
-    return supplier ? supplier.name : '-- Chọn supplier --';
-  }
 </script>
 
 {#if showModal}
-<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+<div class="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50">
   <div class="bg-white rounded-lg p-6 w-96 max-w-lg">
-    <h2 class="text-xl font-bold mb-4">Chọn Supplier</h2>
+    <h2 class="text-xl font-bold mb-4 text-[#00205b]">Chọn Supplier</h2>
     
     {#if error}
       <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
@@ -90,11 +109,11 @@
 
     <div class="mb-4">
       <label class="block text-sm font-medium text-gray-700 mb-2">
-        Supplier {#if selectedSupplierId}(Hiện tại: {getSupplierName(selectedSupplierId)}){/if}
+        Supplier {#if existingSupplierId}(Hiện tại: {getSupplierName(existingSupplierId)}){/if}
       </label>
       <select 
         bind:value={selectedSupplierId}
-        class="w-full border rounded-md p-2"
+        class="w-full border border-[#DADCFF] rounded-md p-2"
       >
         <option value={null}>-- Chọn supplier --</option>
         {#each suppliers as supplier}
@@ -127,3 +146,18 @@
   </div>
 </div>
 {/if}
+
+<style>
+  input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #d1d5db;
+    cursor: pointer;
+  }
+
+  input[type="radio"]:checked {
+    background-color: #00205b;
+    border-color: #00205b;
+  }
+</style>

@@ -1,197 +1,312 @@
-<script>
+<script lang="ts">
     import { onMount } from "svelte";
+    import { userStore } from "../../../stores/userStore";
     import { apiFetch } from "$lib/api";
 
-    let suppliers = [];
+    interface Supplier {
+        id: string;
+        name: string;
+        email: string;
+        phone: string;
+        address?: string;
+        description?: string;
+    }
+
+    let suppliers: Supplier[] = [];
+    let selectedSupplier: Supplier | null = null;
     let showModal = false;
-    let selectedSupplier = null;
     let isEditMode = false;
+    let isLoading = false;
+    let error: string | null = null;
     let searchQuery = "";
 
-    let supplierForm = {
-        name: "",
-        phone: "",
-        email: "",
-        address: "",
-        description: ""
-    };
+    // Subscribe to user store
+    let canEdit = false;
+    $: canEdit = $userStore ? userStore.hasPermission($userStore) : false;
 
-    // Pagination
-    let itemPage = 1;
-    const itemsPerPage = 10;
-    function paginatedItems() {
-        const start = (itemPage - 1) * itemsPerPage;
-        return items.slice(start, start + itemsPerPage);
+    // Filtered suppliers based on search
+    $: filteredSuppliers = suppliers.filter(supplier => 
+        supplier.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        supplier.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        supplier.phone.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    async function fetchSuppliers() {
+        isLoading = true;
+        try {
+            const response = await apiFetch("suppliers");
+            suppliers = response;
+        } catch (err) {
+            console.error("Error fetching suppliers:", err);
+            error = "Không thể tải danh sách nhà cung cấp";
+        } finally {
+            isLoading = false;
+        }
     }
-    function goToPage(type, event) {
-        let value = parseInt(event.target.value) || 1;
-        let maxPage = Math.ceil((items.length) / itemsPerPage);
-        let pageValue = Math.max(1, Math.min(maxPage, value));
-        itemPage = pageValue;
-    }
 
-    const fetchSuppliers = async () => {
-        try {
-            const headers = { Authorization: `Bearer ${getToken()}` };
-            const result = await apiFetch("/suppliers", { headers });
-            suppliers = result.map(supplier => ({
-                id: supplier.id,
-                name: supplier.name,
-                phone: supplier.phone || "Chưa có số",
-                email: supplier.email || "Chưa có email",
-                address: supplier.address || "Chưa có địa chỉ",
-                description: supplier.description || "Không có mô tả",
-            }));
-        } catch (error) {
-            console.error("Lỗi khi fetch API nhà cung cấp:", error);
-        }
-    };
-
-    const handleSubmit = async () => {
-        try {
-            const endpoint = isEditMode 
-                ? `/suppliers/${selectedSupplier.id}`
-                : '/suppliers';
-            
-            await apiFetch(endpoint, {
-                method: isEditMode ? 'PUT' : 'POST',
-                body: supplierForm 
-            });
-
-            const response = await fetch(url, { method, headers, body });
-            if (response.ok) {
-                closeModal();
-                fetchSuppliers();
-            } else {
-                console.error("Lỗi:", await response.json());
-            }
-        } catch (error) {
-            console.error("Lỗi khi gửi form:", error);
-        }
-    };
-
-    const handleDelete = async (supplier) => {
-        const confirmDelete = confirm(`Bạn có chắc muốn xóa nhà cung cấp: ${supplier.name}?`);
-        if (!confirmDelete) return;
-
-        try {
-            const url = `http://127.0.0.1:8000/api/suppliers/${supplier.id}`;
-            const headers = { Authorization: `Bearer ${getToken()}` };
-            const response = await fetch(url, { method: "DELETE", headers });
-
-            if (response.ok) {
-                fetchSuppliers();
-            } else {
-                console.error("Lỗi khi xóa:", await response.json());
-            }
-        } catch (error) {
-            console.error("Lỗi khi xóa nhà cung cấp:", error);
-        }
-    };
-
-    function openModal(supplier = null) {
-        isEditMode = !!supplier;
+    function handleOpenModal(event: Event | null, supplier: Supplier | null = null) {
+        if (!canEdit) return;
+        if (event) event.preventDefault();
+        if (event?.stopPropagation) event.stopPropagation();
         selectedSupplier = supplier;
-        supplierForm = supplier ? { ...supplier } : {
-            name: "", phone: "", email: "", address: "", description: ""
-        };
+        isEditMode = !!supplier;
         showModal = true;
     }
 
-    function closeModal() {
-        showModal = false;
-        selectedSupplier = null;
+    function handleSelectSupplier(supplier: Supplier) {
+        selectedSupplier = supplier;
+    }
+
+    async function handleDelete(event: Event, supplierId: string) {
+        if (!canEdit) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (confirm("Bạn có chắc chắn muốn xóa nhà cung cấp này không?")) {
+            isLoading = true;
+            try {
+                await apiFetch(`suppliers/${supplierId}`, {
+                    method: "DELETE"
+                });
+                if (selectedSupplier?.id === supplierId) {
+                    selectedSupplier = null;
+                }
+                await fetchSuppliers();
+            } catch (err) {
+                console.error("Error deleting supplier:", err);
+                error = "Không thể xóa nhà cung cấp";
+            } finally {
+                isLoading = false;
+            }
+        }
+    }
+
+    async function handleSubmit(event: SubmitEvent) {
+        if (!canEdit) return;
+        event.preventDefault();
+        const formData = new FormData(event.target as HTMLFormElement);
+        const supplierData = Object.fromEntries(formData);
+        
+        const endpoint = isEditMode && selectedSupplier 
+            ? `suppliers/${selectedSupplier.id}` 
+            : "suppliers";
+        const method = isEditMode ? "PUT" : "POST";
+
+        isLoading = true;
+        try {
+            await apiFetch(endpoint, {
+                method,
+                body: supplierData
+            });
+            showModal = false;
+            await fetchSuppliers();
+        } catch (err) {
+            console.error("Error saving supplier:", err);
+            error = "Không thể lưu thông tin nhà cung cấp";
+        } finally {
+            isLoading = false;
+        }
     }
 
     onMount(fetchSuppliers);
 </script>
 
-{#if suppliers.length > 0}
-<div class="bg-gray-100 h-screen flex w-full">
-    <div class="bg-white p-4 border-r border-gray-300 overflow-y-auto small-scrollbar w-[300px]">
-        <div class="flex justify-between items-center border border-gray-300 rounded p-2 mb-4">
-            <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
-            <input 
-                type="text" 
-                placeholder="Tìm kiếm suppliers" 
-                bind:value={searchQuery}
-                class="w-full outline-none border-none pl-2"
-            />
-        </div>
+<!-- Loading Overlay -->
+{#if isLoading}
+  <div class="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00205b]"></div>
+  </div>
+{/if}
 
-        <div>
-            {#each filteredSuppliers() as supplier (supplier.id)}
-                <div
+<!-- Error Message -->
+{#if error}
+  <div class="fixed top-4 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg">
+    {error}
+    <button class="ml-4 underline" on:click={() => error = null}>Đóng</button>
+  </div>
+{/if}
+
+<div class="container">
+    <div class="bg-gray-100 h-screen flex w-full">
+        <div class="bg-white p-4 border-r border-gray-300 overflow-y-auto small-scrollbar w-[300px]">
+            <div class="flex justify-between items-center border border-gray-300 rounded p-2 mb-4">
+                <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
+                <input 
+                    type="text" 
+                    bind:value={searchQuery}
+                    placeholder="Tìm kiếm suppliers" 
+                    class="w-full outline-none border-none pl-2"
+                />
+            </div>
+
+            <div>
+                {#each filteredSuppliers as supplier (supplier.id)}
+                    <div
                         class="flex items-center justify-between p-2 cursor-pointer rounded
-                {selectedSupplier && selectedSupplier.id === supplier.id ? 'text-[#00205b]' : 'text-gray-500 hover:bg-gray-100'}"
-                        on:click={() => selectSupplier(supplier)}
-                >
-                    <div class="flex items-center gap-1">
-                        <span class="mr-2 text-xl"><i class="fa-solid fa-box"></i></span>
-                        <span title={supplier.name}>
-                    {supplier.name.length > 15 ? supplier.name.slice(0, 15) + '...' : supplier.name}
-                </span>
+                        {selectedSupplier?.id === supplier.id ? 'text-[#00205b] bg-blue-50' : 'text-gray-500 hover:bg-gray-100'}"
+                        on:click={() => handleSelectSupplier(supplier)}
+                    >
+                        <div class="flex items-center gap-1">
+                            <span class="mr-2 text-xl"><i class="fa-solid fa-box"></i></span>
+                            <span title={supplier.name}>
+                                {supplier.name.length > 15 ? supplier.name.slice(0, 15) + '...' : supplier.name}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            {#if canEdit}
+                                <button 
+                                    class="text-blue-600 hover:text-blue-800" 
+                                    on:click={(e) => handleOpenModal(e, supplier)}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                        <path d="M6.41421 15.89L16.5563 5.74785L15.1421 4.33363L5 14.4758V15.89H6.41421ZM7.24264 17.89H3V13.6473L14.435 2.21231C14.8256 1.82179 15.4587 1.82179 15.8492 2.21231L18.6777 5.04074C19.0682 5.43126 19.0682 6.06443 18.6777 6.45495L7.24264 17.89ZM3 19.89H21V21.89H3V19.89Z"></path>
+                                    </svg>
+                                </button>
+                                <button 
+                                    class="text-red-500 hover:text-red-700 ml-2" 
+                                    on:click={(e) => handleDelete(e, supplier.id)}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                                        <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z"></path>
+                                    </svg>
+                                </button>
+                            {/if}
+                        </div>
                     </div>
-                    <div class="flex items-center gap-1">
-                        <a href="#" on:click={event => handleOpenModal(event, supplier)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-                                <path d="M6.41421 15.89L16.5563 5.74785L15.1421 4.33363L5 14.4758V15.89H6.41421ZM7.24264 17.89H3V13.6473L14.435 2.21231C14.8256 1.82179 15.4587 1.82179 15.8492 2.21231L18.6777 5.04074C19.0682 5.43126 19.0682 6.06443 18.6777 6.45495L7.24264 17.89ZM3 19.89H21V21.89H3V19.89Z"></path>
-                            </svg>
-                        </a>
-                        <span class="ml-auto text-red-500 cursor-pointer" on:click={event => handleDelete(event, supplier.id)}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
-                        <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z"></path>
-                    </svg>
-                </span>
-                    </div>
-                </div>
-            {/each}
+                {/each}
+            </div>
         </div>
-    </div>
 
-    <div class="flex flex-col w-full p-3">
-        <div class="flex justify-between align-center border-b border-gray-300 p-4">
-            <h2 class="flex items-center gap-2 text-3xl ml-3 cursor-pointer {selectedSupplier ? 'text-[#00205B]' : 'text-gray-500'}">
-                {selectedSupplier ? (selectedSupplier.name.length > 30 ? selectedSupplier.name.slice(0, 30) + "..." : selectedSupplier.name) : "Chọn supplier"}
-            </h2>
-            <button class="px-4 py-2 bg-[#00205b] text-white rounded flex items-center" on:click={() => openModal(false)}>
-                <span class="text-xl mr-2 bg-white/10 px-2 rounded">+</span>Thêm supplier
-            </button>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {#each suppliers as supplier}
-                <div class="relative bg-gray-100 text-black p-6 rounded-lg shadow-md text-center">
-                    <button on:click={() => handleDelete(supplier)} class="absolute top-2 right-2 bg-gray-500 text-white p-1 rounded-full text-xs"><svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
-                    </svg></button>
-                    <h2 class="text-lg font-semibold mb-2 cursor-pointer" on:click={() => openModal(supplier)}>{supplier.name}</h2>
-                    <p><strong>📞</strong> {supplier.phone}</p>
-                    <p><strong>📧</strong> {supplier.email}</p>
-                    <p><strong>🏠</strong> {supplier.address}</p>
-                    <p><strong>📜</strong> {supplier.description}</p>
+        <div class="flex flex-col w-full p-3">
+            <div class="flex justify-between align-center border-b border-gray-300 p-4">
+                <h2 class="flex items-center gap-2 text-3xl ml-3 {selectedSupplier ? 'text-[#00205B]' : 'text-gray-500'}">
+                    {selectedSupplier ? (selectedSupplier.name.length > 30 ? selectedSupplier.name.slice(0, 30) + "..." : selectedSupplier.name) : "Chọn supplier"}
+                </h2>
+                {#if canEdit}
+                    <button 
+                        on:click={(e) => handleOpenModal(e)}
+                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
+                        Thêm nhà cung cấp
+                    </button>
+                {/if}
+            </div>
+            {#if selectedSupplier}
+                <div class="p-6">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-xl font-semibold mb-4">Thông tin chi tiết</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-gray-600">Email</p>
+                                <p class="font-medium">{selectedSupplier.email || 'Chưa có'}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Số điện thoại</p>
+                                <p class="font-medium">{selectedSupplier.phone || 'Chưa có'}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Địa chỉ</p>
+                                <p class="font-medium">{selectedSupplier.address || 'Chưa có'}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Mô tả</p>
+                                <p class="font-medium">{selectedSupplier.description || 'Chưa có'}</p>
+                            </div>
+                        </div>
+                        {#if canEdit}
+                            <div class="mt-6 flex justify-end space-x-3">
+                                <button
+                                    on:click={(e) => handleOpenModal(e, selectedSupplier)}
+                                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                >
+                                    Chỉnh sửa
+                                </button>
+                                <button
+                                    on:click={(e) => handleDelete(e, selectedSupplier.id)}
+                                    class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                                >
+                                    Xóa
+                                </button>
+                            </div>
+                        {/if}
+                    </div>
                 </div>
-            {/each}
+            {:else}
+                <div class="flex items-center justify-center h-full text-gray-500">
+                    <p>Chọn một nhà cung cấp để xem chi tiết</p>
+                </div>
+            {/if}
         </div>
     </div>
 </div>
-{/if}
 
 {#if showModal}
-    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div class="bg-white rounded shadow-lg w-96 p-4">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">{isEditMode ? `Chỉnh sửa: ${selectedSupplier.name}` : "Thêm Nhà cung cấp"}</h2>
-                <button on:click={closeModal} class="text-gray-600 text-2xl">&times;</button>
-            </div>
-            <form on:submit|preventDefault={handleSubmit} class="space-y-4">
-                <input bind:value={supplierForm.name} placeholder="Tên nhà cung cấp" required class="border w-full p-2 rounded" />
-                <input bind:value={supplierForm.phone} placeholder="Số điện thoại" class="border w-full p-2 rounded" />
-                <input bind:value={supplierForm.email} placeholder="Email" type="email" class="border w-full p-2 rounded" />
-                <input bind:value={supplierForm.address} placeholder="Địa chỉ" class="border w-full p-2 rounded" />
-                <input bind:value={supplierForm.description} placeholder="Mô tả" class="border w-full p-2 rounded" />
-                <div class="flex justify-end mt-4">
-                    <button type="button" on:click={closeModal} class="mr-2 px-4 py-2 border rounded">Hủy</button>
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">{isEditMode ? "Cập nhật" : "Thêm mới"}</button>
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg w-full max-w-md">
+            <h2 class="text-xl font-bold mb-4">
+                {isEditMode ? 'Sửa nhà cung cấp' : 'Thêm nhà cung cấp'}
+            </h2>
+            <form on:submit={handleSubmit}>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tên</label>
+                        <input
+                            type="text"
+                            name="name"
+                            required
+                            value={selectedSupplier?.name || ''}
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <input
+                            type="email"
+                            name="email"
+                            value={selectedSupplier?.email || ''}
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                        <input
+                            type="tel"
+                            name="phone"
+                            value={selectedSupplier?.phone || ''}
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Địa chỉ</label>
+                        <input
+                            type="text"
+                            name="address"
+                            value={selectedSupplier?.address || ''}
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Mô tả</label>
+                        <textarea
+                            name="description"
+                            value={selectedSupplier?.description || ''}
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        ></textarea>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button
+                        type="button"
+                        on:click={() => showModal = false}
+                        class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                    >
+                        Hủy
+                    </button>
+                    <button
+                        type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    >
+                        {isEditMode ? 'Cập nhật' : 'Thêm'}
+                    </button>
                 </div>
             </form>
         </div>

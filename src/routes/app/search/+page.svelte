@@ -187,7 +187,7 @@
         <!-- Apply Filter Button -->
         <button 
             on:click={search} 
-            class="w-full mt-6 bg-blue-900 text-white py-2.5 rounded-lg font-semibold hover:bg-white hover:text-blue-900 border border-blue-900 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full mt-6 bg-[#00205B] text-white py-2.5 rounded-lg font-semibold hover:bg-white hover:text-blue-900 border border-blue-900 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isLoading || !hasAnyFilter()}
         >
             {#if isLoading}

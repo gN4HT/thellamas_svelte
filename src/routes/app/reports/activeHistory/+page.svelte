@@ -74,14 +74,14 @@
           <td class="py-2 px-4 border">{item.activity_type}</td>
           <td class="py-2 px-4 border">{item.activity}</td>
           <td class="py-2 px-4 border">{item.user_name}</td>
-          <td class="py-2 px-4 border">{item.item_id}</td>
-          <td class="py-2 px-4 border">{item.folder_id}</td>
+          <td class="py-2 px-4 border">{item.item_name ?? "-"}</td>
+          <td class="py-2 px-4 border">{item.folder_name ?? "-"}</td>
           <td class="py-2 px-4 border">{item.old_quantity ?? "-"}</td>
           <td class="py-2 px-4 border">{item.new_quantity ?? "-"}</td>
-          <td class="py-2 px-4 border">{item.old_price ?? "-"}</td>
-          <td class="py-2 px-4 border">{item.new_price ?? "-"}</td>
-          <td class="py-2 px-4 border">{item.old_folder ?? "-"}</td>
-          <td class="py-2 px-4 border">{item.new_folder ?? "-"}</td>
+          <td class="py-2 px-4 border">{item.old_price ? item.old_price.toLocaleString() + '₫' : "-"}</td>
+          <td class="py-2 px-4 border">{item.new_price ? item.new_price.toLocaleString() + '₫' : "-"}</td>
+          <td class="py-2 px-4 border">{item.old_folder_name ?? "-"}</td>
+          <td class="py-2 px-4 border">{item.new_folder_name ?? "-"}</td>
         </tr>
       {/each}
     </tbody>

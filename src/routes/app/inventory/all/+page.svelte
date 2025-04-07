@@ -13,9 +13,8 @@
   import { folderStore } from '../../../../stores/folderStore';
   import TagsModal from "../../../../components/TagsModal.svelte";
   import SupplierModal from "../../../../components/SupplierModal.svelte";
-
-  // Constants
-  const ITEMS_PER_PAGE = 8;
+  import MoveFolder from "../../../../components/MoveFolder.svelte";
+  import { userStore } from "../../../../stores/userStore";
 
   // State Management
     let folders: Folder[] = [];
@@ -27,11 +26,27 @@
   
     let folderPage = 1;
     let itemPage = 1;
+    let lastFolderId: number | null = null;
+    let lastItemId: number | null = null;
+    let minFolderId: number | null = null;
+    let maxFolderId: number | null = null;
+    let minItemId: number | null = null;
+    let maxItemId: number | null = null;
+    let hasNextItems = false;
+    let hasPreviousItems = false;
+    let hasNextFolders = false;
+    let hasPreviousFolders = false;
 
   // Thêm state cho thùng rác
   let isTrashMode = false;
   let deletedItems: Item[] = [];
   let deletedFolders: Folder[] = [];
+
+  // Add these state variables after other state declarations
+  let showMoveModal = false;
+  let itemToMove: Item | null = null;
+  let folderToMove: Folder | null = null;
+  let moveModalType: 'folder' | 'item' = 'folder';
 
   // Subscribe to URL changes
   $: {
@@ -41,26 +56,25 @@
     if (folderId) { 
         currentFolderId = Number(folderId);
         console.log('URL changed, fetching data for folder:', currentFolderId);
+        // Reset pagination when changing folders
+        folderPage = 1;
+        itemPage = 1;
+        lastFolderId = null;
+        lastItemId = null;
         fetchData(currentFolderId);
     } else {
         currentFolderId = null;
         currentFolderName = "Tất cả mặt hàng";
+        // Reset pagination when going back to root
+        folderPage = 1;
+        itemPage = 1;
+        lastFolderId = null;
+        lastItemId = null;
         console.log('URL changed, fetching root data');
         fetchData(null);
     }
   }
-
-  // Computed Properties
-  $: paginatedFolders = folders.slice(
-      (folderPage - 1) * ITEMS_PER_PAGE,  
-      folderPage * ITEMS_PER_PAGE
-  );  
-
-  $: paginatedItems = items.slice(
-      (itemPage - 1) * ITEMS_PER_PAGE,
-      itemPage * ITEMS_PER_PAGE
-  );
-
+  
   $: totalPrice = items.reduce((total, item) => {
       const price = Number(String(item.price).replace(/[^\d.-]/g, "")) || 0;
         return total + price;
@@ -91,51 +105,108 @@
   let selectedItemForTags: Item | null = null;
   let selectedFolderForTags: Folder | null = null;
 
+  // Subscribe to user store
+  let canEdit = false;
+  $: canEdit = $userStore ? userStore.hasPermission($userStore) : false;
+
   // Data Fetching
+  async function fetchFolders(isPrev = false) {
+    try {
+        let folderUrl = '/folders';
+        // Sử dụng maxId cho prev, minId cho next
+        if (isPrev && maxFolderId) {
+            folderUrl += `?latestId=${maxFolderId}&action=prev`;
+        } else if (!isPrev && minFolderId) {
+            folderUrl += `?latestId=${minFolderId}`;
+        }
+        const allFolders = await apiFetch(folderUrl);
+
+        // Lọc folders theo is_deleted
+        const filteredFolders = allFolders.filter(folder => folder.is_deleted !== 1);
+        folders = filteredFolders;
+
+        // Update pagination states
+        hasNextFolders = folders.length > 0;
+        hasPreviousFolders = folderPage > 1;
+
+        // Lấy min và max id ngay khi có data mới
+        if (folders.length > 0) {
+            const folderIds = folders.map(folder => folder.id);
+            minFolderId = Math.min(...folderIds);
+            maxFolderId = Math.max(...folderIds);
+            // lastFolderId chỉ dùng để hiển thị
+            lastFolderId = isPrev ? maxFolderId : minFolderId;
+        }
+
+        console.log('Folders Length:', folders.length);
+        console.log('Min Folder ID:', minFolderId);
+        console.log('Max Folder ID:', maxFolderId);
+        console.log('Folder URL:', folderUrl);
+    } catch (err) {
+        console.error("Lỗi khi tải folders:", err);
+        error = err.message || "Không thể tải folders. Vui lòng thử lại sau.";
+    }
+  }
+
+  async function fetchItems(folderId: number | null = null, isPrev = false) {
+    try {
+        let itemUrl = '/items';
+        // Sử dụng maxId cho prev, minId cho next
+        if (isPrev && maxItemId) {
+            itemUrl += `?latestId=${maxItemId}&action=prev`;
+        } else if (!isPrev && minItemId) {
+            itemUrl += `?latestId=${minItemId}`;
+        }
+        const allItems = await apiFetch(itemUrl);
+
+        // Lọc items theo folder_id và is_deleted
+        const filteredItems = folderId 
+            ? allItems.filter(item => item.folder_id === folderId && item.is_deleted !== 1)
+            : allItems.filter(item => item.is_deleted !== 1);
+        
+        items = filteredItems;
+
+        // Update pagination states
+        hasNextItems = items.length > 0;
+        hasPreviousItems = itemPage > 1;
+
+        // Lấy min và max id ngay khi có data mới
+        if (items.length > 0) {
+            const itemIds = items.map(item => item.id);
+            minItemId = Math.min(...itemIds);
+            maxItemId = Math.max(...itemIds);
+            // lastItemId chỉ dùng để hiển thị
+            lastItemId = isPrev ? maxItemId : minItemId;
+        }
+
+        console.log('Items Length:', items.length);
+        console.log('Min Item ID:', minItemId);
+        console.log('Max Item ID:', maxItemId);
+        console.log('Item URL:', itemUrl);
+    } catch (err) {
+        console.error("Lỗi khi tải items:", err);
+        error = err.message || "Không thể tải items. Vui lòng thử lại sau.";
+    }
+  }
+
   async function fetchData(folderId: number | null = null) {
     isLoading = true;
     error = null;
     try {
-        const [allFolders, allItems] = await Promise.all([
-            apiFetch("/folders"),
-            apiFetch("/items")
+        await Promise.all([
+            fetchFolders(false),
+            fetchItems(folderId, false)
         ]);
 
-        // Lọc folders và items dựa trên folderId
+        // Cập nhật tên folder hiện tại
         if (folderId) {
-            // Lọc folders có parent_id trùng với folderId hiện tại
-            folders = allFolders.filter(folder => 
-                folder.parent_id === folderId && 
-                folder.is_deleted !== 1
-            );
-
-            // Lọc items thuộc folder hiện tại
-            items = allItems.filter(item => 
-                item.folder_id === folderId && 
-                item.is_deleted !== 1
-            );
-            
-            // Cập nhật tên folder hiện tại
-            const currentFolder = allFolders.find(f => f.id === folderId);
+            const currentFolder = folders.find(f => f.id === folderId);
             if (currentFolder) {
                 currentFolderName = currentFolder.name;
             }
         } else {
-            // Hiển thị folders gốc (không có parent)
-            folders = allFolders.filter(folder => 
-                folder.parent_id === null && 
-                folder.is_deleted !== 1
-            );
-
-            // Hiển thị tất cả items khi ở trang chủ
-            items = allItems.filter(item => 
-                item.is_deleted !== 1
-            );
             currentFolderName = "Tất cả mặt hàng";
         }
-
-        console.log('Current Folder ID:', folderId);
-        console.log('Total Items:', items.length);
 
     } catch (err) {
         console.error("Lỗi khi tải dữ liệu:", err);
@@ -302,6 +373,14 @@
             throw new Error('Failed to save folder');
         }
 
+        // Reset pagination values khi tạo mới
+        if (!isEdit) {
+            folderPage = 1;
+            lastFolderId = null;
+            minFolderId = null;
+            maxFolderId = null;
+        }
+
         const allFolders = await apiFetch("/folders");
         folderStore.set(allFolders);
         await fetchData(currentFolderId);
@@ -345,6 +424,14 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
             throw new Error('Failed to save item');
         }
 
+        // Reset pagination values khi tạo mới
+        if (!isEdit) {
+            itemPage = 1;
+            lastItemId = null;
+            minItemId = null;
+            maxItemId = null;
+        }
+        
         // Refresh data sau khi lưu thành công
         await fetchData(currentFolderId);
         
@@ -382,6 +469,54 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
     }
   }
 
+  // Add these functions after other handlers
+  function handleMoveFolder(folder: Folder) {
+    folderToMove = folder;
+    itemToMove = null;
+    moveModalType = 'folder';
+    showMoveModal = true;
+  }
+
+  function handleMoveItem(item: Item) {
+    itemToMove = item;
+    folderToMove = null;
+    moveModalType = 'item';
+    showMoveModal = true;
+  }
+
+  // Add function to handle page changes
+  function handlePageChange(type: 'folder' | 'item', direction: 'next' | 'prev') {
+    if (type === 'folder') {
+      if (direction === 'next') {
+        folderPage++;
+        fetchFolders(false);
+      } else {
+        folderPage--;
+        // Reset lastId when going back to first page
+        if (folderPage === 1) {
+          lastFolderId = null;
+          minFolderId = null;
+          maxFolderId = null;
+        }
+        fetchFolders(true);
+      }
+    } else {
+      if (direction === 'next') {
+        itemPage++;
+        fetchItems(currentFolderId, false);
+      } else {
+        itemPage--;
+        // Reset lastId when going back to first page
+        if (itemPage === 1) {
+          lastItemId = null;
+          minItemId = null;
+          maxItemId = null;
+        }
+        fetchItems(currentFolderId, true);
+      }
+    }
+  }
+
   onMount(() => fetchData(null));
   </script>
   
@@ -407,7 +542,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
             </button>
         </div>
         
-        {#if !isTrashMode}
+        {#if !isTrashMode && canEdit}
     <div class="flex space-x-4">
                 <button 
                     on:click={handleAddItem}
@@ -534,10 +669,11 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
       <div class="flex flex-col gap-3">
         <h2 class="text-[#00205B] text-2xl">Thư mục:</h2>
                         <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {#each paginatedFolders as folder (folder.id)}
+                            {#each folders as folder (folder.id)}
                                 <!-- Normal Folder Item -->
                                 <div class="relative group">
             <Folders {folder} />
+                                    {#if canEdit}
                                     <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button 
                                             on:click={() => handleEditFolder(folder)}
@@ -564,13 +700,26 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
               </svg>
             </button>
+                                        <button 
+                                            on:click={() => handleMoveFolder(folder)}
+                                            class="p-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition-colors"
+                                            title="Di chuyển thư mục"
+                                        >
+                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0-4-4m4 4-4 4m0 6H4m0 0 4 4m-4-4 4-4"/>
+                                            </svg>
+                                        </button>
                                     </div>
+                                    {/if}
           </div>
           {/each}
         </div>
                         <Paginations 
                             totalItems={folders.length} 
-                            bind:currentPage={folderPage} 
+                            bind:currentPage={folderPage}
+                            latestId={lastFolderId}
+                            on:next={() => handlePageChange('folder', 'next')}
+                            on:prev={() => handlePageChange('folder', 'prev')}
                         />
         </div>
                 {/if}
@@ -579,10 +728,11 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
       <div class="flex flex-col gap-3 mt-10">
         <h2 class="text-[#00205B] text-2xl">Mặt hàng:</h2>
                         <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {#each paginatedItems as item (item.id)}
+                            {#each items as item (item.id)}
                                 <!-- Normal Item -->
                                 <div class="relative group">
             <Items {...item} />
+                                    {#if canEdit}
                                     <div class="absolute top-2 right-2 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button 
                                             on:click={() => handleEditItem(item)}
@@ -611,6 +761,15 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
                                             </svg>
                                         </button>
                                         <button 
+                                            on:click={() => handleMoveItem(item)}
+                                            class="p-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition-colors"
+                                            title="Di chuyển mặt hàng"
+                                        >
+                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0-4-4m4 4-4 4m0 6H4m0 0 4 4m-4-4 4-4"/>
+                                            </svg>
+                                        </button>
+                                        <button 
                                             on:click={() => handleDelete('item', item.id)}
                                             class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                                         >
@@ -619,12 +778,16 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
               </svg>
             </button>
                                     </div>
+                                    {/if}
           </div>
           {/each}
         </div>
                         <Paginations 
                             totalItems={items.length} 
-                            bind:currentPage={itemPage} 
+                            bind:currentPage={itemPage}
+                            latestId={lastItemId}
+                            on:next={() => handlePageChange('item', 'next')}
+                            on:prev={() => handlePageChange('item', 'prev')}
                         />
         </div>
                 {/if}
@@ -634,6 +797,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
     </div>
   
 <!-- Modals -->
+{#if canEdit}
   <FolderModal
   bind:showModal={showFolderModal}
     bind:folder={folderForEdit}
@@ -678,3 +842,21 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
         itemForSupplier = null;
     }}
 />
+
+<MoveFolder
+    bind:showModal={showMoveModal}
+    id={moveModalType === 'folder' ? folderToMove?.id : itemToMove?.id}
+    type={moveModalType}
+    currentFolderId={currentFolderId}
+    on:success={async (event) => {
+        // Update the folder store with new data
+        if (event.detail.folders) {
+            folderStore.set(event.detail.folders);
+        }
+        await fetchData(currentFolderId);
+        showMoveModal = false;
+        folderToMove = null;
+        itemToMove = null;
+    }}
+/>
+{/if}

@@ -13,4 +13,7 @@ export interface Item {
   created_at: string;
   updated_at: string;
   tags?: Array<{ id: number; name: string }>;
+  has_next: boolean;
+  has_previous: boolean;
+  last_id: number | null;
 }

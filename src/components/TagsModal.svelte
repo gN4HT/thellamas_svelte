@@ -106,9 +106,9 @@
 </script>
 
 {#if showModal}
-<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+<div class="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50">
   <div class="bg-white rounded-lg p-6 w-96 max-w-lg">
-    <h2 class="text-xl font-bold mb-4">Chọn Thẻ</h2>
+    <h2 class="text-xl font-bold mb-4 text-[#00205b]">Chọn Thẻ</h2>
     
     {#if error}
       <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
@@ -120,7 +120,7 @@
       <label class="block text-sm font-medium text-gray-700 mb-2">
         Thẻ
       </label>
-      <div class="border rounded-md overflow-hidden max-h-[300px] overflow-y-auto">
+      <div class="border border-[#DADCFF] rounded-md overflow-hidden max-h-[300px] overflow-y-auto">
         <!-- Thẻ đã liên kết -->
         {#if existingTagIds.length > 0}
           <div class="bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700">
@@ -128,13 +128,13 @@
           </div>
           {#each tags.filter(tag => isTagLinked(tag.id)) as tag}
             <label 
-              class="flex items-center px-3 py-2 hover:bg-blue-50 cursor-pointer border-b bg-blue-50"
+              class="flex items-center px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-[#DADCFF] bg-blue-50"
             >
               <input 
                 type="checkbox"
                 value={tag.id}
                 bind:group={selectedTags}
-                class="mr-3 accent-blue-600"
+                class="mr-3 accent-blue-600 border border-[#DADCFF]"
               />
               <span>{tag.name}</span>
             </label>
@@ -147,7 +147,7 @@
         </div>
         {#each tags.filter(tag => !isTagLinked(tag.id)) as tag}
           <label 
-            class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
+            class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-[#DADCFF] last:border-b-0"
           >
             <input 
               type="checkbox"

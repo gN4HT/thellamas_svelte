@@ -3,11 +3,14 @@
     import {onMount} from "svelte";
     import {goto} from "$app/navigation";
     import { apiFetch } from "$lib/api";
+    import { userStore } from '../../stores/userStore';
+    import type { User } from '../../stores/userStore';
 
     let {children} = $props();
     let showInventoryMenu = $state(false);
     let inventories = $state([]);
-    let isLoading = $state(false);
+    let isLoading = $state(true);
+    let error: string | null = null;
 
     function getRoleInVietnamese(role: string): string {
         switch (role) {
@@ -21,6 +24,23 @@
                 return role;
         }
     }
+
+    async function fetchUserInfo() {
+        try {
+            const userData = await apiFetch('/me');
+            userStore.set(userData);
+            console.log('user:',userData)
+        } catch (err) {
+            console.error('Error fetching user info:', err);
+            error = err.message || 'Could not fetch user information';
+        } finally {
+            isLoading = false;
+        }
+    }
+
+    onMount(() => {
+        fetchUserInfo();
+    });
 
     onMount(async () => {
         if (!localStorage.getItem("token")) {
@@ -68,7 +88,16 @@
     }
 </script>
 
-<div class="relative flex">
+{#if isLoading}
+  <div class="flex justify-center items-center h-screen">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00205b]"></div>
+  </div>
+{:else if error}
+  <div class="p-4 bg-red-100 text-red-700 rounded-lg">
+    {error}
+  </div>
+{:else}
+  <div class="relative flex">
     <!-- Sidebar -->
     <aside
       class="
@@ -286,6 +315,7 @@
 
     
   </div>
+{/if}
 
 
 <style>
