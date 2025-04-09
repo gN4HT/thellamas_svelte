@@ -110,7 +110,7 @@
   $: canEdit = $userStore ? userStore.hasPermission($userStore) : false;
 
   // Data Fetching
-  async function fetchFolders(isPrev = false) {
+  async function fetchFolders(folderId: number | null = null, isPrev = false) {
     try {
         let folderUrl = '/folders';
         // Sử dụng maxId cho prev, minId cho next
@@ -121,8 +121,10 @@
         }
         const allFolders = await apiFetch(folderUrl);
 
-        // Lọc folders theo is_deleted
-        const filteredFolders = allFolders.filter(folder => folder.is_deleted !== 1);
+        // Lọc folders theo folder_id và is_deleted
+        const filteredFolders = folderId 
+            ? allFolders.filter(folder => folder.parent_id === folderId && folder.is_deleted !== 1)
+            : allFolders.filter(folder => folder.is_deleted !== 1);
         folders = filteredFolders;
 
         // Update pagination states
@@ -194,7 +196,7 @@
     error = null;
     try {
         await Promise.all([
-            fetchFolders(false),
+            fetchFolders(folderId, false),
             fetchItems(folderId, false)
         ]);
 
@@ -489,7 +491,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
     if (type === 'folder') {
       if (direction === 'next') {
         folderPage++;
-        fetchFolders(false);
+        fetchFolders(currentFolderId, false);
       } else {
         folderPage--;
         // Reset lastId when going back to first page
@@ -498,7 +500,7 @@ async function handleItemSubmit(event: CustomEvent<{ formData: FormData, isEdit:
           minFolderId = null;
           maxFolderId = null;
         }
-        fetchFolders(true);
+        fetchFolders(currentFolderId, true);
       }
     } else {
       if (direction === 'next') {
