@@ -1,0 +1,168 @@
+<script lang="ts">
+    import {goto} from "$app/navigation";
+    import type {AccessToken} from "../../../models/auth/accessToken";
+    import VerifyPopup from "../../../components/VerifyPopup.svelte";
+    import LoadingButton from "../../../components/LoadingButton.svelte";
+
+    // State management
+    let isLoading = false;
+    let showVerifyPopup = false;
+    let verifyEmail = '';
+    let successMessage = '';
+    const formData = {
+        name: '', email: '', password: '', password_confirmation: ''
+    }
+    const formError: { passwordError: string | null, confirmPasswordError: string | null } = {
+        passwordError: null,
+        confirmPasswordError: null
+    };
+
+    function validatePassword() {
+        if (formData.password.length < 8) {
+            formError.passwordError = "Password must be at least 8 characters long.";
+        } else if (!/[A-Z]/.test(formData.password)) {
+            formError.passwordError = "Password must contain at least one uppercase letter.";
+        } else if (!/[0-9]/.test(formData.password)) {
+            formError.passwordError = "Password must contain at least one number.";
+        }
+    }
+
+    function validateConfirmPassword() {
+        formError.confirmPasswordError = formData.password_confirmation !== formData.password ? "Passwords do not match." : null;
+    }
+
+    export const register = async (e: SubmitEvent) => {
+        e.preventDefault();
+        isLoading = true;
+        try {
+            validatePassword();
+            validateConfirmPassword();
+
+            const response = await fetch("http://127.0.0.1:8000/api/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const data: AccessToken = await response.json();
+
+            if (!response.ok) {
+                return {message: data.message || "Đăng ký thất bại!"}
+            }
+            
+            // Show success message
+            successMessage = `Mã xác thực đã được gửi đến email ${formData.email}. Vui lòng kiểm tra email của bạn.`;
+            
+            // Show verify popup instead of redirecting
+            verifyEmail = formData.email;
+            showVerifyPopup = true;
+            return {success: true, message: data.message};
+        } catch (error) {
+            console.log(`Register error: ${error.message}`);
+            return {success: false, message: "Không thể kết nối đến server!"};
+        } finally {
+            isLoading = false;
+        }
+    };
+
+    function handleVerifySuccess() {
+        showVerifyPopup = false;
+        goto("/app");
+    }
+</script>
+
+<div class="flex items-center justify-center min-h-screen font-sans py-20">
+    <div class="flex justify-between w-full max-w-5xl">
+        <!-- Left Section -->
+        <div class="w-[449px]">
+            <h1 class="text-4xl font-bold text-black mb-2">Không Bao Giờ Thất Lạc Hàng Lần Nào Nữa</h1>
+            <div class="mb-12 max-w-[300px]">
+                <p class="text-base text-black">Phần mềm quản lý hàng tồn kho hiệu quả, trực quan và mạnh mẽ giúp doanh
+                    nghiệp và nhóm của bạn luôn ngăn nắp</p>
+            </div>
+            <div class="flex items-center w-full px-5 py-3 mb-5 text-sm font-bold text-white bg-[#00205b] gap-10 hover:bg-[#00205b]">
+                <img src="/img/u_google.png" alt=""> Đăng nhập bằng Google
+            </div>
+            <div class="flex items-center text-sm text-gray-500 my-4">
+                <div class="flex-1 border-b border-gray-300"></div>
+                <span class="px-4">Hoặc</span>
+                <div class="flex-1 border-b border-gray-300"></div>
+            </div>
+            <form class="flex flex-col w-full max-w-md p-6 bg-white shadow-lg rounded-md" on:submit="{register}">
+                <h1 class="text-2xl font-bold mb-6 text-center">Tạo tài khoản</h1>
+                <input type="text" placeholder="Tên đầy đủ" required bind:value={formData.name}
+                       class="mb-4 p-2 border border-gray-300 rounded text-base">
+                <input type="email" placeholder="Email" required bind:value={formData.email}
+                       class="mb-4 p-2 border border-gray-300 rounded text-base">
+                <input type="password" placeholder="Password" required bind:value={formData.password}
+                       class="mb-4 p-2 border border-gray-300 rounded text-base">
+                <input type="password" placeholder="Password Confirmation" required
+                       bind:value={formData.password_confirmation}
+                       class="mb-4 p-2 border border-gray-300 rounded text-base">
+                <LoadingButton 
+                    type="submit"
+                    loading={isLoading}
+                    size="lg"
+                >
+                    {isLoading ? 'Đang xử lý...' : 'Tạo tài khoản'}
+                </LoadingButton>
+            </form>
+            <div class="flex flex-col items-center text-center mt-6 gap-2">
+                <p class="text-sm max-w-md">
+                    Bằng cách nhấp "Tạo tài khoản", bạn sẽ đồng ý với The Llamas's
+                    <a href="/" class="font-bold text-[#00205b] hover:underline">Điều khoản & Điều kiện</a> và
+                    <a href="/" class="font-bold text-[#00205b] hover:underline">Chính sách bảo mật</a>.
+                </p>
+                <p class="text-sm">
+                    Bạn đã có tài khoản? <a href="login" class="font-bold text-blue-700 hover:underline">Đăng nhập
+                    ngay</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Right Section -->
+        <div class="flex flex-col items-center flex-1 pt-9">
+            <div class="max-w-[250px] text-center mb-5 border border-gray-200 p-5 rounded-lg">
+                <div class="flex justify-center mb-3">
+                    <img src="/img/Star 1.png" alt="" class="h-5 w-5">
+                    <img src="/img/Star 1.png" alt="" class="h-5 w-5">
+                    <img src="/img/Star 1.png" alt="" class="h-5 w-5">
+                    <img src="/img/Star 1.png" alt="" class="h-5 w-5">
+                    <img src="/img/Star 1.png" alt="" class="h-5 w-5">
+                </div>
+                <p class="italic text-gray-600 text-base mb-2">
+                    "Dễ dàng thêm hàng tồn kho. Dễ dàng vận hành. Dễ dàng cá nhân hóa.
+                    Nhóm của tôi đã áp dụng The Llamas ngay lập tức!"
+                </p>
+                <p class="text-sm font-bold text-black">Khâu Vân Nam<br><span
+                        class="text-xs text-gray-500">Leader</span></p>
+            </div>
+
+            <div class="text-center">
+                <p class="text-sm max-w-xs mb-5">Mong muốn của chúng tôi là muốn được tiếp cận càng nhiều doanh nghiệp
+                    lớn, vừa và nhỏ để phát triển và hợp lý hóa việc theo dõi, kiểm toán và quản lý hàng tồn kho.</p>
+          
+            </div>
+        </div>
+    </div>
+</div>
+
+{#if showVerifyPopup}
+    <VerifyPopup 
+        email={verifyEmail} 
+        isOpen={showVerifyPopup}
+        on:close={() => showVerifyPopup = false}
+        on:success={handleVerifySuccess}
+    />
+{/if}
+
+{#if successMessage}
+    <div class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        <span>{successMessage}</span>
+    </div>
+{/if}
