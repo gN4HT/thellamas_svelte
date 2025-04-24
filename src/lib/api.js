@@ -34,12 +34,12 @@ export const apiFetch = async (
       options.body = body instanceof FormData ? body : JSON.stringify(body);
     }
 
-    console.log("API Request:", {
-      url: fullUrl,
-      method,
-      headers: defaultHeaders,
-      bodyType: body instanceof FormData ? "FormData" : typeof body,
-    });
+    // console.log("API Request:", {
+    //   url: fullUrl,
+    //   method,
+    //   headers: defaultHeaders,
+    //   bodyType: body instanceof FormData ? "FormData" : typeof body,
+    // });
 
     const response = await fetch(fullUrl, options);
 
