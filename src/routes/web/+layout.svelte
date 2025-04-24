@@ -1,7 +1,11 @@
 <script lang="ts">
   import { afterNavigate } from '$app/navigation';
+  import { onMount } from 'svelte';
+  
   let {children} = $props();
   let isMenuOpen = $state(false);
+  let logoUrl = $state('/img/1 (1).png'); // Default logo
+  let footerLogoUrl = $state('/img/2 2.png'); // Default footer logo
 
   function toggleMenu() {
       isMenuOpen = !isMenuOpen;
@@ -10,6 +14,29 @@
   // Close menu after navigation
   afterNavigate(() => {
       isMenuOpen = false;
+  });
+
+  onMount(async () => {
+    try {
+      // Use absolute URL for API call
+      const backendUrl = 'http://localhost:8000'; // <-- Adjust if your backend runs on a different port
+      const response = await fetch(`${backendUrl}/api/logo`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success && data.logo_url) {
+        // Prepend backend URL if logo_url is relative
+        logoUrl = data.logo_url.startsWith('/') ? `${backendUrl}${data.logo_url}` : data.logo_url;
+        footerLogoUrl = logoUrl; // Use the same fetched logo for the footer
+      }
+    } catch (error) {
+      console.error('Error fetching logo:', error);
+      // Keep default logos if fetch fails
+    }
   });
 </script>
 
@@ -26,7 +53,7 @@
       <!-- Logo -->
       <div class="flex items-center">
         <a href="/web">        
-          <img src="/img/1 (1).png" alt="Logo" class="w-[100px] h-[100px]">
+          <img src={logoUrl} alt="Logo" class="w-[100px] h-[100px]">
         </a>
       </div>
 
@@ -99,7 +126,7 @@ shadow hover:bg-blue-700">Dùng thử miễn phí</a>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
     <!-- Logo và Giới thiệu -->
     <div class="space-y-4 w-full">
-      <img src="/img/2 2.png" alt="Logo" class="w-[100px] h-[100px]">
+      <img src={footerLogoUrl} alt="Logo" class="w-[100px] h-[100px]">
       <p class="text-gray-400 text-sm sm:text-base">
         Giải pháp quản lý kho hàng thông minh cho doanh nghiệp của bạn
       </p>
@@ -109,14 +136,14 @@ shadow hover:bg-blue-700">Dùng thử miễn phí</a>
     <div class="w-full">
       <h4 class="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Giải pháp</h4>
       <ul class="space-y-2 sm:space-y-3">
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Ô tô</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Nha khoa</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Sự kiện</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Giáo dục</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Bán lẻ</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Đồ cổ</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Chính phủ</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Hàng không</a></li>
+        <li><a href="/web/solution" class="text-gray-400 hover:text-white transition-colors duration-200">Ô tô</a></li>
+        <li><a href="/web/solution" class="text-gray-400 hover:text-white transition-colors duration-200">Nha khoa</a></li>
+        <li><a href="/web/solution" class="text-gray-400 hover:text-white transition-colors duration-200">Sự kiện</a></li>
+        <li><a href="/web/solution" class="text-gray-400 hover:text-white transition-colors duration-200">Giáo dục</a></li>
+        <li><a href="/web/solution" class="text-gray-400 hover:text-white transition-colors duration-200">Bán lẻ</a></li>
+        <li><a href="/web/solution" class="text-gray-400 hover:text-white transition-colors duration-200">Đồ cổ</a></li>
+        <li><a href="/web/solution" class="text-gray-400 hover:text-white transition-colors duration-200">Chính phủ</a></li>
+        <li><a href="/web/solution" class="text-gray-400 hover:text-white transition-colors duration-200">Hàng không</a></li>
       </ul>
     </div>
 
@@ -124,13 +151,13 @@ shadow hover:bg-blue-700">Dùng thử miễn phí</a>
     <div class="w-full">
       <h4 class="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Tin tức</h4>
       <ul class="space-y-2 sm:space-y-3">
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Quản lý tồn kho</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Theo dõi vật tư</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Theo dõi tài sản</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Theo dõi phụ tùng</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Theo dõi nguyên vật liệu</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Mã vạch tồn kho</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Ứng dụng tồn kho</a></li>
+        <li><a href="/web/post" class="text-gray-400 hover:text-white transition-colors duration-200">Quản lý tồn kho</a></li>
+        <li><a href="/web/post" class="text-gray-400 hover:text-white transition-colors duration-200">Theo dõi vật tư</a></li>
+        <li><a href="/web/post" class="text-gray-400 hover:text-white transition-colors duration-200">Theo dõi tài sản</a></li>
+        <li><a href="/web/post" class="text-gray-400 hover:text-white transition-colors duration-200">Theo dõi phụ tùng</a></li>
+        <li><a href="/web/post" class="text-gray-400 hover:text-white transition-colors duration-200">Theo dõi nguyên vật liệu</a></li>
+        <li><a href="/web/post" class="text-gray-400 hover:text-white transition-colors duration-200">Mã vạch tồn kho</a></li>
+        <li><a href="/web/post" class="text-gray-400 hover:text-white transition-colors duration-200">Ứng dụng tồn kho</a></li>
       </ul>
     </div>
 
@@ -138,11 +165,11 @@ shadow hover:bg-blue-700">Dùng thử miễn phí</a>
     <div class="w-full">
       <h4 class="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Thông tin</h4>
       <ul class="space-y-2 sm:space-y-3">
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Về chúng tôi</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Giải pháp</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Bảng giá</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Hướng dẫn</a></li>
-        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Tin tức</a></li>
+        <li><a href="/web/about" class="text-gray-400 hover:text-white transition-colors duration-200">Về chúng tôi</a></li>
+        <li><a href="/web/about" class="text-gray-400 hover:text-white transition-colors duration-200">Giải pháp</a></li>
+        <li><a href="/web/about" class="text-gray-400 hover:text-white transition-colors duration-200">Bảng giá</a></li>
+        <li><a href="/web/about" class="text-gray-400 hover:text-white transition-colors duration-200">Hướng dẫn</a></li>
+        <li><a href="/web/about" class="text-gray-400 hover:text-white transition-colors duration-200">Tin tức</a></li>
       </ul>
     </div>
   </div>
@@ -175,7 +202,6 @@ shadow hover:bg-blue-700">Dùng thử miễn phí</a>
   header, main, footer {
       font-family: "PoppinsRegular", serif;
       font-size: 14px;
- padding: 0 20px;
     }
 
  

@@ -1,9 +1,7 @@
-<script>
-</script>
+
 
 <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
   <div class="container mx-auto px-4">
-    <!-- Hero Section -->
     <div class="text-center py-20">
       <h1 class="text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#00205b] to-[#00205b]">
         Giải Pháp
@@ -12,8 +10,6 @@
         Khám phá các giải pháp quản lý kho hiệu quả cho doanh nghiệp của bạn
       </p>
     </div>
-
-    <!-- Main Solutions Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
       <div class="bg-white rounded-lg shadow-md p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
         <div class="mb-4">
@@ -34,10 +30,7 @@
               <span class="text-blue-500">•</span>
               <span>Báo cáo và phân tích</span>
             </li>
-            <li class="flex items-center gap-2">
-              <span class="text-blue-500">•</span>
-              <span>Tích hợp đa nền tảng</span>
-            </li>
+    
           </ul>
         </div>
       </div>
@@ -49,10 +42,7 @@
         </div>
         <div>
           <ul class="space-y-3">
-            <li class="flex items-center gap-2">
-              <span class="text-blue-500">•</span>
-              <span>Quét mã QR và mã vạch</span>
-            </li>
+       
             <li class="flex items-center gap-2">
               <span class="text-blue-500">•</span>
               <span>Theo dõi vị trí tài sản</span>
@@ -84,10 +74,7 @@
               <span class="text-blue-[#00205b]">•</span>
               <span>Cảnh báo hết hàng</span>
             </li>
-            <li class="flex items-center gap-2">
-              <span class="text-blue-[#00205b]">•</span>
-              <span>Đặt hàng tự động</span>
-            </li>
+           
             <li class="flex items-center gap-2">
               <span class="text-blue-[#00205b]">•</span>
               <span>Theo dõi chi phí</span>
@@ -144,7 +131,7 @@
               Gửi Yêu Cầu
             </a>
             <a 
-              href="/web/plan" 
+              href="/web/sub_plan" 
               class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-[#00205b] transition-all duration-300"
             >
               Xem Bảng Giá

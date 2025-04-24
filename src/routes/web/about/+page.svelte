@@ -1,5 +1,4 @@
 <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-  <!-- Hero Section with Background Image -->
   <section class="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
     <div class="absolute inset-0 bg-[#00205b] opacity-90"></div>
     <div class="absolute inset-0 bg-[url('/img/slide.jpg')] bg-cover bg-center opacity-20"></div>
@@ -16,7 +15,7 @@
           của bạn tối ưu hóa quy trình quản lý kho, giảm thiểu chi phí và tăng hiệu quả kinh doanh.
         </p>
         <div class="mt-12 flex flex-col sm:flex-row justify-center gap-6">
-          <a href="/web/contact" class="bg-white text-[#00205b] px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-all duration-300">
+          <a href="/web/register" class="bg-white text-[#00205b] px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-all duration-300">
             Bắt Đầu Ngay
           </a>
           <a href="#features" class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-[#00205b] transition-all duration-300">

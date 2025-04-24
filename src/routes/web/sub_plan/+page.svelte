@@ -1,15 +1,13 @@
 <script>
     import { onMount } from "svelte";
 
-    let plans = []; // Chứa danh sách gói từ API
-
-    // Gọi API để fetch dữ liệu
+    let plans = []; 
     const fetchPlans = async () => {
         try {
             const response = await fetch("http://127.0.0.1:8000/api/plans");
             if (response.ok) {
                 const data = await response.json();
-                plans = data.data; // Lưu dữ liệu vào biến từ key `data`
+                plans = data.data; 
             } else {
                 console.error("Failed to fetch plans");
             }
@@ -18,19 +16,17 @@
         }
     };
 
-    // Gọi API khi component được mount
     onMount(() => {
         fetchPlans();
     });
 
-    // Hàm đổi màu dựa vào thứ tự gói
     function getBorderColor(order) {
-        const colors = ["#4CAF50", "#9C27B0", "#2196F3"]; // Màu viền
+        const colors = ["#4CAF50", "#9C27B0", "#2196F3"]; 
         return colors[(order - 1) % colors.length];
     }
 
     function getTextColor(order) {
-        const colors = ["#4CAF50", "#9C27B0", "#2196F3"]; // Màu text
+        const colors = ["#4CAF50", "#9C27B0", "#2196F3"]; 
         return colors[(order - 1) % colors.length];
     }
 </script>
@@ -40,7 +36,8 @@
         <div class="bg-white p-8 rounded-xl shadow-lg w-96 border-t-4 text-center" style="border-color: {getBorderColor(index + 1)};">
             <h3 class="text-2xl font-bold" style="color: {getTextColor(index + 1)};">{plan.name}</h3>
             <p class="text-gray-600 mt-2">{plan.description}</p>
-            <p class="text-3xl font-extrabold my-4">${plan.price}/tháng</p>
+            <p class="text-3xl font-extrabold my-4">{plan.price} <span></span> VNĐ /tháng</p>
+
             <button
                     class="w-full py-3 font-semibold rounded"
                     style="background-color: {getTextColor(index + 1)}; color: white;"

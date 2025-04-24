@@ -1,24 +1,44 @@
+<script>
+    import { onMount } from "svelte";
+
+    let plans = []; // Chứa danh sách gói từ API
+
+    // Gọi API để fetch dữ liệu
+    const fetchPlans = async () => {
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/plans");
+            if (response.ok) {
+                const data = await response.json();
+                plans = data.data; // Lưu dữ liệu vào biến từ key `data`
+            } else {
+                console.error("Failed to fetch plans");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    };
+
+    // Gọi API khi component được mount
+    onMount(() => {
+        fetchPlans();
+    });
+
+    // Hàm đổi màu dựa vào thứ tự gói
+    function getBorderColor(order) {
+        const colors = ["#4CAF50", "#9C27B0", "#2196F3"]; // Màu viền
+        return colors[(order - 1) % colors.length];
+    }
+
+    function getTextColor(order) {
+        const colors = ["#4CAF50", "#9C27B0", "#2196F3"]; // Màu text
+        return colors[(order - 1) % colors.length];
+    }
+</script>
 <div class="flex flex-wrap justify-center gap-10">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-96 border-t-4 border-green-400 text-center">
-        <h3 class="text-green-500 text-2xl font-bold">Nâng cao</h3>
-        <p class="text-3xl font-extrabold my-4">$449.00$/năm</p>
-        <button class="bg-green-500 text-white w-full py-3 font-semibold rounded">Nâng cấp</button>
-        <p class="mt-4 font-bold">📄 2 giấy phép người dùng</p>
-        <ul class="mt-4 text-left text-gray-700 space-y-2">
-            <li>✔️ Tất cả tính năng miễn phí TheLlamas</li>
-            <li>✔️ 500 mặt hàng</li>
-            <li>✔️ 5 trường tùy chỉnh</li>
-            <li>➕ Tạo mã QR không giới hạn</li>
-            <li>➕ Cảnh báo hàng tồn kho thấp</li>
-            <li>➕ Báo cáo hàng tồn kho thấp</li>
-            <li>➕ Truy cập người dùng có thể tùy chỉnh</li>
-            <li>➕ Mở khóa tất cả đơn vị đo lường</li>
-            <li>➕ Thương hiệu tùy chỉnh</li>
-        </ul>
-    </div>
+    
     <div class="bg-white p-8 rounded-xl shadow-lg w-96 border-t-4 border-purple-400 text-center">
-        <h3 class="text-purple-500 text-2xl font-bold">Cao cấp</h3>
-        <p class="text-3xl font-extrabold my-4">$1349.00/năm</p>
+        <h3 class="text-purple-500 text-2xl font-bold">Advanced</h3>
+        <p class="text-3xl font-extrabold my-4">699.000 VNĐĐ/năm</p>
         <button class="bg-purple-500 text-white w-full py-3 font-semibold rounded">Nâng cấp</button>
         <p class="mt-4 font-bold">📄 5 giấy phép người dùng</p>
         <ul class="mt-4 text-left text-gray-700 space-y-2">
@@ -34,8 +54,8 @@
         </ul>
     </div>
     <div class="bg-white p-8 rounded-xl shadow-lg w-96 border-t-4 border-blue-400 text-center">
-        <h3 class="text-blue-500 text-2xl font-bold">Chuyên nghiệp</h3>
-        <p class="text-3xl font-extrabold my-4">$2699.00/năm</p>
+        <h3 class="text-blue-500 text-2xl font-bold">Ultra</h3>
+        <p class="text-3xl font-extrabold my-4">999.000 VNĐ/năm</p>
         <button class="bg-blue-500 text-white w-full py-3 font-semibold rounded">Nâng cấp</button>
         <p class="mt-4 font-bold">📄 8 giấy phép người dùng</p>
         <ul class="mt-4 text-left text-gray-700 space-y-2">
