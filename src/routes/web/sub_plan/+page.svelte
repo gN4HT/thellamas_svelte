@@ -1,18 +1,15 @@
 <script>
     import { onMount } from "svelte";
+    import { apiFetch } from "$lib/api";
+    import { goto } from "$app/navigation";
 
     let plans = []; // Chứa danh sách gói từ API
 
     // Gọi API để fetch dữ liệu
     const fetchPlans = async () => {
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/plans");
-            if (response.ok) {
-                const data = await response.json();
-                plans = data.data; // Lưu dữ liệu vào biến từ key `data`
-            } else {
-                console.error("Failed to fetch plans");
-            }
+            const data = await apiFetch("plans");
+            plans = data.data; // Lưu dữ liệu vào biến từ key `data`
         } catch (error) {
             console.error("Error:", error);
         }
@@ -33,6 +30,11 @@
         const colors = ["#4CAF50", "#9C27B0", "#2196F3"]; // Màu text
         return colors[(order - 1) % colors.length];
     }
+
+    // Hàm xử lý khi click nút nâng cấp
+    const handleUpgrade = (planId) => {
+        goto(`/web/order?plan=${planId}`);
+    };
 </script>
 
 <div class="flex flex-wrap justify-center gap-10">
@@ -40,10 +42,12 @@
         <div class="bg-white p-8 rounded-xl shadow-lg w-96 border-t-4 text-center" style="border-color: {getBorderColor(index + 1)};">
             <h3 class="text-2xl font-bold" style="color: {getTextColor(index + 1)};">{plan.name}</h3>
             <p class="text-gray-600 mt-2">{plan.description}</p>
-            <p class="text-3xl font-extrabold my-4">${plan.price}/tháng</p>
+            <p class="text-3xl font-extrabold my-4">{plan.price} <span></span> VNĐ /tháng</p>
+
             <button
                     class="w-full py-3 font-semibold rounded"
                     style="background-color: {getTextColor(index + 1)}; color: white;"
+                    on:click={() => handleUpgrade(plan.id)}
             >
                 Nâng cấp
             </button>

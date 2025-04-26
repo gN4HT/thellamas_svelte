@@ -2,23 +2,56 @@
     import { page } from '$app/stores';
     import { goto } from '$app/navigation';
     import { onMount, afterUpdate } from 'svelte';
+    import { folderStore } from '../stores/folderStore';
     
     export let folders: { id: number; name: string; children?: any[] }[] = [];
     export let level: number = 1;
   
     // Trạng thái ẩn/hiện của từng thư mục
     let expanded: { [key: number]: boolean } = {};
+    let currentFolders: typeof folders = [];
+    
+    // Subscribe to folderStore
+    folderStore.subscribe(allFolders => {
+        if (allFolders) {
+            currentFolders = buildFolderTree(allFolders);
+        }
+    });
+
+    // Build folder tree from flat array
+    function buildFolderTree(flatFolders: any[]) {
+        const tree = [];
+        const map = {};
+
+        // First pass: create map of all folders
+        flatFolders.forEach(folder => {
+            map[folder.id] = { ...folder, children: [] };
+        });
+
+        // Second pass: build tree structure
+        flatFolders.forEach(folder => {
+            if (folder.parent_id) {
+                if (map[folder.parent_id]) {
+                    map[folder.parent_id].children.push(map[folder.id]);
+                }
+            } else {
+                tree.push(map[folder.id]);
+            }
+        });
+
+        return tree;
+    }
     
     // Hàm toggle trạng thái expanded
     function toggleExpand(id: number) {
-      expanded[id] = !expanded[id];
+        expanded[id] = !expanded[id];
     }
 
     // Hàm xử lý click vào folder
     async function handleFolderClick(event: MouseEvent, folderId: number) {
         event.preventDefault();
         await goto(`/app/inventory/all?folder=${folderId}`, {
-            keepfocus: true,
+            keepFocus: true,
             noScroll: true,
             replaceState: true
         });
@@ -27,9 +60,10 @@
     // Kiểm tra folder hiện tại
     $: currentFolderId = new URLSearchParams($page.url.search).get('folder');
 
-    // Theo dõi thay đổi của folders để cập nhật expanded state
+    // Theo dõi thay đổi của folders và currentFolders để cập nhật expanded state
     $: {
-        if (folders) {
+        const foldersToCheck = currentFolders.length > 0 ? currentFolders : folders;
+        if (foldersToCheck) {
             // Tìm và mở folder cha của folder hiện tại
             const findAndExpandParent = (items: typeof folders, targetId: string | null): boolean => {
                 for (const item of items) {
@@ -47,7 +81,7 @@
             };
 
             if (currentFolderId) {
-                findAndExpandParent(folders, currentFolderId);
+                findAndExpandParent(foldersToCheck, currentFolderId);
             }
         }
     }
@@ -63,7 +97,7 @@
     });
 </script>
   
-{#each folders as folder (folder.id)}
+{#each (currentFolders.length > 0 ? currentFolders : folders) as folder (folder.id)}
     <div style="margin-left: {level === 1 ? '15px' : level * 15 + 'px'}" class="my-1">
         <div class="flex items-center">
             {#if folder.children && folder.children.length > 0}
@@ -125,4 +159,3 @@
         background-color: rgba(0, 0, 0, 0.1);
     }
 </style>
-  

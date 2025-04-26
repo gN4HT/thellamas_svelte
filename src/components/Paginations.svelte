@@ -4,19 +4,21 @@
 
     export let totalItems: number;
     export let currentPage: number = 1;
-    export let latestId: number | null = null;
+    export let itemsPerPage: number = 8;
 
     function goToPage(event: Event): void {
         const input = event.target as HTMLInputElement;
         let value = parseInt(input.value) || 1;
-        currentPage = Math.max(1, value);
+        const maxPage = Math.ceil(totalItems / itemsPerPage);
+        currentPage = Math.max(1, Math.min(value, maxPage));
     }
 
-    $: canGoNext = latestId === null || latestId > 1;
+    $: maxPage = Math.ceil(totalItems / itemsPerPage);
+    $: canGoNext = currentPage < maxPage;
 </script>
 
 <p class="text-sm text-gray-500 mb-2">
-    Trang: {currentPage}
+    Trang: {currentPage} / {maxPage}
 </p>
 
 <div class="flex items-center gap-2">
@@ -37,6 +39,8 @@
         type="number"
         bind:value={currentPage}
         on:change={goToPage}
+        min="1"
+        max={maxPage}
         class="w-16 text-center border border-gray-300 rounded 
                p-1 text-sm focus:outline-none focus:ring-2 
                focus:ring-blue-500 focus:border-blue-500"

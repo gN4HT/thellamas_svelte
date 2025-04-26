@@ -49,10 +49,10 @@
     });
 </script>
 
-<div class="p-6">
+<div class="p-4 md:p-6">
     <!-- Header -->
-    <div class="flex justify-between border-b pb-4">
-        <h1 class="text-2xl font-semibold text-gray-900">Bảng điều khiển</h1>
+    <div class="flex flex-col sm:flex-row justify-between border-b pb-4 gap-4">
+        <h1 class="text-xl md:text-2xl font-semibold text-gray-900">Bảng điều khiển</h1>
         <button class="flex items-center bg-blue-900 text-white px-4 py-2 rounded-md">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
                  fill="rgba(255,255,255,1)">
@@ -67,15 +67,15 @@
         <h3 class="text-sm">Thư mục được chọn:</h3>
         <span class="px-4 py-1 bg-gray-600 text-white rounded-full">Tất cả thư mục</span>
     </div>
-    <div class=" max-w-5xl mx-auto">
+    <div class="w-full max-w-5xl mx-auto">
         <!-- Inventory Summary -->
         <div class="mt-6">
             <h2 class="text-lg font-semibold mb-4">Tóm tắt hàng tồn kho</h2>
-            <div class="grid grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {#each data.inventory_summary as item}
-                    <div class="flex flex-col items-center p-8 shadow-md rounded-md bg-white">
-                        <img alt="cc" src={item.icon} class="w-10 h-10"/>
-                        <p class="text-2xl font-bold">{item.value}</p>
+                    <div class="flex flex-col items-center p-4 md:p-8 shadow-md rounded-md bg-white">
+                        <img alt="cc" src={item.icon} class="w-8 md:w-10 h-8 md:h-10"/>
+                        <p class="text-xl md:text-2xl font-bold">{item.value}</p>
                         <span>{item.label}</span>
                     </div>
                 {/each}
@@ -84,20 +84,16 @@
 
         <!-- Recent Activity -->
         <div class="mt-6">
-            <div class="mb-6 flex justify-between items-center">
+            <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <h2 class="text-lg font-semibold">Hoạt động gần đây</h2>
                 <div class="flex items-center gap-2">
                     <span class="text-gray-600 text-sm">Tất cả hoạt động</span>
-                    <a href="/"
-                    ><img alt="cc" src="/img/dashboard-icon.png" class="w-6 h-6"
-                    /></a>
+                    <a href="/"><img alt="cc" src="/img/dashboard-icon.png" class="w-6 h-6"/></a>
                 </div>
             </div>
             {#each data.recent_activities as activity}
-                <div class="flex justify-between p-4 shadow-md bg-white rounded-md mb-2">
-                    <p>
-                        {activity.activity}
-                    </p>
+                <div class="flex flex-col sm:flex-row justify-between p-4 shadow-md bg-white rounded-md mb-2 gap-2">
+                    <p class="break-words">{activity.activity}</p>
                     <span class="text-sm">{activity.time}</span>
                 </div>
             {/each}
@@ -106,10 +102,10 @@
         <!-- Recent Items -->
         <div class="mt-6">
             <h2 class="text-lg font-semibold mb-4">Mặt hàng gần đây</h2>
-            <div class="grid grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {#each data.recent_items as item}
                     <div class="shadow-md rounded-lg overflow-hidden bg-white">
-                        <a href="/"><img src={item.img} alt={item.name} class="w-full h-80"/></a>
+                        <a href="/"><img src={item.img} alt={item.name} class="w-full h-48 md:h-80 object-cover"/></a>
                         <div class="p-4">
                             <h3 class="font-semibold">{item.name}</h3>
                             <p class="text-gray-500 py-2">{item.description}</p>
@@ -126,7 +122,7 @@
 
         <!-- Stock Level -->
         <div class="mt-6">
-            <div class="mb-6 flex justify-between items-center">
+            <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <h2 class="text-lg font-semibold">Mức tồn kho</h2>
                 <div class="flex items-center gap-2">
                     <span class="text-gray-600 text-sm">Ở hoặc Dưới Mức Tối Thiểu</span>
@@ -136,12 +132,12 @@
             <div class="grid grid-cols-1 gap-4">
                 {#each data.stock_levels as item}
                     <div class="flex items-center shadow-md p-4 bg-white rounded-lg">
-                        <a href="/" class="w-10 h-10 flex justify-center items-center bg-gray-400">
+                        <a href="/" class="w-10 h-10 flex-shrink-0 flex justify-center items-center bg-gray-400">
                             <img alt="cc" src={item.img} class="w-10 h-10"/>
                         </a>
                         <div class="flex justify-between flex-1 pl-4">
-                            <p class="text-lg font-medium">{item.name}</p>
-                            <span class="text-red-600">{item.unit}</span>
+                            <p class="text-base md:text-lg font-medium">{item.name}</p>
+                            <span class="text-red-600 ml-2">{item.unit}</span>
                         </div>
                     </div>
                 {/each}

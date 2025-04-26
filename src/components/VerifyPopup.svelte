@@ -39,6 +39,29 @@
         }
     }
 
+    // Function to handle paste
+    function handlePaste(e: ClipboardEvent, index: number) {
+        e.preventDefault();
+        const pastedData = e.clipboardData?.getData('text');
+        
+        if (!pastedData) return;
+        
+        // Filter only digits and take first 4
+        const digits = pastedData.replace(/\D/g, '').slice(0, 4);
+        
+        if (digits.length === 4) {
+            // Split digits into array and update OTP
+            otp = digits.split('');
+            
+            // Focus last input
+            const inputs = document.querySelectorAll('input[type="text"]');
+            const lastInput = inputs[3] as HTMLInputElement;
+            if (lastInput) {
+                lastInput.focus();
+            }
+        }
+    }
+
     // Function to handle backspace
     function handleKeyDown(e: KeyboardEvent, index: number) {
         const input = e.target as HTMLInputElement;
@@ -195,7 +218,7 @@
 </script>
 
 {#if isOpen}
-<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center popup-overlay" on:click={handleClickOutside}>
+<div class="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50 popup-overlay" on:click={handleClickOutside}>
     <div class="bg-white rounded-lg p-6 w-full max-w-md relative">
         <button 
             class="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
@@ -223,6 +246,7 @@
                             bind:value={otp[i]}
                             on:input={(e) => handleInput(e, i)}
                             on:keydown={(e) => handleKeyDown(e, i)}
+                            on:paste={(e) => handlePaste(e, i)}
                             class="w-18 h-18 text-center text-xl border border-gray-300 rounded focus:ring-2 focus:ring-[#00205b] focus:border-transparent"
                             maxlength="1"
                             pattern="\d"
