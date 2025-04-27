@@ -8,8 +8,11 @@
 
     let {children} = $props();
     let showInventoryMenu = $state(false);
+    let showNotificationMenu = $state(false);
     let inventories = $state([]);
+    let notifications = $state([]);
     let isLoading = $state(true);
+    let isNotificationLoading = $state(false);
     let error = $state<string | null>(null);
 
     function getRoleInVietnamese(role: string): string {
@@ -38,6 +41,34 @@
         }
     }
 
+    async function fetchNotifications() {
+        isNotificationLoading = true;
+        try {
+            const response = await apiFetch('/notifications');
+            notifications = response.data;
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        } finally {
+            isNotificationLoading = false;
+        }
+    }
+
+    async function markNotificationAsRead(notificationId: number) {
+        try {
+            await apiFetch(`/notifications/${notificationId}/read`, {
+                method: 'POST'
+            });
+            // Update the notification in the list
+            notifications = notifications.map(notification => 
+                notification.id === notificationId 
+                    ? { ...notification, is_read: true }
+                    : notification
+            );
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    }
+
     onMount(() => {
         fetchUserInfo();
     });
@@ -46,7 +77,7 @@
         if (!localStorage.getItem("token")) {
             goto('/web/login');
         }
-        await fetchInventories();
+        await Promise.all([fetchInventories(), fetchNotifications()]);
     });
 
     async function fetchInventories() {
@@ -310,6 +341,69 @@
   </button>
 </div>
 
+<!-- Notification Bell -->
+<div class="fixed bottom-[100px] right-6 z-50">
+  <!-- Notification Menu -->
+  {#if showNotificationMenu}
+    <div
+      class="absolute bottom-16 right-0 w-80 bg-white rounded-lg shadow-xl max-h-96 overflow-y-auto"
+    >
+      <div class="p-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800">Thông báo tồn kho</h3>
+      </div>
+      {#if isNotificationLoading}
+        <div class="p-4 flex justify-center">
+          <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-[#00205b]"></div>
+        </div>
+      {:else if !notifications || notifications.length === 0}
+        <div class="p-4 text-center text-gray-500">
+          Chưa có sản phẩm nào dưới mức tồn kho
+        </div>
+      {:else}
+        <div class="divide-y divide-gray-200">
+          {#each notifications as notification}
+            <div class="p-4 hover:bg-gray-50 transition-colors">
+              <div class="flex justify-between items-start">
+                <div class="flex-1">
+                  <p class="text-sm text-gray-800">{notification.message}</p>
+                  <p class="text-xs text-gray-500 mt-1">{new Date(notification.created_at).toLocaleString()}</p>
+                </div>
+                {#if !notification.is_read}
+                  <button
+                    class="ml-2 p-1 rounded-full hover:bg-gray-100"
+                    onclick={() => markNotificationAsRead(notification.id)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </button>
+                {/if}
+              </div>
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </div>
+  {/if}
+
+  <!-- Notification Bell Button -->
+  <button
+    class="bg-[#00205b] text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:bg-[#001639] transition duration-300 relative"
+    onclick={() => {
+      showNotificationMenu = !showNotificationMenu;
+      if (showNotificationMenu) {
+        fetchNotifications();
+      }
+    }}
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+    </svg>
+    {#if (notifications ?? []).some(n => !n.is_read)}
+      <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full"></span>
+    {/if}
+  </button>
+</div>
 
   </main>
 

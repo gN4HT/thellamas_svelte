@@ -158,7 +158,7 @@
             console.log('Order ID:', orderId);
 
             // 2. Lấy payment URL
-            const paymentResponse = await fetch(`http://127.0.0.1:8000/api/orders/${orderId}/payment-url`, {
+            const paymentResponse = await fetch(`http://127.0.0.1:8000/api/payments/${orderId}/zalopay/payment-url`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
