@@ -172,9 +172,9 @@
             const paymentData = await paymentResponse.json();
             console.log('Payment URL Response:', paymentData);
             
-            if (paymentData && paymentData.payment_url) {
-                // 3. Chuyển hướng đến trang thanh toán VNPay
-                window.location.href = paymentData.payment_url;
+            if (paymentData && paymentData.data && paymentData.data.order_url) {
+                // 3. Chuyển hướng đến trang thanh toán Zalopay
+                window.location.href = paymentData.data.order_url;
             } else {
                 throw new Error('Không nhận được URL thanh toán');
             }
