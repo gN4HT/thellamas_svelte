@@ -45,9 +45,12 @@
         isNotificationLoading = true;
         try {
             const response = await apiFetch('/notifications');
-            notifications = response.data;
+            console.log('Raw API response:', response);
+            notifications = Array.isArray(response) ? response : response.data || [];
+            console.log('Processed notifications:', notifications);
         } catch (error) {
             console.error('Error fetching notifications:', error);
+            notifications = [];
         } finally {
             isNotificationLoading = false;
         }
@@ -56,14 +59,15 @@
     async function markNotificationAsRead(notificationId: number) {
         try {
             await apiFetch(`/notifications/${notificationId}/read`, {
-                method: 'POST'
+                method: 'PUT'
             });
             // Update the notification in the list
             notifications = notifications.map(notification => 
                 notification.id === notificationId 
-                    ? { ...notification, is_read: true }
+                    ? { ...notification, read: true }
                     : notification
             );
+            console.log('Updated notifications after marking as read:', notifications);
         } catch (error) {
             console.error('Error marking notification as read:', error);
         }
@@ -362,18 +366,19 @@
       {:else}
         <div class="divide-y divide-gray-200">
           {#each notifications as notification}
-            <div class="p-4 hover:bg-gray-50 transition-colors">
+            <div class="p-4 hover:bg-gray-50 transition-colors {notification.read ? 'bg-gray-50' : 'bg-blue-50'}">
               <div class="flex justify-between items-start">
                 <div class="flex-1">
                   <p class="text-sm text-gray-800">{notification.message}</p>
                   <p class="text-xs text-gray-500 mt-1">{new Date(notification.created_at).toLocaleString()}</p>
                 </div>
-                {#if !notification.is_read}
+                {#if !notification.read}
                   <button
-                    class="ml-2 p-1 rounded-full hover:bg-gray-100"
+                    class="ml-2 p-1 rounded-full hover:bg-blue-100 transition-colors duration-200"
                     onclick={() => markNotificationAsRead(notification.id)}
+                    title="Đánh dấu đã đọc"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
                   </button>
@@ -399,7 +404,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
     </svg>
-    {#if (notifications ?? []).some(n => !n.is_read)}
+    {#if (notifications ?? []).some(n => !n.read)}
       <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full"></span>
     {/if}
   </button>

@@ -15,6 +15,7 @@
     import SupplierModal from "../../../../components/SupplierModal.svelte";
     import MoveFolder from "../../../../components/MoveFolder.svelte";
     import { userStore } from "../../../../stores/userStore";
+    import { read, utils, writeFile } from 'xlsx';
 
     // State Management
     let allFolders: Folder[] = [];
@@ -46,6 +47,12 @@
     let itemToMove: Item | null = null;
     let folderToMove: Folder | null = null;
     let moveModalType: 'folder' | 'item' = 'folder';
+
+    // Add new state variables
+    let importFile: File | null = null;
+    let importError: string | null = null;
+    let isImporting = false;
+    let showImportModal = false;
 
     // Subscribe to URL changes
     $: {
@@ -159,9 +166,23 @@
     async function fetchItems(folderId: number | null = null) {
         try {
             const response = await apiFetch('/items');
+            console.log('Raw API Response:', response); // Debug log
+            
+            // Transform response to ensure proper data types
+            const transformedResponse = response.map(item => ({
+                ...item,
+                quantity: Number(item.quantity),
+                stock_level: Number(item.stock_level),
+                price: Number(item.price)
+            }));
+            
+            console.log('Transformed Response:', transformedResponse); // Debug log
+            
             const filteredItems = folderId 
-                ? response.filter(item => item.folder_id === folderId && item.is_deleted !== 1)
-                : response.filter(item => item.is_deleted !== 1);
+                ? transformedResponse.filter(item => item.folder_id === folderId && item.is_deleted !== 1)
+                : transformedResponse.filter(item => item.is_deleted !== 1);
+                
+            console.log('Filtered Items:', filteredItems); // Debug log
             return filteredItems;
         } catch (err) {
             error = err.message || "Không thể tải items. Vui lòng thử lại sau.";
@@ -451,6 +472,135 @@
         }
     }
 
+    // Add new functions for Excel handling
+    async function handleExportExcel() {
+        try {
+            console.log('Items before export:', allItems); // Debug log
+            
+            // Prepare data for export with proper type conversion
+            const exportData = allItems.map(item => {
+                const stockLevel = typeof item.stock_level === 'number' ? item.stock_level : 
+                                 typeof item.stock_level === 'string' ? parseInt(item.stock_level) : 0;
+                                 
+                console.log('Processing item:', {
+                    name: item.name,
+                    quantity: item.quantity,
+                    stock_level: item.stock_level,
+                    parsed_stock_level: stockLevel,
+                    price: item.price
+                });
+                
+                return {
+                    'Tên sản phẩm': item.name || '',
+                    'Số lượng': typeof item.quantity === 'number' ? item.quantity : parseInt(item.quantity) || 0,
+                    'Mức tồn kho': stockLevel,
+                    'Giá': typeof item.price === 'number' ? item.price : parseInt(item.price) || 0
+                };
+            });
+
+            console.log('Final export data:', exportData); // Debug log
+
+            // Create workbook and worksheet
+            const ws = utils.json_to_sheet(exportData);
+            
+            // Set column widths
+            const wscols = [
+                {wch: 30}, // Tên sản phẩm
+                {wch: 10}, // Số lượng
+                {wch: 12}, // Mức tồn kho
+                {wch: 15}  // Giá
+            ];
+            ws['!cols'] = wscols;
+
+            const wb = utils.book_new();
+            utils.book_append_sheet(wb, ws, "Items");
+
+            // Generate Excel file
+            writeFile(wb, `items_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+        } catch (error) {
+            console.error('Error exporting Excel:', error);
+            alert('Có lỗi xảy ra khi xuất file Excel. Vui lòng thử lại.');
+        }
+    }
+
+    async function downloadTemplate() {
+        try {
+            // Create sample data for template
+            const templateData = [
+                {
+                    'Tên sản phẩm': 'Ví dụ: Laptop Dell XPS 13',
+                    'Số lượng': 10,
+                    'Mức tồn kho': 5,
+                    'Giá': 25000000
+                }
+            ];
+
+            // Create workbook and worksheet
+            const ws = utils.json_to_sheet(templateData);
+            const wb = utils.book_new();
+            utils.book_append_sheet(wb, ws, "Mẫu");
+
+            // Generate Excel file
+            writeFile(wb, 'mau_nhap_du_lieu.xlsx');
+        } catch (error) {
+            console.error('Error creating template:', error);
+            alert('Có lỗi xảy ra khi tạo mẫu Excel. Vui lòng thử lại.');
+        }
+    }
+
+    async function handleImportExcel(event: Event) {
+        const input = event.target as HTMLInputElement;
+        if (!input.files?.length) return;
+
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        reader.onload = async (e) => {
+            try {
+                const data = new Uint8Array(e.target?.result as ArrayBuffer);
+                const workbook = read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = utils.sheet_to_json(firstSheet);
+
+                // Validate required columns
+                const requiredColumns = ['Tên sản phẩm', 'Số lượng', 'Giá', 'Mức tồn kho'];
+                const firstRow = jsonData[0];
+                const missingColumns = requiredColumns.filter(col => !(col in firstRow));
+
+                if (missingColumns.length > 0) {
+                    alert(`Thiếu các cột bắt buộc: ${missingColumns.join(', ')}`);
+                    return;
+                }
+
+                // Process each row
+                for (const row of jsonData) {
+                    const formData = new FormData();
+                    formData.append('name', row['Tên sản phẩm']);
+                    formData.append('quantity', row['Số lượng']);
+                    formData.append('price', row['Giá']);
+                    formData.append('stock_level', row['Mức tồn kho']);
+                    if (currentFolderId) {
+                        formData.append('folder_id', currentFolderId.toString());
+                    }
+
+                    await apiFetch('/items', {
+                        method: 'POST',
+                        body: formData
+                    });
+                }
+
+                // Refresh data after import
+                await fetchData(currentFolderId);
+                alert('Import thành công!');
+            } catch (error) {
+                console.error('Lỗi khi import:', error);
+                alert('Có lỗi xảy ra khi import. Vui lòng kiểm tra lại file.');
+            }
+        };
+
+        reader.readAsArrayBuffer(file);
+    }
+
     onMount(() => {
         loadDataFromCache(null);
     });
@@ -480,6 +630,22 @@
         
         {#if !isTrashMode && canEdit}
             <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
+                <button 
+                    on:click={handleExportExcel}
+                    class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors w-full sm:w-auto"
+                >
+                    Xuất Excel
+                </button>
+                <button
+                    on:click={downloadTemplate}
+                    class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 transition-colors w-full sm:w-auto"
+                >
+                    Tải mẫu Excel
+                </button>
+                <label class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors w-full sm:w-auto cursor-pointer">
+                    Nhập Excel
+                    <input type="file" accept=".xlsx,.xls" on:change={handleImportExcel} class="hidden" />
+                </label>
                 <button 
                     on:click={handleAddItem}
                     class="bg-[#00205b] text-white px-4 py-2 rounded hover:bg-[#001639] transition-colors w-full sm:w-auto"
@@ -808,4 +974,44 @@
             itemToMove = null;
         }}
     />
+
+    <!-- Add Import Modal -->
+    {#if showImportModal}
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full">
+                <h2 class="text-xl font-bold mb-4">Nhập dữ liệu từ Excel</h2>
+                {#if importError}
+                    <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
+                        {importError}
+                    </div>
+                {/if}
+                <p class="mb-4">File Excel phải chứa các cột sau:</p>
+                <ul class="list-disc pl-4 mb-4">
+                    <li>Tên sản phẩm (bắt buộc)</li>
+                    <li>Số lượng (bắt buộc)</li>
+                    <li>Mức tồn kho (bắt buộc)</li>
+                    <li>Giá (bắt buộc)</li>
+                </ul>
+                <p class="text-sm text-gray-600 mb-4">
+                    Bạn có thể tải mẫu Excel để xem cấu trúc file cần nhập.
+                </p>
+                <div class="flex justify-end gap-4">
+                    <button 
+                        on:click={() => {
+                            showImportModal = false;
+                            importError = null;
+                            importFile = null;
+                        }}
+                        class="px-4 py-2 text-gray-600 hover:text-gray-800"
+                    >
+                        Hủy
+                    </button>
+                    <label class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer">
+                        Chọn file
+                        <input type="file" accept=".xlsx,.xls" on:change={handleImportExcel} class="hidden" />
+                    </label>
+                </div>
+            </div>
+        </div>
+    {/if}
 {/if}
