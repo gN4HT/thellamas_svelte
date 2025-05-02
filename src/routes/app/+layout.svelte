@@ -220,7 +220,7 @@
                 class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item transition-colors hover:bg-[#00307b]/50"
                 class:active={page.url.pathname === "/app/fields"}
         >
-          <img src="/img/Frame 87.png" alt="fields Icon" class="ml-1"/>
+        <img src="/img/Items (5).png" alt="Product News Icon"/>
           <span
                   class="ml-3 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap"
           >
@@ -241,46 +241,8 @@
         </span>
       </a>
   
-      <div class="pb-[120px]"></div>
+      <div class="pb-[330px]"></div>
   
-      <a
-        href="/app/productnews"
-        class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item transition-colors hover:bg-[#00307b]/50"
-        class:active={page.url.pathname === "/app/productnews"}
-      >
-        <img src="/img/Items (5).png" alt="Product News Icon"/>
-        <span
-          class="ml-3 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap"
-        >
-          Tin tức sản phẩm
-        </span>
-      </a>
-  
-      <a
-        href="/app/help"
-        class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item transition-colors hover:bg-[#00307b]/50"
-        class:active={page.url.pathname === "/app/help"}
-      >
-        <img src="/img/Items (6).png" alt="Help Icon"/>
-        <span
-          class="ml-3 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap"
-        >
-          Trợ giúp
-        </span>
-      </a>
-  
-      <a
-        href="/app/notification"
-        class="flex items-center px-3 py-2 rounded-xl cursor-pointer sidebar-item transition-colors hover:bg-[#00307b]/50"
-        class:active={page.url.pathname === "/app/notification"}
-      >
-        <img src="/img/Items (7).png" alt="Notifications Icon"/>
-        <span
-          class="ml-3 text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap"
-        >
-          Thông báo
-        </span>
-      </a>
   
       <a
         href="/app/settings"

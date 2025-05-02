@@ -83,21 +83,22 @@ async function fetchCategories() {
       <div class="text-center text-gray-500">Không có bài viết nào.</div>
     {:else}
       {#each displayedPosts as post}
-        <button
-          aria-label="Xem chi tiết"
-          class="bg-white p-4 shadow-md rounded-lg mb-4 cursor-pointer hover:bg-gray-100"
-          on:click={() => fetchPostDetail(post.id)}
-        >
+      <button
+      aria-label="Xem chi tiết"
+      class="bg-white p-4 shadow-md rounded-lg mb-4 cursor-pointer hover:bg-gray-100 w-[650px] mx-auto"
+      on:click={() => fetchPostDetail(post.id)}
+    >
+    
         <a href={`post/${post.id}`}>
           <img 
           src="http://127.0.0.1:8000/storage/{post.image}"  
           alt={post.title} 
-          class="w-full h-48 object-cover rounded-lg mb-3"
+          class="w-full h-48 object-cover rounded-lg mb-3 h-[250px]"
           />
         </a>
 
         <a href={`post/${post.id}`}><h2 class="text-lg font-semibold text-gray-700">{post.title}</h2></a>
-          <p class="text-gray-600 mt-2">{post.content.substring(0, 100)}...</p>
+          <p class="text-gray-600 mt-2">{post.description}...</p>
         </button>
       {/each}
 

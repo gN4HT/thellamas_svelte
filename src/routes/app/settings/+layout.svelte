@@ -8,6 +8,7 @@
         {path: "/app/settings/preferences", icon: "fa-gear", label: "Cài đặt"},
         {path: "/app/settings/company", icon: "fa-briefcase", label: "Thông tin công ty"},
         {path: "/app/settings/planBill", icon: "fa-credit-card", label: "Kế hoạch & Thanh toán"},
+        {path: "/app/settings/userInventory", icon: "fa-user", label: "Quản lý thành viên"},
 
     ];
 

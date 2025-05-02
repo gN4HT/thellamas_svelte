@@ -15,14 +15,6 @@
     inventory_id: null
   };
 
-  // Suggested field types
-  const suggestedTypes = [
-    { name: "Văn bản", type: "text" },
-    { name: "Email", type: "email" },
-    { name: "Số điện thoại", type: "tel" },
-    { name: "URL", type: "url" },
-    { name: "Ngày tháng", type: "date" }
-  ];
 
   const getToken = () => localStorage.getItem("token");
 
@@ -30,7 +22,7 @@
   const fetchFields = async () => {
     try {
       const headers = { Authorization: `Bearer ${getToken()}` };
-      const result = await apiFetch("http://127.0.0.1:8000/api/fields", { headers });
+      const result = await apiFetch("fields", { headers });
       fields = result.map(field => ({
         id: field.id,
         name: field.name,
@@ -46,46 +38,49 @@
 
   // Handle form submission
   const handleSubmit = async () => {
-    try {
-      const url = isEditMode && selectedField
-              ? `http://127.0.0.1:8000/api/fields/${selectedField.id}`
-              : "http://127.0.0.1:8000/api/fields";
-      const method = isEditMode ? "PUT" : "POST";
-      const headers = {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getToken()}`,
-      };
-      // Convert is_hidden từ boolean sang 0/1 cho API
-      const formData = {
-        ...fieldForm,
-        is_hidden: fieldForm.is_hidden ? 1 : 0
-      };
-      const body = JSON.stringify(formData);
-      const response = await fetch(url, { method, headers, body });
-      if (response.ok) {
-        closeModal();
-        fetchFields();
-      } else {
-        console.error("Lỗi:", await response.json());
-      }
-    } catch (error) {
-      console.error("Lỗi khi gửi form:", error);
+  try {
+    const endpoint = isEditMode && selectedField
+            ? `fields/${selectedField.id}`
+            : "fields";
+    const method = isEditMode ? "PUT" : "POST";
+
+    const formData = new FormData();
+    formData.append('name', fieldForm.name);
+    formData.append('is_hidden', fieldForm.is_hidden ? '1' : '0');
+    formData.append('type', fieldForm.type);
+    formData.append('inventory_id', fieldForm.inventory_id || '');
+
+    // Handle value based on type
+    if (fieldForm.type === 'checkbox') {
+      // For checkbox, append each value separately
+      fieldForm.value.forEach((val, index) => {
+        formData.append(`value[${index}]`, val);
+      });
+    } else {
+      // For other types, append as single value
+      formData.append('value', String(fieldForm.value));
     }
-  };
+
+    await apiFetch(endpoint, { 
+      method, 
+      body: formData 
+    });
+
+    closeModal();
+    fetchFields();
+  } catch (error) {
+    console.error("Lỗi khi gửi form:", error);
+  }
+};
+
 
   // Handle field deletion
   const handleDelete = async (field) => {
     const confirmDelete = confirm(`Bạn có chắc muốn xóa trường: ${field.name}?`);
     if (!confirmDelete) return;
     try {
-      const url = `http://127.0.0.1:8000/api/fields/${field.id}`;
-      const headers = { Authorization: `Bearer ${getToken()}` };
-      const response = await fetch(url, { method: "DELETE", headers });
-      if (response.ok) {
-        fetchFields();
-      } else {
-        console.error("Lỗi khi xóa:", await response.json());
-      }
+      await apiFetch(`fields/${field.id}`, { method: "DELETE" });
+      fetchFields();
     } catch (error) {
       console.error("Lỗi khi xóa trường:", error);
     }
@@ -277,266 +272,69 @@
 </div>
 
 <!-- Add/Edit Field Modal -->
+
 {#if showModal}
-  <div class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto m-6">
-      <div class="p-8">
-        <div class="flex justify-between items-center mb-8">
-          <h2 class="text-2xl font-semibold text-gray-900">
-            {isEditMode ? 'Chỉnh sửa trường tùy chỉnh' : 'Tạo trường tùy chỉnh'}
-          </h2>
-          <button
-                  aria-label="Đóng"
-                  class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors duration-150"
-                  on:click={closeModal}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+  <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg w-full max-w-md p-6 shadow-xl">
+      <h2 class="text-xl font-bold mb-4">{isEditMode ? 'Sửa trường' : 'Thêm trường mới'}</h2>
+
+      <form on:submit|preventDefault={handleSubmit} class="space-y-4">
+        <div>
+            <label class="block font-medium">Tên trường:</label>
+            <input class="w-full border px-3 py-2 rounded" bind:value={fieldForm.name} required />
         </div>
-
-        <div class="flex gap-12">
-          <!-- Left side - Field type selection -->
-          <div class="flex-1">
-            {#if !isEditMode}
-              <div class="flex items-center bg-blue-50 text-[#00307b] p-4 rounded-lg mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                </svg>
-                <span class="text-sm">Bạn có thể thêm 1 trường tùy chỉnh trong gói Miễn phí.</span>
-                <a href="/" class="text-[#00307b] ml-2 hover:underline text-sm font-medium">Xem các gói</a>
-              </div>
-
-              <h3 class="text-gray-600 font-medium mb-4">LOẠI TRƯỜNG</h3>
-
-              <div class="space-y-3">
-                {#each suggestedTypes as type}
-                  <div class="flex items-center">
-                    <button
-                            class="flex-1 p-4 border rounded-lg text-left hover:border-[#00307b] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00307b] transition-all duration-200 {fieldForm.type === type.type ? 'border-[#00307b] bg-blue-50' : 'hover:bg-gray-50'}"
-                            on:click={() => handleFieldTypeSelect(type.type)}
-                    >
-                      <div class="flex items-center">
-                        <span class="text-gray-700">{type.name}</span>
-                      </div>
-                    </button>
-                  </div>
-                {/each}
-              </div>
-            {:else}
-              <div class="p-4 border rounded-lg mb-6">
-                <h3 class="font-medium text-gray-900 mb-2">Loại trường hiện tại</h3>
-                <p class="text-gray-600">{fieldForm.type}</p>
-                <p class="text-sm text-gray-500 mt-2">Không thể thay đổi loại trường sau khi đã tạo.</p>
-              </div>
-            {/if}
-          </div>
-
-          <!-- Right side - Field configuration -->
-          <div class="w-96 border-l pl-8 space-y-6">
-            <div>
-              <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Tên trường</label>
-              <input
-                      name="name"
-                      type="text"
-                      bind:value={fieldForm.name}
-                      placeholder="Nhập tên trường..."
-                      class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200"
-              />
-            </div>
-
-            <div>
-              <label for="is_hidden" class="block text-sm font-medium text-gray-700 mb-2">Hiển thị trong danh sách</label>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input
-                        name="is_hidden"
-                        type="checkbox"
-                        checked={!fieldForm.is_hidden}
-                        class="sr-only peer"
-                        on:change={() => {
-                    fieldForm.is_hidden = !fieldForm.is_hidden;
-                  }}
-                />
-                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00307b]"></div>
-              </label>
-            </div>
-
-            <!-- Field options for select/dropdown/checkbox type fields -->
-            {#if fieldForm.type === 'select' || fieldForm.type === 'checkbox'}
-              <div>
-                <label for="value" class="block text-sm font-medium text-gray-700 mb-2">Tùy chọn</label>
-                {#each fieldForm.value as option, index}
-                  <div class="flex items-center mb-2">
-                    <input
-                            name="value"
-                            type="text"
-                            value={option}
-                            on:input={(e) => updateValueOption(index, e.target.value)}
-                            placeholder="Nhập tùy chọn..."
-                            class="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200"
-                    />
-                    <button
-                            aria-label="Xóa tùy chọn"
-                            name="remove_value"
-                            class="ml-2 p-2 text-red-500 hover:text-red-700 rounded-full hover:bg-red-50"
-                            on:click={() => removeValueOption(index)}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
-                {/each}
-                <button
-                        class="mt-2 flex items-center text-[#00307b] hover:text-[#002561] font-medium"
-                        on:click={addValueOption}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                  </svg>
-                  Thêm tùy chọn
-                </button>
-              </div>
-            {/if}
-
-            <!-- Preview for different field types -->
-            {#if fieldForm.type && !isEditMode}
-              <div class="mt-6 border-t pt-6">
-                <h3 class="text-lg font-medium mb-2">Xem trước</h3>
-
-                {#if fieldForm.type === 'text'}
-                  <div>
-                    <label for="text" class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Văn bản'}</label>
-                    <input
-                            name="text"
-                            type="text"
-                            placeholder="Nhập văn bản..."
-                            class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200"
-                    />
-                  </div>
-                {/if}
-
-                {#if fieldForm.type === 'tel'}
-                  <div>
-                    <label for="tel" class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Số điện thoại'}</label>
-                    <input
-                            name="tel"
-                            type="tel"
-                            placeholder="Nhập số điện thoại..."
-                            on:keypress={handleKeyPress}
-                            pattern="[0-9]{10}"
-                            maxlength="10"
-                            class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200"
-                    />
-                  </div>
-                {/if}
-
-                {#if fieldForm.type === 'email'}
-                  <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Email'}</label>
-                    <input
-                            name="email"
-                            type="email"
-                            placeholder="example@email.com"
-                            class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200"
-                    />
-                  </div>
-                {/if}
-
-                {#if fieldForm.type === 'url'}
-                  <div>
-                    <label for="url" class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Website'}</label>
-                    <input
-                            name="url"
-                            type="url"
-                            placeholder="https://example.com"
-                            class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200"
-                    />
-                  </div>
-                {/if}
-
-                {#if fieldForm.type === 'date'}
-                  <div>
-                    <label for="date" class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Ngày tháng'}</label>
-                    <div class="flex items-center">
-                      <input
-                              type="date"
-                              name="date"
-                              class="flex-1 p-3 border rounded-lg mr-2 focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200"
-                      />
-                      <button aria-label="Chọn ngày" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-150">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10" />
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </button>
+    
+        <div>
+            <label class="block font-medium">Ẩn trường?</label>
+            <input type="checkbox" bind:checked={fieldForm.is_hidden} />
+        </div>
+    
+        <div>
+            <label class="block font-medium">Kiểu trường:</label>
+            <select class="w-full border px-3 py-2 rounded" bind:value={fieldForm.type}>
+                <option value="text">Văn bản</option>
+                <option value="email">Email</option>
+                <option value="phone">Số điện thoại</option>
+                <option value="web_url">URL</option>
+                <option value="date">Ngày</option>
+                <option value="checkbox">Checkbox</option>
+            </select>
+        </div>
+    
+        <!-- Phần điền giá trị cho checkbox -->
+        <div>
+            <label class="block font-medium">Giá trị (cho checkbox):</label>
+            {#if fieldForm.type === 'checkbox'}
+                {#each fieldForm.value as val, index}
+                    <div class="flex gap-2 items-center mb-2">
+                        <input class="border px-2 py-1 flex-1" bind:value={fieldForm.value[index]} />
+                        <button type="button" class="text-red-500" on:click={() => removeValueOption(index)}>✖</button>
                     </div>
-                  </div>
-                {/if}
-
-                {#if fieldForm.type === 'select'}
-                  <div>
-                    <label for="select" class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Lựa chọn'}</label>
-                    <select
-                            name="select"
-                            class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00307b] focus:border-[#00307b] transition-all duration-200"
-                    >
-                      <option value="" disabled selected>Chọn một tùy chọn...</option>
-                      {#each fieldForm.value as option}
-                        <option value={option}>{option}</option>
-                      {/each}
-                    </select>
-                  </div>
-                {/if}
-
-                {#if fieldForm.type === 'checkbox'}
-                  <div>
-                    <label for="checkbox" class="block text-sm font-medium text-gray-700 mb-2">{fieldForm.name || 'Tùy chọn'}</label>
-                    <div class="space-y-2">
-                      {#each fieldForm.value as option}
-                        <div class="flex items-center">
-                          <input
-                                  type="checkbox"
-                                  name="checkbox"
-                                  class="h-4 w-4 text-[#00307b] focus:ring-[#00307b] border-gray-300 rounded"
-                          />
-                          <label for="checkbox" class="ml-2 text-gray-700">{option}</label>
-                        </div>
-                      {/each}
-                    </div>
-                  </div>
-                {/if}
-              </div>
+                {/each}
+                <button type="button" class="bg-green-500 text-white px-2 py-1 rounded" on:click={addValueOption}>+ Thêm giá trị</button>
             {/if}
-
-            {#if errorMessage}
-              <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                </svg>
-                {errorMessage}
-              </p>
-            {/if}
-          </div>
         </div>
+    
+        <!-- Phần điền giá trị cho các kiểu trường khác -->
+        {#if fieldForm.type !== 'checkbox'}
+            <div>
+                <label class="block font-medium">Giá trị:</label>
+                <input class="w-full border px-3 py-2 rounded" bind:value={fieldForm.value} />
+            </div>
+        {/if}
+    
 
-        <div class="mt-8 flex justify-end pt-6 border-t">
-          <button
-                  class="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg mr-3 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-all duration-200"
-                  on:click={closeModal}
-          >
-            HỦY
-          </button>
-          <button
-                  class="bg-[#00307b] text-white px-8 py-3 rounded-lg hover:bg-[#002561] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00307b] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                  on:click={handleSubmit}
-                  disabled={!fieldForm.name || errorMessage}
-          >
-            {isEditMode ? 'LƯU ': 'TẠO'}
-          </button>
+    
+        {#if errorMessage}
+            <p class="text-red-500 text-sm">{errorMessage}</p>
+        {/if}
+    
+        <div class="flex justify-end gap-2 mt-4">
+            <button type="button" class="px-4 py-2 bg-gray-300 rounded" on:click={closeModal}>Hủy</button>
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">{isEditMode ? 'Lưu' : 'Tạo'}</button>
         </div>
-      </div>
+    </form>
+    
     </div>
   </div>
 {/if}

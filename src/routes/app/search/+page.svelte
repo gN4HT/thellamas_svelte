@@ -2,6 +2,7 @@
     import { apiFetch } from '$lib/api';
     import { onMount } from 'svelte';
     import Items from "../../../components/Items.svelte";
+    import Paginations from "../../../components/Paginations.svelte";
     import type { Folder } from "../../../models/folder";
 
     let filters = {
@@ -34,6 +35,9 @@
     let isLoading = false;
     let error = null;
     let results = [];
+    let currentPage = 1;
+    let totalItems = 0;
+    const itemsPerPage = 12;
 
     // Add function to check if any filter has value
     function hasAnyFilter() {
@@ -77,6 +81,7 @@
 
             const response = await apiFetch(`/item_search?${params.toString()}`);
             results = response || [];
+            totalItems = results.length;
             console.log('Search results:', results);
         } catch (err) {
             error = err.message;
@@ -85,6 +90,31 @@
             isLoading = false;
         }
     }
+
+    function handlePageChange(event: CustomEvent) {
+        if (event.detail === 'next') {
+            if (currentPage * itemsPerPage < totalItems) {
+                currentPage++;
+            }
+        } else if (event.detail === 'prev') {
+            if (currentPage > 1) {
+                currentPage--;
+            }
+        }
+    }
+
+    // Calculate paginated data
+    $: {
+        if (results.length > 0) {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            paginatedResults = results.slice(start, end);
+        } else {
+            paginatedResults = [];
+        }
+    }
+
+    let paginatedResults = [];
 </script>
 
 <style>
@@ -219,11 +249,18 @@
             </div>
         {:else}
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {#each results as item (item.id)}
-                    
-                        <Items {...item} />
-                    
+                {#each paginatedResults as item (item.id)}
+                    <Items {...item} />
                 {/each}
+            </div>
+            <div class="mt-8">
+                <Paginations 
+                    {totalItems}
+                    bind:currentPage={currentPage}
+                    itemsPerPage={itemsPerPage}
+                    on:prev={handlePageChange}
+                    on:next={handlePageChange}
+                />
             </div>
         {/if}
     </main>

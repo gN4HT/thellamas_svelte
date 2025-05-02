@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import flattenColorPalette from "tailwindcss/dist/flatten-color-palette";
 
 module.exports = {
@@ -152,3 +153,17 @@ function addVariablesForColors({ addBase, theme }: any) {
     ":root": newVars,
   });
 }
+=======
+module.exports = {
+    theme: {
+      screens: {
+        sm: '640px',
+        md: '768px',
+        lg: '1024px',
+        xl: '1280px',
+        '2xl': '1536px',
+      },
+    },
+  };
+  
+>>>>>>> origin/tringuyen

@@ -6,10 +6,7 @@
     let reports = [
         {name: "Lịch sử hoạt động", icon: "fa-clock-rotate-left", path: "/app/reports/activeHistory"},
         {name: "Tóm tắt hàng tồn kho", icon: "fa-layer-group", path: "/app/reports/inventorySummary"},
-        {name: "Giao dịch", icon: "fa-repeat", path: "/app/reports/transactions"},
         {name: "Quá trình xử lý sản phẩm", icon: "fa-chart-simple", path: "/app/reports/productProcessing"},
-        {name: "Tổng kết chuyển đổi", icon: "fa-folder-tree", path: "/app/reports/conversionSummary"},
-        {name: "Tóm tắt hoạt động của người dùng", icon: "fa-users", path: "/app/reports/userActivity"}
     ];
 
     // Đường dẫn hiện tại (reactive)

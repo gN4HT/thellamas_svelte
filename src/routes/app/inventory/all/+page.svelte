@@ -16,6 +16,7 @@
     import MoveFolder from "../../../../components/MoveFolder.svelte";
     import { userStore } from "../../../../stores/userStore";
     import { read, utils, writeFile } from 'xlsx';
+    import FieldsModal from "../../../../components/FieldsModal.svelte";
 
     // State Management
     let allFolders: Folder[] = [];
@@ -53,6 +54,12 @@
     let importError: string | null = null;
     let isImporting = false;
     let showImportModal = false;
+
+    // Add new state variables after other state declarations
+    let showFieldsModal = false;
+    let itemForFields: Item | null = null;
+    let folderForFields: Folder | null = null;
+    let currentModalType: 'folder' | 'item' = 'item';
 
     // Subscribe to URL changes
     $: {
@@ -134,7 +141,6 @@
     let showTagsModal = false;
     let itemForTags: Item | null = null;
     let folderForTags: Folder | null = null;
-    let currentModalType: 'folder' | 'item' = 'item';
 
     // Modal cho supplier
     let showSupplierModal = false;
@@ -560,7 +566,7 @@
                 const data = new Uint8Array(e.target?.result as ArrayBuffer);
                 const workbook = read(data, { type: 'array' });
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = utils.sheet_to_json(firstSheet);
+                const jsonData = utils.sheet_to_json<Record<string, any>>(firstSheet);
 
                 // Validate required columns
                 const requiredColumns = ['Tên sản phẩm', 'Số lượng', 'Giá', 'Mức tồn kho'];
@@ -599,6 +605,12 @@
         };
 
         reader.readAsArrayBuffer(file);
+    }
+
+    // Add new handler function after other handlers
+    function handleOpenFields(item: Item) {
+        itemForFields = item;
+        showFieldsModal = true;
     }
 
     onMount(() => {
@@ -884,6 +896,16 @@
                                                 </svg>
                                             </button>
                                             <button 
+                                                aria-label="Quản lý fields"
+                                                on:click={() => handleOpenFields(item)}
+                                                class="p-2 bg-indigo-500 text-white rounded-full hover:bg-indigo-600 transition-colors"
+                                                title="Quản lý fields"
+                                            >
+                                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
+                                                </svg>
+                                            </button>
+                                            <button 
                                                 aria-label="Xóa"
                                                 on:click={() => handleDelete('item', item.id)}
                                                 class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
@@ -1014,4 +1036,17 @@
             </div>
         </div>
     {/if}
+
+    <!-- Add FieldsModal -->
+    <FieldsModal
+        bind:showModal={showFieldsModal}
+        id={itemForFields?.id}
+        type="item"
+        currentFields={itemForFields?.fields?.map(f => f.id) || []}
+        on:success={() => {
+            fetchData(currentFolderId);
+            showFieldsModal = false;
+            itemForFields = null;
+        }}
+    />
 {/if}
