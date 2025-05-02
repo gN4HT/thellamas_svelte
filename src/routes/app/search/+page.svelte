@@ -34,6 +34,57 @@
     let isLoading = false;
     let error = null;
     let results = [];
+    let validationErrors = {
+        quantity: '',
+        price: '',
+    };
+
+    // Validation functions
+    function validateQuantity() {
+        const min = Number(filters.min_quantity);
+        const max = Number(filters.max_quantity);
+        
+        if (filters.min_quantity && filters.max_quantity && min > max) {
+            validationErrors.quantity = 'Số lượng tối thiểu không được lớn hơn số lượng tối đa';
+            return false;
+        }
+        if (filters.min_quantity && min < 0) {
+            validationErrors.quantity = 'Số lượng không được âm';
+            return false;
+        }
+        if (filters.max_quantity && max < 0) {
+            validationErrors.quantity = 'Số lượng không được âm';
+            return false;
+        }
+        validationErrors.quantity = '';
+        return true;
+    }
+
+    function validatePrice() {
+        const min = Number(filters.min_price);
+        const max = Number(filters.max_price);
+        
+        if (filters.min_price && filters.max_price && min > max) {
+            validationErrors.price = 'Giá tối thiểu không được lớn hơn giá tối đa';
+            return false;
+        }
+        if (filters.min_price && min < 0) {
+            validationErrors.price = 'Giá không được âm';
+            return false;
+        }
+        if (filters.max_price && max < 0) {
+            validationErrors.price = 'Giá không được âm';
+            return false;
+        }
+        validationErrors.price = '';
+        return true;
+    }
+
+    function validateFilters() {
+        const isQuantityValid = validateQuantity();
+        const isPriceValid = validatePrice();
+        return isQuantityValid && isPriceValid;
+    }
 
     // Add function to check if any filter has value
     function hasAnyFilter() {
@@ -62,6 +113,10 @@
     });
 
     async function search() {
+        if (!validateFilters()) {
+            return;
+        }
+
         isLoading = true;
         error = null;
 
@@ -79,7 +134,7 @@
             results = response || [];
             console.log('Search results:', results);
         } catch (err) {
-            error = err.message;
+            error = err.message || 'Có lỗi xảy ra khi tìm kiếm';
             console.error("Search error:", err);
         } finally {
             isLoading = false;
@@ -119,19 +174,26 @@
                 {#if toggleStates[key]}
                     <!-- Quantity & Price -->
                     {#if key === 'quantity' || key === 'price'}
-                        <div class="flex gap-3 mt-4">
-                            <input 
-                                type="number" 
-                                class="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
-                                bind:value={filters[`min_${key}`]} 
-                                placeholder={`Tối thiểu`} 
-                            />
-                            <input 
-                                type="number" 
-                                class="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
-                                bind:value={filters[`max_${key}`]} 
-                                placeholder={`Tối đa`} 
-                            />
+                        <div class="flex flex-col gap-3 mt-4">
+                            <div class="flex gap-3">
+                                <input 
+                                    type="number" 
+                                    class="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
+                                    bind:value={filters[`min_${key}`]} 
+                                    placeholder={`Tối thiểu`} 
+                                    on:blur={() => validateFilters()}
+                                />
+                                <input 
+                                    type="number" 
+                                    class="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
+                                    bind:value={filters[`max_${key}`]} 
+                                    placeholder={`Tối đa`} 
+                                    on:blur={() => validateFilters()}
+                                />
+                            </div>
+                            {#if validationErrors[key]}
+                                <span class="text-red-500 text-sm">{validationErrors[key]}</span>
+                            {/if}
                         </div>
 
                     <!-- Stock -->
