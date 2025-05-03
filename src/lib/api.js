@@ -3,7 +3,7 @@ const BASE_URL = "http://127.0.0.1:8000/api";
 
 export const apiFetch = async (
   endpoint,
-  { method = "GET", body = null, headers = {} } = {}
+  { method = "GET", body = null, headers = {}, type = null } = {}
 ) => {
   try {
     // Retrieve token from localStorage
@@ -22,6 +22,7 @@ export const apiFetch = async (
       ...(body && !(body instanceof FormData)
         ? { "Content-Type": "application/json" }
         : {}),
+      ...(type ? { "x-type": type } : {}),
       ...headers,
     };
 

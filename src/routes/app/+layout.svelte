@@ -241,7 +241,7 @@
         </span>
       </a>
   
-      <div class="pb-[330px]"></div>
+      <div class="pb-[320px]"></div>
   
   
       <a

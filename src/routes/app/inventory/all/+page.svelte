@@ -17,6 +17,7 @@
     import { userStore } from "../../../../stores/userStore";
     import { read, utils, writeFile } from 'xlsx';
     import FieldsModal from "../../../../components/FieldsModal.svelte";
+    import QRCodeModal from "../../../../components/QRCodeModal.svelte";
 
     // State Management
     let allFolders: Folder[] = [];
@@ -60,6 +61,10 @@
     let itemForFields: Item | null = null;
     let folderForFields: Folder | null = null;
     let currentModalType: 'folder' | 'item' = 'item';
+
+    // Add new state variables after other state declarations
+    let showQRCodeModal = false;
+    let itemForQRCode: Item | null = null;
 
     // Subscribe to URL changes
     $: {
@@ -158,7 +163,7 @@
     // Data Fetching
     async function fetchFolders(folderId: number | null = null) {
         try {
-            const response = await apiFetch('/folders');
+            const response = await apiFetch('/folders', { type: 'folders' });
             const filteredFolders = folderId 
                 ? response.filter(folder => folder.parent_id === folderId && folder.is_deleted !== 1)
                 : response.filter(folder => folder.is_deleted !== 1);
@@ -171,7 +176,7 @@
 
     async function fetchItems(folderId: number | null = null) {
         try {
-            const response = await apiFetch('/items');
+            const response = await apiFetch('/items', { type: 'items' });
             console.log('Raw API Response:', response); // Debug log
             
             // Transform response to ensure proper data types
@@ -367,6 +372,7 @@
             const response = await apiFetch(endpoint, {
                 method: 'POST',
                 body: formData,
+                type: 'folders'
             });
 
             if (!response) {
@@ -374,7 +380,7 @@
             }
 
             // Fetch all folders and update the store
-            const allFolders = await apiFetch("/folders");
+            const allFolders = await apiFetch("/folders", { type: 'folders' });
             folderStore.set(allFolders);
 
             // Clear cache and refresh current view
@@ -402,6 +408,7 @@
             const response = await apiFetch(endpoint, {
                 method: 'POST',
                 body: formData,
+                type: 'items'
             });
 
             if (!response) {
@@ -430,12 +437,13 @@
 
         try {
             await apiFetch(`/${type}s/${id}/delete`, {
-                method: 'PUT'
+                method: 'PUT',
+                type: type === 'folder' ? 'folders' : 'items'
             });
             
             if (type === 'folder') {
                 // Cập nhật store khi xóa folder
-                const allFolders = await apiFetch("/folders");
+                const allFolders = await apiFetch("/folders", { type: 'folders' });
                 folderStore.set(allFolders);
             }
             
@@ -611,6 +619,12 @@
     function handleOpenFields(item: Item) {
         itemForFields = item;
         showFieldsModal = true;
+    }
+
+    // Add new handler function after other handlers
+    function handleOpenQRCode(item: Item) {
+        itemForQRCode = item;
+        showQRCodeModal = true;
     }
 
     onMount(() => {
@@ -798,8 +812,8 @@
                                                 on:click={() => handleEditFolder(folder)}
                                                 class="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors"
                                             >
-                                                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
+                                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                 </svg>
                                             </button>
                                             <button 
@@ -809,7 +823,7 @@
                                                 title="Quản lý tags"
                                             >
                                                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8v11a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V8M3 8l8.2-7.6a1 1 0 0 1 1.6 0L21 8M3 8h18"/>
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                                                 </svg>
                                             </button>
                                             <button 
@@ -817,8 +831,8 @@
                                                 on:click={() => handleDelete('folder', folder.id)}
                                                 class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                                             >
-                                                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+                                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                 </svg>
                                             </button>
                                             <button 
@@ -828,7 +842,7 @@
                                                 title="Di chuyển thư mục"
                                             >
                                                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0-4-4m4 4-4 4m0 6H4m0 0 4 4m-4-4 4-4"/>
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                                                 </svg>
                                             </button>
                                         </div>
@@ -861,8 +875,8 @@
                                                 on:click={() => handleEditItem(item)}
                                                 class="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors"
                                             >
-                                                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
+                                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                 </svg>
                                             </button>
                                             <button 
@@ -872,7 +886,7 @@
                                                 title="Quản lý tags"
                                             >
                                                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8v11a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V8M3 8l8.2-7.6a1 1 0 0 1 1.6 0L21 8M3 8h18"/>
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                                                 </svg>
                                             </button>
                                             <button 
@@ -882,7 +896,7 @@
                                                 title="Chọn supplier"
                                             >
                                                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v13m0-13 4 4m-4-4-4 4"/>
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                                 </svg>
                                             </button>
                                             <button 
@@ -892,7 +906,7 @@
                                                 title="Di chuyển mặt hàng"
                                             >
                                                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0-4-4m4 4-4 4m0 6H4m0 0 4 4m-4-4 4-4"/>
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                                                 </svg>
                                             </button>
                                             <button 
@@ -902,7 +916,17 @@
                                                 title="Quản lý fields"
                                             >
                                                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                                </svg>
+                                            </button>
+                                            <button 
+                                                aria-label="QR Code"
+                                                on:click={() => handleOpenQRCode(item)}
+                                                class="p-2 bg-teal-500 text-white rounded-full hover:bg-teal-600 transition-colors"
+                                                title="QR Code"
+                                            >
+                                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
                                                 </svg>
                                             </button>
                                             <button 
@@ -910,8 +934,8 @@
                                                 on:click={() => handleDelete('item', item.id)}
                                                 class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                                             >
-                                                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+                                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                 </svg>
                                             </button>
                                         </div>
@@ -1047,6 +1071,16 @@
             fetchData(currentFolderId);
             showFieldsModal = false;
             itemForFields = null;
+        }}
+    />
+
+    <!-- Add QRCodeModal -->
+    <QRCodeModal
+        bind:showModal={showQRCodeModal}
+        item={itemForQRCode}
+        onClose={() => {
+            showQRCodeModal = false;
+            itemForQRCode = null;
         }}
     />
 {/if}
