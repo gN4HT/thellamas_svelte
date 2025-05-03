@@ -28,6 +28,9 @@
     let error: string | null = null;
     let currentFolderId: number | null = null;
     let currentFolderName: string = "Tất cả mặt hàng";
+    let totalPrice = 0;
+    let totalItemsCount = 0;
+    let totalFoldersCount = 0;
   
     let folderPage = 1;
     let itemPage = 1;
@@ -99,11 +102,19 @@
         items = allItems.slice(itemStart, itemEnd);
         totalItems = allItems.length;
     }
-  
-    $: totalPrice = items.reduce((total, item) => {
-        const price = Number(String(item.price).replace(/[^\d.-]/g, "")) || 0;
-        return total + price;
-    }, 0);
+
+    async function fetchDashboardData() {
+        try {
+            const response = await apiFetch("/dashboard");
+            if (response?.counts) {
+                totalPrice = response.counts.price || 0;
+                totalItemsCount = response.counts.items || 0;
+                totalFoldersCount = response.counts.folders || 0;
+            }
+        } catch (err) {
+            console.error('Error fetching dashboard data:', err);
+        }
+    }
 
     // Cache Management
     function loadDataFromCache(folderId: number | null) {
@@ -603,8 +614,8 @@
         showQRCodeModal = true;
     }
 
-    onMount(() => {
-        loadDataFromCache(null);
+    onMount(async () => {
+        await fetchDashboardData();
     });
 </script>
   
@@ -666,8 +677,8 @@
     
     <!-- Statistics -->
     <div class="p-4 mt-4 flex flex-wrap gap-4 sm:gap-6 text-gray-700">
-        <span>Thư mục: <strong>{folders.length}</strong></span>
-        <span>Mặt hàng: <strong>{items.length}</strong></span>
+        <span>Thư mục: <strong>{totalFoldersCount}</strong></span>
+        <span>Mặt hàng: <strong>{totalItemsCount}</strong></span>
         <span>Tổng giá trị: <strong>₫{totalPrice.toLocaleString()}</strong></span>
     </div>
     

@@ -10,6 +10,20 @@
         stock_levels: []
     };
 
+    let currentDateTime = "";
+
+    function updateDateTime() {
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        
+        currentDateTime = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    }
+
     const fetchData = async () => {
         try {
             const result = await apiFetch("/dashboard");
@@ -27,7 +41,7 @@
             }));
 
             data.recent_items = result.items.map(item => ({
-                img: `/img/${item.image}`,
+                img: `${item.image}`,
                 name: item.name,
                 description: `Số lượng: ${item.quantity}`,
                 unit: `${item.quantity} Đơn vị`,
@@ -35,7 +49,7 @@
             }));
 
             data.stock_levels = result.low_stock_items.map(item => ({
-                img: `/img/${item.image}`,
+                img: `${item.image}`,
                 name: item.name,
                 unit: `${item.quantity} Đơn vị`
             }));
@@ -46,6 +60,10 @@
 
     onMount(() => {
         fetchData();
+        updateDateTime();
+        // Update every second
+        const interval = setInterval(updateDateTime, 1000);
+        return () => clearInterval(interval);
     });
 </script>
 
@@ -53,19 +71,12 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between border-b pb-4 gap-4">
         <h1 class="text-xl md:text-2xl font-semibold text-gray-900">Bảng điều khiển</h1>
-        <button class="flex items-center bg-blue-900 text-white px-4 py-2 rounded-md">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
-                 fill="rgba(255,255,255,1)">
-                <path d="M16 18V20H5V18H16ZM21 11V13H3V11H21ZM19 4V6H8V4H19Z"></path>
-            </svg>
-            <span class="ml-2 uppercase text-sm tracking-wide">Cài đặt thư mục</span>
-        </button>
     </div>
 
     <!-- Selected Folders -->
     <div class="flex items-center gap-4 py-4">
-        <h3 class="text-sm">Thư mục được chọn:</h3>
-        <span class="px-4 py-1 bg-gray-600 text-white rounded-full">Tất cả thư mục</span>
+        <h3 class="text-sm">Ngày tháng hiện tại:</h3>
+        <span class="px-4 py-1 bg-gray-600 text-white rounded-full">{currentDateTime}</span>
     </div>
     <div class="w-full max-w-5xl mx-auto">
         <!-- Inventory Summary -->
@@ -86,10 +97,6 @@
         <div class="mt-6">
             <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <h2 class="text-lg font-semibold">Hoạt động gần đây</h2>
-                <div class="flex items-center gap-2">
-                    <span class="text-gray-600 text-sm">Tất cả hoạt động</span>
-                    <a href="/"><img alt="cc" src="/img/dashboard-icon.png" class="w-6 h-6"/></a>
-                </div>
             </div>
             {#each data.recent_activities as activity}
                 <div class="flex flex-col sm:flex-row justify-between p-4 shadow-md bg-white rounded-md mb-2 gap-2">
@@ -105,7 +112,13 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {#each data.recent_items as item}
                     <div class="shadow-md rounded-lg overflow-hidden bg-white">
-                        <a href="/"><img src={item.img} alt={item.name} class="w-full h-48 md:h-80 object-cover"/></a>
+                        {#if item.img && item.img !== 'null' && item.img !== 'undefined' && item.img.length > 0}
+                        <img src={`http://127.0.0.1:8000/storage/${item.img}`} class="w-full h-48 md:h-80 object-cover"/>
+                        {:else}
+                            <div class="bg-gray-200 h-48 md:h-80 flex items-center justify-center">
+                                <span class="text-4xl text-gray-400"><i class="fa-solid fa-file"></i></span>
+                            </div>
+                        {/if}
                         <div class="p-4">
                             <h3 class="font-semibold">{item.name}</h3>
                             <p class="text-gray-500 py-2">{item.description}</p>
@@ -124,17 +137,19 @@
         <div class="mt-6">
             <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <h2 class="text-lg font-semibold">Mức tồn kho</h2>
-                <div class="flex items-center gap-2">
-                    <span class="text-gray-600 text-sm">Ở hoặc Dưới Mức Tối Thiểu</span>
-                    <div><img alt="cc" src="/img/dashboard-icon.png" class="w-6 h-6"/></div>
-                </div>
             </div>
-            <div class="grid grid-cols-1 gap-4">
+            <div class="grid grid-cols-1 gap-4 h-[500px] overflow-auto">
                 {#each data.stock_levels as item}
                     <div class="flex items-center shadow-md p-4 bg-white rounded-lg">
-                        <a href="/" class="w-10 h-10 flex-shrink-0 flex justify-center items-center bg-gray-400">
-                            <img alt="cc" src={item.img} class="w-10 h-10"/>
-                        </a>
+                        {#if item.img && item.img !== 'null' && item.img !== 'undefined' && item.img.length > 0}
+                        <a class="w-20 h-20 flex-shrink-0 flex justify-center items-center bg-gray-400">
+                                <img src={`http://127.0.0.1:8000/storage/${item.img}`} class="w-20 h-20"/>
+                            </a>
+                        {:else}
+                            <a class="w-20 h-20 flex-shrink-0 flex justify-center items-center bg-gray-200">
+                                <span class="text-4xl text-gray-400"><i class="fa-solid fa-file"></i></span>
+                            </a>
+                        {/if}
                         <div class="flex justify-between flex-1 pl-4">
                             <p class="text-base md:text-lg font-medium">{item.name}</p>
                             <span class="text-red-600 ml-2">{item.unit}</span>

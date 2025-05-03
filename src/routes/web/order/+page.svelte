@@ -241,17 +241,16 @@
 
             <div class="mb-6">
                 <p class="text-center text-gray-600 mb-4">
-                    Thanh toán qua VNPay - Cổng thanh toán trực tuyến an toàn và bảo mật
+                    Thanh toán qua ZaloPay - Cổng thanh toán trực tuyến an toàn và bảo mật
                 </p>
-                <img src="/vnpay-logo.png" alt="VNPay Logo" class="h-12 mx-auto mb-4">
             </div>
 
             <button
                 type="submit"
-                class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 disabled:opacity-50"
+                class="w-full bg-[#00205B] border border-[#00205B] text-white py-2 px-4 rounded hover:text-[#00205B] hover:bg-white disabled:opacity-50"
                 disabled={loading}
             >
-                {loading ? 'Đang xử lý...' : 'Tiến hành thanh toán qua VNPay'}
+                {loading ? 'Đang xử lý...' : 'Tiến hành thanh toán qua ZaloPay'}
             </button>
         </form>
     {:else}

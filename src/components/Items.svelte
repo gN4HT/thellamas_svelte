@@ -8,7 +8,7 @@
 <div class="bg-white shadow rounded-lg overflow-hidden w-[360px] ">
         {#if item.images && item.images.length > 0}
             <img 
-                src="{`http://127.0.0.1:8000/public/storage/${item.images[0]}`}" 
+                src="{`http://127.0.0.1:8000/storage/${item.images[0]}`}" 
                 alt={item.name} 
                 class="w-full h-[120px] object-cover object-center" 
             />

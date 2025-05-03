@@ -17,25 +17,29 @@
   let successMessage = "";
 
   async function userInf() {
-    try {
-      const data = await apiFetch("/user"); 
-      const firstUser = data[0];
+  try {
+    const userData = await apiFetch("/me"); // API trả về object người dùng
 
-      user = {
-        id: firstUser.id,
-        name: firstUser.name ?? "",
-        email: firstUser.email ?? "",
-        phone_number: firstUser.phone_number ?? "",
-        date_of_birth: firstUser.date_of_birth ?? "",
-        addresses: firstUser.addresses ?? "",
-        profile_picture: null,
-      };
-
-      avatarPreview = firstUser.profile_picture ?? avatarPreview;
-    } catch (error) {
-      errorMessage = "Lỗi khi tải thông tin người dùng: " + error.message;
+    if (!userData || !userData.id) {
+      throw new Error("Không tìm thấy thông tin người dùng.");
     }
+
+    user = {
+      id: userData.id,
+      name: userData.name ?? "",
+      email: userData.email ?? "",
+      phone_number: userData.phone_number ?? "",
+      date_of_birth: userData.date_of_birth ?? "",
+      addresses: userData.addresses ?? "",
+      profile_picture: null, // Chỉ dùng khi upload
+    };
+
+    avatarPreview = userData.profile_picture || "https://via.placeholder.com/150";
+  } catch (error) {
+    console.error("Lỗi khi tải thông tin người dùng:", error);
+    errorMessage = "Lỗi khi tải thông tin người dùng: " + error.message;
   }
+}
 
   function handleFileChange(event) {
     const file = event.target.files[0];
