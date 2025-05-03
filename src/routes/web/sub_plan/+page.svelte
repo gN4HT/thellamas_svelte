@@ -35,6 +35,14 @@
     onMount(async () => {
         await fetchUserInfo();
         await fetchPlans();
+        
+        const token = localStorage.getItem('token');
+    if (!token) {
+        goto('/web/login');
+        return;
+    }
+    await fetchUserInfo();
+    await fetchPlans();
     });
 
     // Hàm đổi màu dựa vào thứ tự gói
