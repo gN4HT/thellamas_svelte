@@ -58,7 +58,7 @@
       });
     } else {
       // For other types, append as single value
-      formData.append('value', String(fieldForm.value));
+      formData.append('value[]', String(fieldForm.value));
     }
 
     await apiFetch(endpoint, { 
@@ -181,7 +181,7 @@
 </script>
 
 <div class="min-h-screen bg-gray-50 p-6">
-  <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-sm p-6">
+  <div class="max-w-8xl mx-auto bg-white rounded-lg shadow-sm p-6">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-semibold">Trường tùy chỉnh</h1>
       <button
@@ -212,12 +212,8 @@
     {#each fields as field}
       <div class="grid grid-cols-4 gap-4 py-4 border-b items-center hover:bg-gray-50 transition-colors duration-150">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 font-medium">
-            {field.name.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <div class="font-medium text-gray-900">{field.name}</div>
-            <div class="text-sm text-gray-500">{field.type}</div>
+          <div class="w-15 h-8 bg-gray-100 rounded-lg flex items-center justify-start text-gray-500 font-medium">
+            {field.name.toUpperCase()}
           </div>
         </div>
         <div>
