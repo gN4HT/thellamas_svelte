@@ -1,11 +1,13 @@
 <script lang="ts">
   import { afterNavigate } from '$app/navigation';
   import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
   
   let {children} = $props();
   let isMenuOpen = $state(false);
   let logoUrl = $state('/img/1 (1).png'); // Default logo
   let footerLogoUrl = $state('/img/2 2.png'); // Default footer logo
+  let isAuthenticated = $state(false);
 
   function toggleMenu() {
       isMenuOpen = !isMenuOpen;
@@ -18,6 +20,17 @@
 
   onMount(async () => {
     try {
+      // Check authentication status
+      if (browser) {
+        try {
+          const token = localStorage.getItem('token');
+          isAuthenticated = !!token;
+        } catch (error) {
+          console.error('Error accessing localStorage:', error);
+          isAuthenticated = false;
+        }
+      }
+
       // Use absolute URL for API call
       const backendUrl = 'http://localhost:8000'; // <-- Adjust if your backend runs on a different port
       const response = await fetch(`${backendUrl}/api/logo`);
@@ -90,10 +103,12 @@ hover:text-[#00205b]">Tin tức</a>
 
       <!-- Desktop actions -->
       <div class="hidden md:flex items-center space-x-4">
-        <a href="/web/login" class="text-gray-700 text-base
-hover:text-[#00205b]">Đăng nhập</a>
-        <a href="/web/register" class="bg-[#00205b] text-white px-4 py-2 rounded-lg text-base
-shadow hover:bg-white hover:text-[#00205b] ">Dùng thử miễn phí</a>
+        {#if isAuthenticated}
+          <a href="/app/" class="bg-[#00205b] text-white px-4 py-2 rounded-lg text-base shadow hover:bg-white  border border-[#00205b]  hover:text-[#00205b]">Vào kho</a>
+        {:else}
+          <a href="/web/login" class="text-gray-700 text-base hover:text-[#00205b]">Đăng nhập</a>
+          <a href="/web/register" class="bg-[#00205b] text-white px-4 py-2 rounded-lg text-base shadow  border border-[#00205b]  hover:bg-white hover:text-[#00205b]">Dùng thử miễn phí</a>
+        {/if}
       </div>
     </div>
 
@@ -108,7 +123,7 @@ shadow hover:bg-white hover:text-[#00205b] ">Dùng thử miễn phí</a>
           <a href="/web/post" class="block px-3 py-2 text-gray-700 font-medium hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors duration-200">Tin tức</a>
           <div class="border-t border-gray-200 my-2"></div>
           <a href="/web/login" class="block px-3 py-2 text-gray-700 font-medium hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors duration-200">Đăng nhập</a>
-          <a href="/web" class="block px-3 py-2 bg-[#00205b] text-white font-medium hover:bg-blue-700 rounded-md transition-colors duration-200">Dùng thử miễn phí</a>
+          <a href="/web/register" class="block px-3 py-2 bg-[#00205b] text-white font-medium hover:bg-blue-700 rounded-md transition-colors duration-200">Dùng thử miễn phí</a>
         </div>
       </div>
     </div>

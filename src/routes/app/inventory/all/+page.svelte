@@ -176,24 +176,12 @@
 
     async function fetchItems(folderId: number | null = null) {
         try {
-            const response = await apiFetch('/items', { type: 'items' });
-            console.log('Raw API Response:', response); // Debug log
-            
-            // Transform response to ensure proper data types
-            const transformedResponse = response.map(item => ({
-                ...item,
-                quantity: Number(item.quantity),
-                stock_level: Number(item.stock_level),
-                price: Number(item.price)
-            }));
-            
-            console.log('Transformed Response:', transformedResponse); // Debug log
+            const response = await apiFetch('/items');
             
             const filteredItems = folderId 
-                ? transformedResponse.filter(item => item.folder_id === folderId && item.is_deleted !== 1)
-                : transformedResponse.filter(item => item.is_deleted !== 1);
+                ? response.filter(item => item.folder_id === folderId && item.is_deleted !== 1)
+                : response.filter(item => item.is_deleted !== 1);
                 
-            console.log('Filtered Items:', filteredItems); // Debug log
             return filteredItems;
         } catch (err) {
             error = err.message || "Không thể tải items. Vui lòng thử lại sau.";
@@ -237,8 +225,6 @@
             ]);
             deletedFolders = trashFolders;
             deletedItems = trashItems;
-            console.log('Deleted folders:', deletedFolders);
-            console.log('Deleted items:', deletedItems);
         } catch (err) {
             error = err.message;
             console.error("Lỗi khi tải dữ liệu thùng rác:", err);
@@ -437,8 +423,7 @@
 
         try {
             await apiFetch(`/${type}s/${id}/delete`, {
-                method: 'PUT',
-                type: type === 'folder' ? 'folders' : 'items'
+                method: 'PUT'
             });
             
             if (type === 'folder') {
@@ -489,20 +474,12 @@
     // Add new functions for Excel handling
     async function handleExportExcel() {
         try {
-            console.log('Items before export:', allItems); // Debug log
             
             // Prepare data for export with proper type conversion
             const exportData = allItems.map(item => {
                 const stockLevel = typeof item.stock_level === 'number' ? item.stock_level : 
                                  typeof item.stock_level === 'string' ? parseInt(item.stock_level) : 0;
                                  
-                console.log('Processing item:', {
-                    name: item.name,
-                    quantity: item.quantity,
-                    stock_level: item.stock_level,
-                    parsed_stock_level: stockLevel,
-                    price: item.price
-                });
                 
                 return {
                     'Tên sản phẩm': item.name || '',
@@ -511,8 +488,6 @@
                     'Giá': typeof item.price === 'number' ? item.price : parseInt(item.price) || 0
                 };
             });
-
-            console.log('Final export data:', exportData); // Debug log
 
             // Create workbook and worksheet
             const ws = utils.json_to_sheet(exportData);
@@ -599,7 +574,8 @@
 
                     await apiFetch('/items', {
                         method: 'POST',
-                        body: formData
+                        body: formData,
+                        type: 'items'
                     });
                 }
 

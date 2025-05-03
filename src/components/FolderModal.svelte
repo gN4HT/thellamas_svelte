@@ -67,11 +67,6 @@
                 }
             });
 
-            console.log("Submitting folder data:", {
-                isEdit: isEditMode,
-                folderId: folder?.id,
-                data: Object.fromEntries(formData)
-            });
             
             dispatch('submit', { formData, isEdit: isEditMode, folderId: folder?.id });
         } catch (err) {

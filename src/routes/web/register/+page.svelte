@@ -17,13 +17,6 @@
         passwordError: null,
         confirmPasswordError: null
     };
-
-    onMount(() => {
-        if (localStorage.getItem("token")) {
-            goto("/app");
-        }
-    });
-
     function validatePassword() {
         if (formData.password.length < 8) {
             formError.passwordError = "Password must be at least 8 characters long.";

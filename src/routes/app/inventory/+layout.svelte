@@ -52,7 +52,6 @@
             folders = treeData;
             allFoldersFlat = allFolders;
             folderStore.set(allFolders);
-            console.log('Fetched folders:', folders);
         } catch (error) {
             console.error("Lỗi khi tải dữ liệu:", error);
         }

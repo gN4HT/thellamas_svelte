@@ -11,12 +11,6 @@
     let errorMessage = "";
     let isLoading = false;
 
-    onMount(() => {
-        if (localStorage.getItem("token")) {
-            goto("/app");
-        }
-    });
-
     export const login = async (event: SubmitEvent) => {
         event.preventDefault();
         isLoading = true;

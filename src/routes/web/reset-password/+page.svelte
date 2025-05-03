@@ -1,5 +1,6 @@
 <script lang="ts">
     import { page } from '$app/stores';
+    import { goto } from '$app/navigation';
     
     let email = $page.url.searchParams.get('email') || '';
     let otp = '';
@@ -8,10 +9,28 @@
     let error = '';
     let success = '';
     let isLoading = false;
-    let resetToken = '';
+    let resetToken = localStorage.getItem('resetToken') || '';
+
+    // Kiểm tra email hợp lệ
+    function isValidEmail(email: string) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    // Kiểm tra email khi component mount
+    $: {
+        if (email && !isValidEmail(email)) {
+            error = 'Email không hợp lệ';
+            email = '';
+        }
+    }
 
     async function handleVerifyOtp() {
         try {
+            if (!isValidEmail(email)) {
+                throw new Error('Email không hợp lệ');
+            }
+
             isLoading = true;
             error = '';
             success = '';
@@ -27,13 +46,15 @@
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Có lỗi xảy ra');
+                throw new Error(data.message || 'Có lỗi xảy ra khi xác thực OTP');
             }
 
             resetToken = data.reset_token;
+            localStorage.setItem('resetToken', resetToken);
             success = data.message;
         } catch (err) {
             error = err.message;
+            console.error('Error in handleVerifyOtp:', err);
         } finally {
             isLoading = false;
         }
@@ -41,8 +62,16 @@
 
     async function handleResetPassword() {
         try {
+            if (!resetToken) {
+                throw new Error('Vui lòng xác thực OTP trước');
+            }
+
             if (newPassword !== confirmPassword) {
                 throw new Error('Mật khẩu xác nhận không khớp');
+            }
+
+            if (newPassword.length < 6) {
+                throw new Error('Mật khẩu phải có ít nhất 6 ký tự');
             }
 
             isLoading = true;
@@ -64,26 +93,29 @@
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Có lỗi xảy ra');
+                throw new Error(data.message || 'Có lỗi xảy ra khi đặt lại mật khẩu');
             }
 
             success = data.message;
+            // Clear the token after successful password reset
+            localStorage.removeItem('resetToken');
             // Redirect to login page after successful password reset
             setTimeout(() => {
-                window.location.href = '/web/login';
+                goto('/web/login');
             }, 2000);
         } catch (err) {
             error = err.message;
+            console.error('Error in handleResetPassword:', err);
         } finally {
             isLoading = false;
         }
     }
 </script>
 
-<div class="flex items-center justify-center h-screen bg-gray-100">
-    <div class="flex bg-white p-10 rounded-lg shadow-lg space-x-10">
+<div class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="flex flex-col md:flex-row bg-white p-6 md:p-10 rounded-lg shadow-lg space-y-6 md:space-y-0 md:space-x-10">
         <!-- Form Xác thực OTP và Đặt lại Mật khẩu -->
-        <div class="w-96">
+        <div class="w-full md:w-96">
             <h1 class="text-2xl font-bold mb-4">Đặt lại mật khẩu</h1>
             
             {#if error}
@@ -117,10 +149,16 @@
                         class="p-3 border-b border-gray-300 focus:outline-none focus:border-[#00205b]">
                     <button 
                         type="submit" 
-                        disabled={isLoading}
+                        disabled={isLoading || !email}
                         class="bg-[#00205b] text-white py-3 rounded-lg hover:bg-red-600 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         {#if isLoading}
-                            Đang xác thực...
+                            <span class="flex items-center justify-center">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Đang xác thực...
+                            </span>
                         {:else}
                             Xác thực OTP
                         {/if}
@@ -134,19 +172,27 @@
                         bind:value={newPassword}
                         placeholder="Mật khẩu mới" 
                         required 
+                        minlength="6"
                         class="p-3 border-b border-gray-300 focus:outline-none focus:border-[#00205b]">
                     <input 
                         type="password" 
                         bind:value={confirmPassword}
                         placeholder="Xác nhận mật khẩu" 
                         required 
+                        minlength="6"
                         class="p-3 border-b border-gray-300 focus:outline-none focus:border-[#00205b]">
                     <button 
                         type="submit" 
                         disabled={isLoading}
                         class="bg-[#00205b] text-white py-3 rounded-lg hover:bg-red-600 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         {#if isLoading}
-                            Đang đặt lại...
+                            <span class="flex items-center justify-center">
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Đang đặt lại...
+                            </span>
                         {:else}
                             Đặt lại mật khẩu
                         {/if}
@@ -156,7 +202,7 @@
         </div>
 
         <!-- Ảnh -->
-        <div class="flex items-center justify-center">
+        <div class="hidden md:flex items-center justify-center">
             <img src="/img/ảnh tượng trưng.png" alt="Hình minh họa" class="max-w-sm rounded-lg shadow-md">
         </div>
     </div>

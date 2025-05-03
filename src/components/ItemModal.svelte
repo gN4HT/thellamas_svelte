@@ -39,7 +39,6 @@
                 }
                 
                 const itemData = await apiFetch(`/items/${item.id}`);
-                console.log('Fetched item data:', itemData);
                 
                 // Gán giá trị từ API
                 name = itemData.name || '';
@@ -50,17 +49,6 @@
                 
                 // Cập nhật cách lưu existingImages - lưu trữ tên file gốc
                 existingImages = Array.isArray(itemData.images) ? [...itemData.images] : [];
-                console.log('Initial existing images:', existingImages);
-
-                console.log('Set form values:', {
-                    name,
-                    quantity,
-                    stock_level,
-                    price,
-                    notes,
-                    existingImages,
-                    rawImages: itemData.images
-                });
             } catch (err) {
                 console.error('Error fetching item:', err);
                 error = 'Không thể tải dữ liệu mặt hàng';
@@ -78,7 +66,6 @@
     }
 
     function resetAll() {
-        console.log('Resetting form...');
         name = '';
         quantity = '0';
         stock_level = '0';
@@ -96,13 +83,7 @@
 
         imageUrls.forEach(url => URL.revokeObjectURL(url));
         
-        console.log('Form reset values:', {
-            name,
-            quantity,
-            stock_level,
-            price,
-            notes
-        });
+
     }
 
     function validateForm() {
@@ -202,24 +183,6 @@
                 }
             }
 
-            // Log form data before submission
-            console.log('Submitting form data:', {
-                name: name.trim(),
-                quantity,
-                stock_level,
-                price,
-                notes,
-                folderId,
-                isEditMode,
-                itemId: item.id,
-                existingImages,
-                newImages: images ? Array.from(images).map(f => f.name) : []
-            });
-
-            // Log the actual FormData content
-            for (let pair of formData.entries()) {
-                console.log(pair[0], pair[1]);
-            }
 
             dispatch('submit', { 
                 formData, 

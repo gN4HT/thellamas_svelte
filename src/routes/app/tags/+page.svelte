@@ -59,7 +59,7 @@
     isLoading = true;
     error = null;
     try {
-      const response = await apiFetch("tags");
+      const response = await apiFetch("tags", { type: "tags" });
       console.log('Tags response:', response);
       
       // Xử lý response theo cấu trúc API
@@ -127,7 +127,8 @@
     try {
       const response = await apiFetch("tags", {
         method: "POST",
-        body: { name: newTag.trim() }
+        body: { name: newTag.trim() },
+        type: "tags"
       });
 
       if (response) {

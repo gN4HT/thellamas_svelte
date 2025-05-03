@@ -22,7 +22,6 @@
 
       // Fetch item để lấy supplier hiện tại
       const itemData = await apiFetch(`/items/${itemId}`);
-      console.log('Item data:', itemData);
 
       // Set existing supplier từ item data
       existingSupplierId = itemData.supplier_id || null;
@@ -36,12 +35,6 @@
         selectedSupplierId = null;
         existingSupplierId = null;
       }
-
-      console.log('Supplier state:', {
-        existingSupplierId,
-        selectedSupplierId,
-        matchedSupplier: suppliers.find(s => s.id === selectedSupplierId)
-      });
     } catch (err) {
       error = err.message;
       console.error('Error fetching data:', err);
@@ -68,23 +61,16 @@
       formData.append('_method', 'PUT');
       formData.append('supplier_id', selectedSupplierId ? String(selectedSupplierId) : '');
 
-      console.log('Submitting supplier:', {
-        itemId,
-        supplierId: selectedSupplierId,
-        selectedSupplierDetails: suppliers.find(s => s.id === selectedSupplierId),
-        formData: Object.fromEntries(formData)
-      });
-
       const response = await apiFetch(`/items/${itemId}`, {
         method: 'POST',
-        body: formData
+        body: formData,
+        type: 'items'
       });
 
       if (!response) {
         throw new Error('Không nhận được phản hồi từ server');
       }
 
-      console.log('Supplier updated successfully:', response);
       dispatch('success');
       showModal = false;
     } catch (err) {

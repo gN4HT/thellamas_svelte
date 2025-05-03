@@ -23,7 +23,6 @@
       // Fetch chi tiết item để lấy fields hiện tại
       const response = await apiFetch(`/items/${id}`);
       
-      console.log('Response data:', response);
 
       // Lấy danh sách field IDs từ response
       if (response && response.fields && Array.isArray(response.fields)) {
@@ -35,11 +34,6 @@
         // Set selected fields từ existing fields
         selectedFields = [...existingFieldIds];
         
-        console.log('Matching fields:', {
-          existingFieldIds,
-          selectedFields,
-          matchedFields: fields.filter(field => selectedFields.includes(field.id))
-        });
       } else {
         existingFieldIds = [];
         selectedFields = [];
@@ -72,27 +66,16 @@
         selectedFields.forEach(fieldId => {
             formData.append('fields[]', String(fieldId));
         });
-
-        console.log('Submitting fields:', {
-            endpoint: `/items/${id}`,
-            method: 'POST',
-            selectedFields,
-            selectedFieldDetails: fields
-              .filter(field => selectedFields.includes(field.id))
-              .map(field => ({ id: field.id, name: field.name })),
-            formDataEntries: Object.fromEntries(formData)
-        });
         
         const response = await apiFetch(`/items/${id}`, {
             method: 'POST',
-            body: formData
+            body: formData,
+            type: 'items'
         });
 
         if (!response) {
             throw new Error('Không nhận được phản hồi từ server');
         }
-
-        console.log('Fields updated successfully:', response);
         dispatch('success');
         showModal = false;
     } catch (err) {

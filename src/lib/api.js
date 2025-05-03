@@ -22,7 +22,7 @@ export const apiFetch = async (
       ...(body && !(body instanceof FormData)
         ? { "Content-Type": "application/json" }
         : {}),
-      ...(type ? { "x-type": type } : {}),
+      ...(type && method === "POST" ? { "x-type": type } : {}),
       ...headers,
     };
 
@@ -34,13 +34,6 @@ export const apiFetch = async (
     if (body && method !== "GET") {
       options.body = body instanceof FormData ? body : JSON.stringify(body);
     }
-
-    console.log("API Request:", {
-      url: fullUrl,
-      method,
-      headers: defaultHeaders,
-      bodyType: body instanceof FormData ? "FormData" : typeof body,
-    });
 
     const response = await fetch(fullUrl, options);
 

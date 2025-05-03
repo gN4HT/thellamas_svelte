@@ -172,11 +172,25 @@
             const paymentData = await paymentResponse.json();
             console.log('Payment URL Response:', paymentData);
             
-            if (paymentData && paymentData.data && paymentData.data.order_url) {
-                // 3. Chuyển hướng đến trang thanh toán Zalopay
-                window.location.href = paymentData.data.order_url;
+            if (paymentData && paymentData.data) {
+                if (paymentData.data.callback_url) {
+                    // Gọi callback URL trước
+                    await fetch(paymentData.data.callback_url, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+                }
+                
+                if (paymentData.data.order_url) {
+                    // 3. Chuyển hướng đến trang thanh toán Zalopay
+                    window.location.href = paymentData.data.order_url;
+                } else {
+                    throw new Error('Không nhận được URL thanh toán');
+                }
             } else {
-                throw new Error('Không nhận được URL thanh toán');
+                throw new Error('Không nhận được dữ liệu thanh toán');
             }
 
         } catch (err) {

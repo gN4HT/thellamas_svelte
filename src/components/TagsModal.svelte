@@ -24,7 +24,6 @@
       // Fetch chi tiết item/folder để lấy tags hiện tại
       const response = await apiFetch(`/${type}s/${id}`);
       
-      console.log('Response data:', response);
 
       // Lấy danh sách tag IDs từ response
       if (response && response.tags && Array.isArray(response.tags)) {
@@ -36,11 +35,6 @@
         // Set selected tags từ existing tags
         selectedTags = [...existingTagIds];
         
-        console.log('Matching tags:', {
-          existingTagIds,
-          selectedTags,
-          matchedTags: tags.filter(tag => selectedTags.includes(tag.id))
-        });
       } else {
         existingTagIds = [];
         selectedTags = [];
@@ -74,26 +68,17 @@
             formData.append('tags[]', String(tagId));
         });
 
-        console.log('Submitting tags:', {
-            endpoint: `/${type}s/${id}`,
-            method: 'POST',
-            selectedTags,
-            selectedTagDetails: tags
-              .filter(tag => selectedTags.includes(tag.id))
-              .map(tag => ({ id: tag.id, name: tag.name })),
-            formDataEntries: Object.fromEntries(formData)
-        });
         
         const response = await apiFetch(`/${type}s/${id}`, {
             method: 'POST',
-            body: formData
+            body: formData,
+            type: type === 'folder' ? 'folders' : 'items'
         });
 
         if (!response) {
             throw new Error('Không nhận được phản hồi từ server');
         }
 
-        console.log('Tags updated successfully:', response);
         dispatch('success');
         showModal = false;
     } catch (err) {

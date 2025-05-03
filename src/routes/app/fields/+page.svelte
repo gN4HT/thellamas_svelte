@@ -274,8 +274,8 @@
 <!-- Add/Edit Field Modal -->
 
 {#if showModal}
-  <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg w-full max-w-md p-6 shadow-xl">
+<div class="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg w-full max-w-md p-6 shadow-xl">
       <h2 class="text-xl font-bold mb-4">{isEditMode ? 'Sửa trường' : 'Thêm trường mới'}</h2>
 
       <form on:submit|preventDefault={handleSubmit} class="space-y-4">
