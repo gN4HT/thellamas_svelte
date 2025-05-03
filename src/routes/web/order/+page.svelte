@@ -241,7 +241,7 @@
 
             <div class="mb-6">
                 <p class="text-center text-gray-600 mb-4">
-                    Thanh toán qua ZaloPay - Cổng thanh toán trực tuyến an toàn và bảo mật
+                    Thanh toán qua ZaloPay - Cổng thanh toán trực tuyến an toàn nhất và bảo mật
                 </p>
             </div>
 
