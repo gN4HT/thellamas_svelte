@@ -16,7 +16,7 @@
           của bạn tối ưu hóa quy trình quản lý kho, giảm thiểu chi phí và tăng hiệu quả kinh doanh.
         </p>
         <div class="mt-12 flex flex-col sm:flex-row justify-center gap-6">
-          <a href="/web/contact" class="bg-white text-[#00205b] px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-all duration-300">
+          <a href="/web/register" class="bg-white text-[#00205b] px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-all duration-300">
             Bắt Đầu Ngay
           </a>
           <a href="#features" class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-[#00205b] transition-all duration-300">
@@ -372,13 +372,13 @@
           </div>
           <div class="flex flex-col sm:flex-row justify-center gap-6">
             <a 
-              href="/web/contact" 
+              href="/web/register" 
               class="bg-white text-[#00205b] px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-all duration-300"
             >
               Gửi Yêu Cầu
             </a>
             <a 
-              href="/web/plan" 
+              href="/web/sub_plan" 
               class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-[#00205b] transition-all duration-300"
             >
               Xem Bảng Giá

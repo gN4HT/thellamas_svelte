@@ -95,41 +95,7 @@
           </div>
         </section>
   
-        <!-- Section 3: Tips & Tricks -->
-        <section class="bg-white rounded-xl shadow-lg p-8 transform hover:scale-[1.02] transition-transform duration-300">
-          <div class="flex items-center mb-6">
-            <div class="bg-yellow-100 p-3 rounded-full mr-4">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-gray-900">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
-              </svg>
-            </div>
-            <h2 class="text-2xl font-bold text-gray-800">3. Mẹo và thủ thuật</h2>
-          </div>
-          <div class="bg-gradient-to-r from-yellow-50 to-white p-6 rounded-lg border border-yellow-100">
-            <h3 class="font-semibold text-lg mb-4">Tối ưu hóa quy trình làm việc</h3>
-            <ul class="space-y-3">
-              <li class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-700 mr-2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 13.5V3.75m0 6.75a1.5 1.5 0 010 3m0-3a1.5 1.5 0 000 3m0 3.75V16.5m12-3V3.75m0 9.75a1.5 1.5 0 010 3m0-3a1.5 1.5 0 000 3m0 3.75V16.5m-6-9V3.75m0 3.75a1.5 1.5 0 010 3m0-3a1.5 1.5 0 000 3m0 9.75V10.5" />
-                </svg>
-                <span>Sử dụng phím tắt để thao tác nhanh hơn</span>
-              </li>
-              <li class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-700 mr-2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
-                </svg>
-                <span>Tùy chỉnh giao diện theo ý thích</span>
-              </li>
-              <li class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-700 mr-2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 3.75H6.912a2.25 2.25 0 00-2.15 1.588l-2.255 11.25a2.25 2.25 0 002.15 1.588h3.498l1.042 3.313a1.5 1.5 0 002.9 0l1.042-3.313h3.498a2.25 2.25 0 002.15-1.588l-2.255-11.25a2.25 2.25 0 00-2.15-1.588H9M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859M12 2.25v.75m0 0v3.75m0-3.75h-1.5m1.5 0H12" />
-                </svg>
-                <span>Lưu các mẫu thường dùng</span>
-              </li>
-            </ul>
-          </div>
-        </section>
-  
+   
         <!-- Section 4: Support -->
         <section class="py-24 bg-gradient-to-r from-[#00205b] to-[#001a4a] text-white">
           <div class="container mx-auto px-4">
@@ -170,13 +136,13 @@
               </div>
               <div class="flex flex-col sm:flex-row justify-center gap-6">
                 <a 
-                  href="/web/contact" 
+                  href="/web/login" 
                   class="bg-white text-[#00205b] px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-all duration-300"
                 >
                   Gửi Yêu Cầu
                 </a>
                 <a 
-                  href="/web/plan" 
+                  href="/web/sub_plan" 
                   class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-[#00205b] transition-all duration-300"
                 >
                   Xem Bảng Giá

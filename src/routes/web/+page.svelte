@@ -250,10 +250,10 @@
 
     <!-- Buttons -->
     <div class="flex flex-col sm:flex-row justify-center gap-4">
-      <a href="/" class="bg-[#00205b] text-white font-bold py-2 px-4 rounded text-sm sm:text-base">
+      <a href="/web/register" class="bg-[#00205b] text-white font-bold py-2 px-4 rounded text-sm sm:text-base">
         Hãy thử The Llamas miễn phí
       </a>
-      <a href="/" class="border border-[#00205b] text-[#00205b] font-bold py-2 px-4 rounded text-sm sm:text-base">
+      <a href="/web/sub_plan" class="border border-[#00205b] text-[#00205b] font-bold py-2 px-4 rounded text-sm sm:text-base">
         Xem tất cả dịch vụ &#8250;
       </a>
     </div>
@@ -381,8 +381,8 @@
           </li>
         </ul>
         <div class="flex flex-col sm:flex-row gap-4 mt-6">
-          <button href="/login" class="bg-[#00205b] text-white font-bold py-2 px-4 rounded text-sm sm:text-base">Hãy thử The Llamas miễn phí</button>
-          <button href="/about" class="border border-[#00205b] text-[#00205b] font-bold py-2 px-4 rounded text-sm sm:text-base">Xem tất cả dịch vụ</button>
+          <a href="/web/register" class="bg-[#00205b] text-white font-bold py-2 px-4 rounded text-sm sm:text-base cursor-pointer">Hãy thử The Llamas miễn phí</a>
+          <a href="/web/sub_plan" class="border border-[#00205b] text-[#00205b] font-bold py-2 px-4 rounded text-sm sm:text-base cursor-pointer">Xem tất cả dịch vụ</a>
         </div>
       </div>
 
@@ -396,7 +396,7 @@
     <h2 class="text-center text-2xl font-bold mb-4">
      GIẢI PHÁP
     </h2>
-    <div class="flex justify-center items-center w-64 md:h-[40rem] md:w-[1500px]">
+    <div class="flex justify-center items-center w-64 md:h-[40rem] md:w-[1500px] cursor-pointer">
       <LayoutGrid {cards} />
     </div>
   </div>

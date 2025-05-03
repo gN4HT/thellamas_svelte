@@ -3,6 +3,7 @@
     import type {AccessToken} from "../../../models/auth/accessToken";
     import VerifyPopup from "../../../components/VerifyPopup.svelte";
     import LoadingButton from "../../../components/LoadingButton.svelte";
+    import {onMount} from "svelte";
 
     // State management
     let isLoading = false;
@@ -16,6 +17,12 @@
         passwordError: null,
         confirmPasswordError: null
     };
+
+    onMount(() => {
+        if (localStorage.getItem("token")) {
+            goto("/app");
+        }
+    });
 
     function validatePassword() {
         if (formData.password.length < 8) {
@@ -74,23 +81,21 @@
 </script>
 
 <div class="flex items-center justify-center min-h-screen font-sans py-20">
-    <div class="flex justify-between w-full max-w-5xl">
+    <div class="flex justify-between w-full max-w-5xl px-5">
         <!-- Left Section -->
-        <div class="w-[449px]">
-            <h1 class="text-4xl font-bold text-black mb-2">Không Bao Giờ Thất Lạc Hàng Lần Nào Nữa</h1>
-            <div class="mb-12 max-w-[300px]">
-                <p class="text-base text-black">Phần mềm quản lý hàng tồn kho hiệu quả, trực quan và mạnh mẽ giúp doanh
+        <div class="w-full md:w-[449px] mx-auto">
+            <h1 class="text-4xl font-bold text-black mb-2 text-center md:text-left">Không Bao Giờ Thất Lạc Hàng Lần Nào Nữa</h1>
+            <div class="mb-12 max-w-[300px] mx-auto md:mx-0">
+                <p class="text-base text-black text-center md:text-left">Phần mềm quản lý hàng tồn kho hiệu quả, trực quan và mạnh mẽ giúp doanh
                     nghiệp và nhóm của bạn luôn ngăn nắp</p>
             </div>
-            <div class="flex items-center w-full px-5 py-3 mb-5 text-sm font-bold text-white bg-[#00205b] gap-10 hover:bg-[#00205b]">
-                <img src="/img/u_google.png" alt=""> Đăng nhập bằng Google
-            </div>
+         
             <div class="flex items-center text-sm text-gray-500 my-4">
                 <div class="flex-1 border-b border-gray-300"></div>
-                <span class="px-4">Hoặc</span>
+                <span class="px-4"></span>
                 <div class="flex-1 border-b border-gray-300"></div>
             </div>
-            <form class="flex flex-col w-full max-w-md p-6 bg-white shadow-lg rounded-md" on:submit="{register}">
+            <form class="flex flex-col w-full max-w-md p-6 bg-white shadow-lg rounded-md mx-auto" on:submit="{register}">
                 <h1 class="text-2xl font-bold mb-6 text-center">Tạo tài khoản</h1>
                 <input type="text" placeholder="Tên đầy đủ" required bind:value={formData.name}
                        class="mb-4 p-2 border border-gray-300 rounded text-base">
@@ -123,7 +128,7 @@
         </div>
 
         <!-- Right Section -->
-        <div class="flex flex-col items-center flex-1 pt-9">
+        <div class="hidden md:flex flex-col items-center flex-1 pt-9">
             <div class="max-w-[250px] text-center mb-5 border border-gray-200 p-5 rounded-lg">
                 <div class="flex justify-center mb-3">
                     <img src="/img/Star 1.png" alt="" class="h-5 w-5">

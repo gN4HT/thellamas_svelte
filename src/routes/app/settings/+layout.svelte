@@ -9,12 +9,15 @@
         {path: "/app/settings/company", icon: "fa-briefcase", label: "Thông tin công ty"},
         {path: "/app/settings/planBill", icon: "fa-credit-card", label: "Kế hoạch & Thanh toán"},
         {path: "/app/settings/userInventory", icon: "fa-user", label: "Quản lý thành viên"},
-
     ];
 
     function logout() {
         localStorage.removeItem("token");
         goto("/web/login");
+    }
+
+    function goToWeb() {
+        goto("/web");
     }
 </script>
 
@@ -32,6 +35,12 @@
                     </a>
                 </li>
             {/each}
+            <li>
+                <button on:click={goToWeb} class="w-full bg-[#00205b] text-white px-4 py-2 rounded">
+                    <i class="fa-solid fa-globe mr-2"></i>
+                    Quay lại trang web
+                </button>
+            </li>
             <li>
                 <button on:click={logout} class="bg-red-500 text-white px-4 py-2 rounded">
                     Đăng xuất

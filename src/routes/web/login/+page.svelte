@@ -4,11 +4,18 @@
     import {goto} from "$app/navigation";
     import type {AccessToken} from "../../../models/auth/accessToken";
     import LoadingButton from "../../../components/LoadingButton.svelte";
+    import {onMount} from "svelte";
 
     let email = "";
     let password = "";
     let errorMessage = "";
     let isLoading = false;
+
+    onMount(() => {
+        if (localStorage.getItem("token")) {
+            goto("/app");
+        }
+    });
 
     export const login = async (event: SubmitEvent) => {
         event.preventDefault();
@@ -57,7 +64,7 @@
                        class="mb-4 p-2 border border-gray-300 rounded-lg text-base">
                 <input type="password" bind:value={password} placeholder="Mật khẩu" required
                        class="mb-4 p-2 border border-gray-300 rounded-lg text-base">
-                <a href="quenmk" class="text-sm text-blue-500 hover:underline mb-4 text-right">Quên mật khẩu?</a>
+                <a href="/web/forgotPassword" class="text-sm text-blue-500 hover:underline mb-4 text-right">Quên mật khẩu?</a>
                 <LoadingButton 
                     type="submit"
                     loading={isLoading}
