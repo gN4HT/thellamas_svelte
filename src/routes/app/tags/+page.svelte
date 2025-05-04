@@ -226,12 +226,67 @@
     }
   }
 
+  let isSidebarOpen = true;
+  let isMobile = false;
+
+  function checkMobile() {
+    isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      isSidebarOpen = false;
+    }
+  }
+
   onMount(() => {
     fetchTags();
     window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+      window.removeEventListener('resize', checkMobile);
+    };
   });
 </script>
+
+<style>
+  .small-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .small-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  .small-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 30;
+    }
+
+    .sidebar.open {
+      transform: translateX(0);
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 25;
+    }
+
+    .overlay.open {
+      display: block;
+    }
+  }
+</style>
 
 <!-- Loading Overlay -->
 {#if isLoading}
@@ -250,8 +305,19 @@
 
 <!-- Main Content -->
 <div class="bg-gray-100 h-screen flex w-full">
+  <!-- Mobile Toggle Button -->
+  <button 
+    class="fixed top-4 left-[110px] z-40 md:hidden bg-white p-2 rounded-lg shadow-lg"
+    on:click={() => isSidebarOpen = !isSidebarOpen}
+  >
+    <i class="fas fa-bars text-gray-700"></i>
+  </button>
+
+  <!-- Overlay for mobile -->
+  <div class="overlay" class:open={isSidebarOpen && isMobile}></div>
+
   <!-- Sidebar -->
-  <div class="bg-white p-4 border-r border-gray-300 overflow-y-auto small-scrollbar w-[250px]">
+  <div class="sidebar bg-white p-4 border-r border-gray-300 overflow-y-auto small-scrollbar w-[250px] fixed h-full" class:open={isSidebarOpen}>
     <!-- Search Box -->
     <div class="flex items-center border border-gray-300 rounded p-2 mb-4">
       <i class="fa-solid fa-magnifying-glass text-gray-500"></i>
@@ -293,7 +359,7 @@
   </div>
 
   <!-- Main Area -->
-  <div class="flex-1 overflow-y-auto">
+  <div class="flex-1 overflow-y-auto md:ml-[250px] transition-all duration-300">
     <!-- Header -->
     <div class="flex justify-between items-center p-4 border-b bg-white sticky top-0 z-10">
       {#if isEditingTag && canEdit}
@@ -349,7 +415,7 @@
             {#if folders.length > 0}
                 <section class="mb-8">
                     <h2 class="text-xl font-semibold mb-4">Thư mục ({folders.length})</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                         {#each paginatedFolders as folder (folder.id)}
                             <Folders {folder} />
                         {/each}
@@ -367,7 +433,7 @@
             {#if items.length > 0}
                 <section>
                     <h2 class="text-xl font-semibold mb-4">Mặt hàng ({items.length})</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                         {#each paginatedItems as item (item.id)}
                             <Items {...item} />
                         {/each}
@@ -431,16 +497,3 @@
     </div>
   </div>
 {/if}
-
-<style>
-  .small-scrollbar::-webkit-scrollbar {
-    width: 6px;
-  }
-  .small-scrollbar::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-  }
-  .small-scrollbar::-webkit-scrollbar-track {
-    background: #f1f5f9;
-  }
-</style>

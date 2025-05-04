@@ -142,7 +142,8 @@
         h-screen
         transition-all duration-300
         overflow-hidden
-        flex-none                
+        flex-none    
+        z-49          
       "
     >
       <div class="flex justify-center items-center py-5">

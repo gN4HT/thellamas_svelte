@@ -1,6 +1,6 @@
 <script lang="ts">
     import { apiFetch } from '$lib/api';
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy } from 'svelte';
     import Items from "../../../components/Items.svelte";
     import Paginations from "../../../components/Paginations.svelte";
     import type { Folder } from "../../../models/folder";
@@ -38,6 +38,8 @@
     let currentPage = 1;
     let totalItems = 0;
     const itemsPerPage = 12;
+    let isSidebarOpen = true;
+    let isMobile = false;
 
     // Add function to check if any filter has value
     function hasAnyFilter() {
@@ -59,10 +61,27 @@
         try {
             const response = await apiFetch("/folders");
             folders = response.filter(folder => folder.is_deleted !== 1);
+            
+            // Check if mobile on mount
+            checkMobile();
+            // Add resize listener
+            window.addEventListener('resize', checkMobile);
         } catch (err) {
             console.error("Error fetching folders:", err);
             error = err.message;
         }
+    });
+
+    function checkMobile() {
+        isMobile = window.innerWidth < 768;
+        if (isMobile) {
+            isSidebarOpen = false;
+        }
+    }
+
+    // Cleanup
+    onDestroy(() => {
+        window.removeEventListener('resize', checkMobile);
     });
 
     async function search() {
@@ -121,11 +140,49 @@
     .rotate-180 {
         transform: rotate(180deg);
     }
+
+    @media (max-width: 768px) {
+        .sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 30;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 25;
+        }
+
+        .overlay.open {
+            display: block;
+        }
+    }
 </style>
 
 <div class="flex w-full min-h-screen bg-gray-50">
+    <!-- Mobile Toggle Button -->
+    <button 
+        class="fixed top-4 left-[110px] z-40 md:hidden bg-white p-2 rounded-lg shadow-lg"
+        on:click={() => isSidebarOpen = !isSidebarOpen}
+    >
+        <i class="fas fa-bars text-gray-700"></i>
+    </button>
+
+    <!-- Overlay for mobile -->
+    <div class="overlay" class:open={isSidebarOpen && isMobile}></div>
+
     <!-- Sidebar Filter -->
-    <aside class="w-[300px] fixed h-full bg-white border-r border-gray-200 p-6 shadow-lg overflow-y-auto">
+    <aside class="sidebar w-[300px] fixed h-full bg-white border-r border-gray-200 p-6 shadow-lg overflow-y-auto" class:open={isSidebarOpen}>
         <h2 class="text-xl font-semibold mb-6 text-gray-800">Bộ lọc</h2>
 
         {#each Object.keys(labels) as key}
@@ -232,7 +289,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="ml-[300px] flex-1 p-8">
+    <main class="flex-1 p-4 md:p-8 md:ml-[300px] transition-all duration-300">
         <h1 class="text-2xl font-bold text-gray-800 mb-6 border-b border-gray-200 pb-4">Kết quả tìm kiếm</h1>
 
         {#if isLoading}
@@ -248,7 +305,7 @@
                 <h2 class="text-xl font-semibold text-gray-600 mb-2">Không có kết quả</h2>
             </div>
         {:else}
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {#each paginatedResults as item (item.id)}
                     <Items {...item} />
                 {/each}

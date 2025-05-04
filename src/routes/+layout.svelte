@@ -3,7 +3,9 @@
     import {goto} from "$app/navigation";
 
     if (browser && window.location.pathname === "/") {
-        goto("/web");
+        setTimeout(() => {
+            goto("/web");
+        }, 2000);
     }
     let {children} = $props();
 </script>

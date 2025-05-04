@@ -32,26 +32,69 @@
   onMount(fetchLowStockItems);
 </script>
 
-<div class="p-6">
+<style>
+  @media (max-width: 768px) {
+    .table-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 -1.5rem;
+      padding: 0 1.5rem;
+    }
+
+    .table-container::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+
+    .header-container {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .view-all-button {
+      width: 100%;
+    }
+
+    .table {
+      min-width: 800px;
+    }
+  }
+</style>
+
+<div class="p-4 md:p-6 space-y-4">
   <!-- Tiêu đề và nút hành động -->
-  <div class="flex justify-between items-center mb-4">
+  <div class="header-container flex justify-between items-center">
     <h1 class="text-2xl font-bold text-gray-700">Sản phẩm có tồn kho thấp</h1>
-    <button class="bg-[#00205B] text-white px-4 py-2 rounded-lg border border-[#00205B] hover:bg-white hover:text-[#00205B] transition-colors">
+    <button class="view-all-button bg-[#00205B] text-white px-4 py-2 rounded-lg border border-[#00205B] hover:bg-white hover:text-[#00205B] transition-colors duration-200">
       <i class="fa-solid fa-circle-exclamation mr-1"></i> Xem tất cả
     </button>
   </div>
 
   <!-- Trạng thái tải -->
   {#if isLoading}
-    <p class="text-gray-600">Đang tải dữ liệu...</p>
+    <div class="flex justify-center items-center h-40">
+      <div class="animate-spin h-10 w-10 rounded-full border-4 border-blue-500 border-t-transparent"></div>
+    </div>
   {:else if error}
-    <p class="text-red-500">{error}</p>
+    <div class="bg-red-100 text-red-700 border border-red-300 p-4 rounded-md">
+      {error}
+    </div>
   {:else if items.length === 0}
-    <p class="text-gray-600 italic">Không có sản phẩm nào thiếu hàng.</p>
+    <div class="text-center py-8">
+      <p class="text-gray-600 italic">Không có sản phẩm nào thiếu hàng.</p>
+    </div>
   {:else}
     <!-- Bảng hiển thị sản phẩm -->
-    <div class="mt-4 overflow-x-auto">
-      <table class="w-full border-collapse table-fixed border border-gray-300">
+    <div class="table-container">
+      <table class="table w-full border-collapse table-fixed border border-gray-300">
         <thead class="bg-gray-200 text-gray-700 uppercase whitespace-nowrap">
           <tr>
             <th class="py-3 px-4 border border-gray-300 w-72 text-left">Tên</th>

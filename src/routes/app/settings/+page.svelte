@@ -88,13 +88,12 @@
 
   // Hàm xử lý thay đổi mật khẩu
   async function changePassword(event) {
-    event.preventDefault(); // Ngăn form tự động submit
+    event.preventDefault();
 
     const currentPassword = document.getElementById("current_password").value;
     const newPassword = document.getElementById("new_password").value;
     const confirmPassword = document.getElementById("new_password_confirmation").value;
 
-    // Kiểm tra xem mật khẩu mới và mật khẩu xác nhận có khớp không
     if (newPassword !== confirmPassword) {
       errorMessage = "Mật khẩu mới và mật khẩu xác nhận không khớp.";
       return;
@@ -114,7 +113,7 @@
 
       if (response && response.success) {
         successMessage = "Mật khẩu đã được thay đổi thành công!";
-        errorMessage = "";  // Reset thông báo lỗi nếu thành công
+        errorMessage = "";
         document.getElementById("current_password").value = "";
         document.getElementById("new_password").value = "";
         document.getElementById("new_password_confirmation").value = "";
@@ -124,45 +123,91 @@
     } catch (error) {
       console.error("Lỗi thay đổi mật khẩu:", error);
       errorMessage = error.message || "Có lỗi không xác định khi thay đổi mật khẩu.";
-      successMessage = "";  // Reset thông báo thành công nếu có lỗi
+      successMessage = "";
     }
   }
 
-  // Tải thông tin người dùng khi component mount
   onMount(() => {
     userInf();
   });
 </script>
 
+<style>
+  @media (max-width: 768px) {
+    .profile-grid {
+      grid-template-columns: 1fr;
+    }
 
-<div>
-  <h1 class="text-3xl font-semibold pb-6 border-b border-gray-500">Hồ Sơ Người Dùng</h1>
+    .password-grid {
+      grid-template-columns: 1fr;
+    }
 
-  <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+    .avatar-section {
+      margin-bottom: 2rem;
+    }
+
+    .form-input {
+      width: 100%;
+    }
+
+    .button-group {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .forgot-password {
+      margin-left: 0;
+      margin-top: 1rem;
+    }
+  }
+</style>
+
+<div class="space-y-6">
+  <h1 class="text-2xl md:text-3xl font-semibold pb-4 md:pb-6 border-b border-gray-300">Hồ Sơ Người Dùng</h1>
+
+  <!-- Thông tin cá nhân -->
+  <div class="bg-white shadow-md rounded-lg p-4 md:p-6">
     <h2 class="text-xl font-semibold mb-4">Thông Tin Cá Nhân</h2>
 
     <form on:submit|preventDefault={updateUser} enctype="multipart/form-data">
-      <div class="grid grid-cols-3 gap-6">
+      <div class="profile-grid grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Cột 1: Ảnh đại diện -->
-        <div class="flex flex-col items-center">
-          <img src={avatarPreview} alt="Avatar" class="w-32 h-32 rounded-full object-cover mb-4" />
+        <div class="avatar-section flex flex-col items-center">
+          <img src={avatarPreview} alt="Avatar" class="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover mb-4" />
           <label class="block text-gray-600 mb-2">Thay ảnh đại diện</label>
-          <input type="file" accept="image/*" on:change={handleFileChange} class="w-full border rounded-lg p-2" />
+          <input 
+            type="file" 
+            accept="image/*" 
+            on:change={handleFileChange} 
+            class="form-input border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+          />
         </div>
 
         <!-- Cột 2 -->
         <div class="space-y-4">
           <div>
             <label class="block text-gray-600">Họ và tên</label>
-            <input type="text" bind:value={user.name} class="w-full border rounded-lg p-2 mt-1" />
+            <input 
+              type="text" 
+              bind:value={user.name} 
+              class="form-input border rounded-lg p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+            />
           </div>
           <div>
             <label class="block text-gray-600">Email</label>
-            <input type="email" bind:value={user.email} class="w-full border rounded-lg p-2 mt-1" />
+            <input 
+              type="email" 
+              bind:value={user.email} 
+              class="form-input border rounded-lg p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+            />
           </div>
           <div>
             <label class="block text-gray-600">Số điện thoại</label>
-            <input type="text" bind:value={user.phone_number} class="w-full border rounded-lg p-2 mt-1" />
+            <input 
+              type="text" 
+              bind:value={user.phone_number} 
+              class="form-input border rounded-lg p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+            />
           </div>
         </div>
 
@@ -170,52 +215,96 @@
         <div class="space-y-4">
           <div>
             <label class="block text-gray-600">Ngày sinh</label>
-            <input type="date" bind:value={user.date_of_birth} class="w-full border rounded-lg p-2 mt-1" />
+            <input 
+              type="date" 
+              bind:value={user.date_of_birth} 
+              class="form-input border rounded-lg p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+            />
           </div>
           <div>
             <label class="block text-gray-600">Địa chỉ</label>
-            <input type="text" bind:value={user.addresses} class="w-full border rounded-lg p-2 mt-1" />
+            <input 
+              type="text" 
+              bind:value={user.addresses} 
+              class="form-input border rounded-lg p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+            />
           </div>
         </div>
       </div>
 
-
-      <button type="submit" class="mt-6 bg-[#00205b] text-white px-6 py-2 rounded-lg hover:bg-white hover:text-[#00205b] border border-[#00205b]">
+      <button 
+        type="submit" 
+        class="mt-6 bg-[#00205b] text-white px-6 py-2 rounded-lg hover:bg-white hover:text-[#00205b] border border-[#00205b] transition-colors duration-200"
+      >
         Lưu Thay Đổi
       </button>
     </form>
   </div>
 
   <!-- Đổi mật khẩu -->
-  <form on:submit|preventDefault={changePassword}>
-    <div class="grid grid-cols-2 gap-4">
-      <div class="relative">
-        <label for="current_password" class="block text-gray-600">Mật khẩu hiện tại</label>
-        <input type="password" id="current_password" name="current_password" class="w-full border rounded-lg p-2 mt-1" required />
+  <div class="bg-white shadow-md rounded-lg p-4 md:p-6">
+    <h2 class="text-xl font-semibold mb-4">Đổi Mật Khẩu</h2>
+    
+    <form on:submit|preventDefault={changePassword}>
+      <div class="password-grid grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="current_password" class="block text-gray-600">Mật khẩu hiện tại</label>
+          <input 
+            type="password" 
+            id="current_password" 
+            name="current_password" 
+            class="form-input border rounded-lg p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+            required 
+          />
+        </div>
+        <div>
+          <label for="new_password" class="block text-gray-600">Mật khẩu mới</label>
+          <input 
+            type="password" 
+            id="new_password" 
+            name="new_password" 
+            class="form-input border rounded-lg p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+            required 
+          />
+        </div>
+        <div>
+          <label for="new_password_confirmation" class="block text-gray-600">Xác nhận mật khẩu mới</label>
+          <input 
+            type="password" 
+            id="new_password_confirmation" 
+            name="new_password_confirmation" 
+            class="form-input border rounded-lg p-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+            required 
+          />
+        </div>
       </div>
-      <div>
-        <label for="new_password" class="block text-gray-600">Mật khẩu mới</label>
-        <input type="password" id="new_password" name="new_password" class="w-full border rounded-lg p-2 mt-1" required />
+    
+      <div class="button-group flex items-center mt-4">
+        <button 
+          type="submit" 
+          class="bg-[#00205b] text-white px-4 py-2 rounded-lg hover:bg-white hover:text-[#00205b] border border-[#00205b] transition-colors duration-200"
+        >
+          Lưu Thay Đổi
+        </button>
+        <a 
+          href="/web/forgotPassword" 
+          class="forgot-password text-[#00205b] hover:text-blue-700 transition-colors duration-200"
+        >
+          Quên mật khẩu?
+        </a>
       </div>
-      <div>
-        <label for="new_password_confirmation" class="block text-gray-600">Xác nhận mật khẩu mới</label>
-        <input type="password" id="new_password_confirmation" name="new_password_confirmation" class="w-full border rounded-lg p-2 mt-1" required />
-      </div>
-    </div>
-  
-    <button type="submit" class="mt-4 bg-[#00205b] text-white px-4 py-2 rounded-lg hover:bg-white hover:text-[#00205b] border border-[#00205b]">
-      Lưu Thay Đổi
-    </button>
-  
-    {#if errorMessage}
-      <p class="text-red-500 mt-4">{errorMessage}</p> <!-- Thông báo lỗi màu đỏ -->
-    {/if}
-  
-    {#if successMessage}
-      <p class="text-green-500 mt-4">{successMessage}</p> <!-- Thông báo thành công màu xanh lá -->
-    {/if}
-  
-    <a href="/web/forgotPassword" class="text-[#00205b] ml-4">Quên mật khẩu?</a>
-  </form>
-  
+    
+      {#if errorMessage}
+        <div class="mt-4 bg-red-100 text-red-700 border border-red-300 p-4 rounded-md">
+          {errorMessage}
+        </div>
+      {/if}
+    
+      {#if successMessage}
+        <div class="mt-4 bg-green-100 text-green-700 border border-green-300 p-4 rounded-md">
+          {successMessage}
+        </div>
+      {/if}
+    </form>
+  </div>
 </div>
