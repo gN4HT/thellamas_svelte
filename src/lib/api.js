@@ -1,5 +1,5 @@
 // Thêm BASE_URL làm hằng số
-const BASE_URL = "http://127.0.0.1:8000/api";
+const BASE_URL = "https://tkhoa-innovation.com/invTracker_api/public/api";
 
 export const apiFetch = async (
   endpoint,

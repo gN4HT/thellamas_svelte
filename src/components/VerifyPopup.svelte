@@ -99,7 +99,7 @@
             const formData = new FormData();
             formData.append('email', email);
 
-            const response = await fetch("http://127.0.0.1:8000/api/resend-otp", {
+            const response = await fetch("https://tkhoa-innovation.com/invTracker_api/public/api/resend-otp", {
                 method: "POST",
                 body: formData
             });
@@ -166,7 +166,7 @@
             formData.append('email', email);
             formData.append('otp', otpString);
 
-            const response = await fetch("http://127.0.0.1:8000/api/verify-otp", {
+            const response = await fetch("https://tkhoa-innovation.com/invTracker_api/public/api/verify-otp", {
                 method: "POST",
                 body: formData
             });

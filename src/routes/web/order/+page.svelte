@@ -34,7 +34,7 @@
     // Hàm lấy thông tin user
     const fetchUserInfo = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/me', {
+            const response = await fetch('https://tkhoa-innovation.com/invTracker_api/public/api/me', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -69,7 +69,7 @@
         if (planId) {
             try {
                 loading = true;
-                const response = await fetch(`http://127.0.0.1:8000/api/plans/${planId}`);
+                const response = await fetch(`https://tkhoa-innovation.com/invTracker_api/public/api/plans/${planId}`);
                 console.log('Raw Response:', response);
                 
                 if (!response.ok) {
@@ -158,7 +158,7 @@
             console.log('Order ID:', orderId);
 
             // 2. Lấy payment URL
-            const paymentResponse = await fetch(`http://127.0.0.1:8000/api/payments/${orderId}/zalopay/payment-url`, {
+            const paymentResponse = await fetch(`https://tkhoa-innovation.com/invTracker_api/public/api/payments/${orderId}/zalopay/payment-url`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }

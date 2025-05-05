@@ -6,7 +6,7 @@
     // Gọi API để fetch dữ liệu
     const fetchPlans = async () => {
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/plans");
+            const response = await fetch("https://tkhoa-innovation.com/invTracker_api/public/api/plans");
             if (response.ok) {
                 const data = await response.json();
                 plans = data.data; // Lưu dữ liệu vào biến từ key `data`

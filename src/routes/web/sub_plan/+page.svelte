@@ -9,7 +9,7 @@
     // Gọi API để fetch dữ liệu user
     const fetchUserInfo = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/me', {
+            const response = await fetch('https://tkhoa-innovation.com/invTracker_api/public/api/me', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }

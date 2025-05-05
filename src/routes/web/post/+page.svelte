@@ -15,7 +15,7 @@
   error = null;
 
   try {
-    let url = `http://127.0.0.1:8000/api/posts?page=${page}`;
+    let url = `https://tkhoa-innovation.com/invTracker_api/public/api/posts?page=${page}`;
 
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Lỗi HTTP: ${res.status} - ${res.statusText}`);
@@ -35,7 +35,7 @@
 
 async function fetchCategories() {
   try {
-    const res = await fetch("http://127.0.0.1:8000/api/post-categories");
+    const res = await fetch("https://tkhoa-innovation.com/invTracker_api/public/api/post-categories");
     if (!res.ok) throw new Error("Lỗi khi tải danh mục bài viết");
 
     categories = await res.json();
@@ -47,7 +47,7 @@ async function fetchCategories() {
 
   async function fetchPostDetail(postId) {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/posts/${postId}`);
+      const res = await fetch(`https://tkhoa-innovation.com/invTracker_api/public/api/posts/${postId}`);
       if (!res.ok) throw new Error("Lỗi khi tải chi tiết bài viết");
 
       selectedPost = await res.json();
@@ -91,7 +91,7 @@ async function fetchCategories() {
     
         <a href={`post/${post.id}`}>
           <img 
-          src="http://127.0.0.1:8000/storage/{post.image}"  
+          src="https://tkhoa-innovation.com/invTracker_api/public/storage/{post.image}"  
           alt={post.title} 
           class="w-full h-48 object-cover rounded-lg mb-3 h-[250px]"
           />

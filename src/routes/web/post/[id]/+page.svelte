@@ -18,7 +18,7 @@
 
   loading = true;
   try {
-    const res = await fetch(`http://127.0.0.1:8000/api/posts/${postId}`);
+    const res = await fetch(`https://tkhoa-innovation.com/invTracker_api/public/api/posts/${postId}`);
     if (!res.ok) throw new Error("Lỗi khi tải chi tiết bài viết");
 
     const data = await res.json();
@@ -49,7 +49,7 @@
     {:else if post}
       <div class="bg-white p-6 shadow-lg rounded-lg">
         <img 
-          src="http://127.0.0.1:8000/storage/{post.image}" 
+          src="https://tkhoa-innovation.com/invTracker_api/public/storage/{post.image}" 
           alt={post.title} 
           class="w-full h-64 object-cover rounded-lg mb-4"
         />

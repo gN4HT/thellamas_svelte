@@ -24,7 +24,7 @@
     let price = '0';
     let notes = '';
 
-    const IMAGE_BASE_URL = 'http://127.0.0.1:8000/storage/';
+    const IMAGE_BASE_URL = 'https://tkhoa-innovation.com/invTracker_api/public/storage/';
 
     // Thêm hàm để lấy dữ liệu item khi edit
     async function fetchItemData() {

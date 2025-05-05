@@ -35,7 +35,7 @@
             error = '';
             success = '';
 
-            const response = await fetch('http://localhost:8000/api/verify-otp-reset', {
+            const response = await fetch('https://tkhoa-innovation.com/invTracker_api/public/api/verify-otp-reset', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -78,7 +78,7 @@
             error = '';
             success = '';
 
-            const response = await fetch('http://localhost:8000/api/reset-password', {
+            const response = await fetch('https://tkhoa-innovation.com/invTracker_api/public/api/reset-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

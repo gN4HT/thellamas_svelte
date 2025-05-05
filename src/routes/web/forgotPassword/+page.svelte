@@ -10,7 +10,7 @@
             error = '';
             success = '';
 
-            const response = await fetch('http://localhost:8000/api/forgot-password', {
+            const response = await fetch('https://tkhoa-innovation.com/invTracker_api/public/api/forgot-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

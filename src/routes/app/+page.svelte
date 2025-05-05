@@ -113,7 +113,7 @@
                 {#each data.recent_items as item}
                     <div class="shadow-md rounded-lg overflow-hidden bg-white">
                         {#if item.img && item.img !== 'null' && item.img !== 'undefined' && item.img.length > 0}
-                        <img src={`http://127.0.0.1:8000/storage/${item.img}`} class="w-full h-48 md:h-80 object-cover"/>
+                        <img src={`https://tkhoa-innovation.com/invTracker_api/public/storage/${item.img}`} class="w-full h-48 md:h-80 object-cover"/>
                         {:else}
                             <div class="bg-gray-200 h-48 md:h-80 flex items-center justify-center">
                                 <span class="text-4xl text-gray-400"><i class="fa-solid fa-file"></i></span>
@@ -143,7 +143,7 @@
                     <div class="flex items-center shadow-md p-4 bg-white rounded-lg">
                         {#if item.img && item.img !== 'null' && item.img !== 'undefined' && item.img.length > 0}
                         <a class="w-20 h-20 flex-shrink-0 flex justify-center items-center bg-gray-400">
-                                <img src={`http://127.0.0.1:8000/storage/${item.img}`} class="w-20 h-20"/>
+                                <img src={`https://tkhoa-innovation.com/invTracker_api/public/storage/${item.img}`} class="w-20 h-20"/>
                             </a>
                         {:else}
                             <a class="w-20 h-20 flex-shrink-0 flex justify-center items-center bg-gray-200">

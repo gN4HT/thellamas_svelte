@@ -100,7 +100,6 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-
   }
 </style>
 
