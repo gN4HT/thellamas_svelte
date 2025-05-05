@@ -111,7 +111,7 @@
         }
 
         if (!formData.user_billing_address.trim()) {
-            error = "Vui lòng nhập địa chỉ thanh toán";
+            error = "Vui lòng nhập thông tin thanh toán";
             return;
         }
 
@@ -228,13 +228,13 @@
         <form on:submit|preventDefault={handleSubmit} class="bg-white p-6 rounded-lg shadow-md">
             <div class="mb-6">
                 <label class="block text-gray-700 text-sm font-bold mb-2">
-                    Địa chỉ thanh toán
+                    Thông tin thanh toán
                 </label>
                 <textarea
                     bind:value={formData.user_billing_address}
                     class="w-full p-2 border rounded"
                     rows="3"
-                    placeholder="Nhập địa chỉ thanh toán đầy đủ"
+                    placeholder="Nhập thông tin thanh toán đầy đủ"
                     required
                 ></textarea>
             </div>
