@@ -24,7 +24,7 @@
     // Gọi API để fetch dữ liệu plans
     const fetchPlans = async () => {
         try {
-            const data = await apiFetch("plans");
+            const data = await apiFetch("/plans");
             plans = data.data; // Lưu dữ liệu vào biến từ key `data`
         } catch (error) {
             console.error("Error:", error);

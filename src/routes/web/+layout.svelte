@@ -2,6 +2,8 @@
   import { afterNavigate } from '$app/navigation';
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
+  import {goto} from "$app/navigation";
+
   
   let {children} = $props();
   let isMenuOpen = $state(false);
@@ -12,6 +14,10 @@
   function toggleMenu() {
       isMenuOpen = !isMenuOpen;
   }
+  function logout() {
+        localStorage.removeItem("token");
+        goto("/web/login");
+    }
 
   // Close menu after navigation
   afterNavigate(() => {
@@ -105,7 +111,8 @@ hover:text-[#00205b]">Tin tức</a>
       <div class="hidden md:flex items-center space-x-4">
         {#if isAuthenticated}
           <a href="/app/" class="bg-[#00205b] text-white px-4 py-2 rounded-lg text-base shadow hover:bg-white  border border-[#00205b]  hover:text-[#00205b]">Vào kho</a>
-        {:else}
+          <button on:click={logout} class="bg-red-500 text-white px-4 py-2 rounded-lg text-base shadow hover:bg-white  border border-red-500  hover:text-red-500">Đăng xuất</button>
+          {:else}
           <a href="/web/login" class="text-gray-700 text-base hover:text-[#00205b]">Đăng nhập</a>
           <a href="/web/register" class="bg-[#00205b] text-white px-4 py-2 rounded-lg text-base shadow  border border-[#00205b]  hover:bg-white hover:text-[#00205b]">Dùng thử miễn phí</a>
         {/if}
