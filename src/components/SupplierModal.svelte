@@ -24,7 +24,7 @@
       const itemData = await apiFetch(`/items/${itemId}`);
 
       // Set existing supplier từ item data
-      existingSupplierId = itemData.supplier_id || null;
+      existingSupplierId = Number(itemData.supplier_id) || null;
       
       // Set selected supplier từ existing supplier
       selectedSupplierId = existingSupplierId;

@@ -19,6 +19,6 @@
         {/if}
     <div class="p-4">
         <p class="mt-2 font-semibold text-gray-700">{item.name}</p>
-        <p class="text-sm text-gray-500 mt-1">{item.quantity} | ₫{item.price?.toLocaleString()}</p>
+        <p class="text-sm text-gray-500 mt-1">{item.quantity} | ₫{parseInt(item.price?.toString() || '0').toLocaleString()} VNĐ</p>
     </div>
 </div>

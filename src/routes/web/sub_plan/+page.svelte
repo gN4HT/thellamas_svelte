@@ -25,7 +25,9 @@
     const fetchPlans = async () => {
         try {
             const data = await apiFetch("/plans");
+            console.log('Plans API Response:', data);
             plans = data.data; // Lưu dữ liệu vào biến từ key `data`
+            console.log('Processed Plans:', plans);
         } catch (error) {
             console.error("Error:", error);
         }
@@ -98,9 +100,13 @@
             </ul>
             <p class="mt-4 font-bold">🚀 Tính năng nổi bật:</p>
             <ul class="mt-4 text-left text-gray-700 space-y-2">
-                {#each Object.entries(plan.enabled_features) as [feature, value]}
-                    <li>✔️ {feature.replace(/_/g, ' ')}: {typeof value === 'boolean' ? (value ? 'Có' : 'Không') : value}</li>
-                {/each}
+                {#if plan.enabled_features}
+                    {#each Object.entries(plan.enabled_features) as [feature, value]}
+                        <li>✔️ {feature.replace(/_/g, ' ')}: {typeof value === 'boolean' ? (value ? 'Có' : 'Không') : value}</li>
+                    {/each}
+                {:else}
+                    <li>Không có thông tin tính năng nổi bật.</li>
+                {/if}
             </ul>
         </div>
     {/each}

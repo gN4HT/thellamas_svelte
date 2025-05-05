@@ -38,40 +38,52 @@
 
   // Handle form submission
   const handleSubmit = async () => {
-  try {
-    const endpoint = isEditMode && selectedField
-            ? `fields/${selectedField.id}`
-            : "fields";
-    const method = isEditMode ? "PUT" : "POST";
+    try {
+      const endpoint = isEditMode && selectedField
+        ? `fields/${selectedField.id}`
+        : "fields";
+      const method = isEditMode ? "PUT" : "POST";
 
-    const formData = new FormData();
-    formData.append('name', fieldForm.name);
-    formData.append('is_hidden', fieldForm.is_hidden ? '1' : '0');
-    formData.append('type', fieldForm.type);
-    formData.append('inventory_id', fieldForm.inventory_id || '');
+      let requestData;
+      if (isEditMode) {
+        // Use JSON for editing
+        requestData = {
+          name: fieldForm.name,
+          is_hidden: fieldForm.is_hidden ? 1 : 0,
+          type: fieldForm.type,
+          inventory_id: fieldForm.inventory_id || null,
+          value: fieldForm.type === 'checkbox' ? fieldForm.value : [String(fieldForm.value)]
+        };
+      } else {
+        // Use FormData for creating new fields
+        const formData = new FormData();
+        formData.append('name', fieldForm.name);
+        formData.append('is_hidden', fieldForm.is_hidden ? '1' : '0');
+        formData.append('type', fieldForm.type);
+        formData.append('inventory_id', fieldForm.inventory_id || '');
 
-    // Handle value based on type
-    if (fieldForm.type === 'checkbox') {
-      // For checkbox, append each value separately
-      fieldForm.value.forEach((val, index) => {
-        formData.append(`value[${index}]`, val);
+        if (fieldForm.type === 'checkbox') {
+          fieldForm.value.forEach((val, index) => {
+            formData.append(`value[${index}]`, val);
+          });
+        } else {
+          formData.append('value[]', String(fieldForm.value));
+        }
+        requestData = formData;
+      }
+
+      await apiFetch(endpoint, { 
+        method, 
+        body: requestData,
+        headers: isEditMode ? { 'Content-Type': 'application/json' } : undefined
       });
-    } else {
-      // For other types, append as single value
-      formData.append('value[]', String(fieldForm.value));
+
+      closeModal();
+      fetchFields();
+    } catch (error) {
+      console.error("Lỗi khi gửi form:", error);
     }
-
-    await apiFetch(endpoint, { 
-      method, 
-      body: formData 
-    });
-
-    closeModal();
-    fetchFields();
-  } catch (error) {
-    console.error("Lỗi khi gửi form:", error);
-  }
-};
+  };
 
 
   // Handle field deletion

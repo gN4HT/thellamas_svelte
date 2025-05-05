@@ -75,7 +75,7 @@
         const folderId = params.get('folder');
         
         if (folderId) { 
-            currentFolderId = Number(folderId);
+            currentFolderId = folderId;
             folderPage = 1;
             itemPage = 1;
             loadDataFromCache(currentFolderId);
@@ -679,7 +679,7 @@
     <div class="p-4 mt-4 flex flex-wrap gap-4 sm:gap-6 text-gray-700">
         <span>Thư mục: <strong>{totalFoldersCount}</strong></span>
         <span>Mặt hàng: <strong>{totalItemsCount}</strong></span>
-        <span>Tổng giá trị: <strong>₫{totalPrice.toLocaleString()}</strong></span>
+        <span>Tổng giá trị: <strong>₫{parseInt(totalPrice?.toString() || '0').toLocaleString()} VNĐ</strong></span>
     </div>
     
     <!-- Main Content -->

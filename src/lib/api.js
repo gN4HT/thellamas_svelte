@@ -39,6 +39,11 @@ export const apiFetch = async (
 
     if (!response.ok) {
       const errorData = await response.json();
+      if (
+        errorData?.message === "You have exceeded your subscription plan limit"
+      ) {
+        alert(`Bạn đã đạt giới hạn ${type}`);
+      }
       throw new Error(errorData?.message || response.statusText);
     }
 

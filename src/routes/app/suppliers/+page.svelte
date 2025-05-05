@@ -9,7 +9,6 @@
         email: string;
         phone: string;
         address?: string;
-        description?: string;
     }
 
     let suppliers: Supplier[] = [];
@@ -168,7 +167,7 @@
 
 <!-- Loading Overlay -->
 {#if isLoading}
-  <div class="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
+<div class="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50">
     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00205b]"></div>
   </div>
 {/if}
@@ -279,10 +278,7 @@
                             <p class="text-gray-600">Địa chỉ</p>
                             <p class="font-medium">{selectedSupplier.address || 'Chưa có'}</p>
                         </div>
-                        <div>
-                            <p class="text-gray-600">Mô tả</p>
-                            <p class="font-medium">{selectedSupplier.description || 'Chưa có'}</p>
-                        </div>
+
                     </div>
                     {#if canEdit}
                         <div class="mt-6 flex justify-end space-x-3">
@@ -355,14 +351,6 @@
                             value={selectedSupplier?.address || ''}
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         />
-                    </div>
-                    <div>
-                        <label for="description" class="block text-sm font-medium text-gray-700">Mô tả</label>
-                        <textarea
-                            name="description"
-                            value={selectedSupplier?.description || ''}
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        ></textarea>
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3">
