@@ -111,7 +111,7 @@
         }
 
         if (!formData.user_billing_address.trim()) {
-            error = "Vui lòng nhập họ và tên";
+            error = "Vui lòng nhập ghi chú";
             return;
         }
 
@@ -234,7 +234,7 @@
                     bind:value={formData.user_billing_address}
                     class="w-full p-2 border rounded"
                     rows="3"
-                    placeholder="Nhập họ và tên đầy đủ"
+                    placeholder="Nhập ghi chú"
                     required
                 ></textarea>
             </div>

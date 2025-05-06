@@ -35,7 +35,7 @@
         profile_picture: null,
       };
 
-      avatarPreview = `https://tkhoa-innovation.com/invTracker_api/public/storage/${userData.profile_picture}` || "https://via.placeholder.com/150";
+      avatarPreview = `https://tkhoa-innovation.com/invTracker_api/public/${userData.profile_picture}` || "https://via.placeholder.com/150";
     } catch (error) {
       console.error("Lỗi khi tải thông tin người dùng:", error);
       errorMessage = "Lỗi khi tải thông tin người dùng: " + error.message;
