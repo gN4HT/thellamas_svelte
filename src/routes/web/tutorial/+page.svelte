@@ -121,7 +121,7 @@
                     </svg>
                   </div>
                   <p class="text-lg">Điện Thoại</p>
-                  <p class="text-white/80">(84) 123-456-789</p>
+                  <p class="text-white/80">(84) 708-957-718</p>
                 </div>
                 <div class="bg-white/10 p-6 rounded-xl backdrop-blur-sm flex flex-col items-center text-center">
                   <div class="w-12 h-12 mb-4 flex items-center justify-center">
@@ -131,7 +131,7 @@
                     </svg>
                   </div>
                   <p class="text-lg">Địa Chỉ</p>
-                  <p class="text-white/80">123 Đường ABC, Quận 1, TP.HCM</p>
+                  <p class="text-white/80">Số 07 Đường số 11 – Cityland Park Hills, Phường 10, Gò Vấp, TP. HCM</p>
                 </div>
               </div>
               <div class="flex flex-col sm:flex-row justify-center gap-6">

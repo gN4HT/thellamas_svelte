@@ -143,8 +143,8 @@ hover:text-[#00205b]">Tin tức</a>
   {@render children()}
 </main>
 
-<footer class="bg-black text-white py-8 sm:py-12">
-<div class="max-w-7xl mx-auto px-4 py-20 sm:px-6 lg:px-8">
+<footer class="bg-black text-white py-4 sm:py-8">
+<div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
     <!-- Logo và Giới thiệu -->
     <div class="space-y-4 w-full">
@@ -187,11 +187,11 @@ hover:text-[#00205b]">Tin tức</a>
     <div class="w-full">
       <h4 class="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Thông tin</h4>
       <ul class="space-y-2 sm:space-y-3">
-        <li><a href="/web/about" class="text-gray-400 hover:text-white transition-colors duration-200">Về chúng tôi</a></li>
-        <li><a href="/web/about" class="text-gray-400 hover:text-white transition-colors duration-200">Giải pháp</a></li>
-        <li><a href="/web/about" class="text-gray-400 hover:text-white transition-colors duration-200">Bảng giá</a></li>
-        <li><a href="/web/about" class="text-gray-400 hover:text-white transition-colors duration-200">Hướng dẫn</a></li>
-        <li><a href="/web/about" class="text-gray-400 hover:text-white transition-colors duration-200">Tin tức</a></li>
+        <li><a href="/web/about" class="text-gray-400 hover:text-white transition-colors duration-200">Giới thiệu</a></li>
+        <li><a href="/web/solution" class="text-gray-400 hover:text-white transition-colors duration-200">Giải pháp</a></li>
+        <li><a href="/web/sub_plan" class="text-gray-400 hover:text-white transition-colors duration-200">Bảng giá</a></li>
+        <li><a href="/web/tutorial" class="text-gray-400 hover:text-white transition-colors duration-200">Hướng dẫn</a></li>
+        <li><a href="/web/post  " class="text-gray-400 hover:text-white transition-colors duration-200">Tin tức</a></li>
       </ul>
     </div>
   </div>
