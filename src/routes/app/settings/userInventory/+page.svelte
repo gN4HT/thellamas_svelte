@@ -67,7 +67,8 @@
       isAdding = true;
       const response = await apiFetch("/user-inventory/add-by-email", {
         method: "POST",
-        body: { email: newUserEmail }
+        body: { email: newUserEmail },
+        headers: { 'x-type': 'users' }
       });
 
       if (response?.message === "Thêm người dùng thành công.") {

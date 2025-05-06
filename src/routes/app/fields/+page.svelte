@@ -75,7 +75,9 @@
       await apiFetch(endpoint, { 
         method, 
         body: requestData,
-        headers: isEditMode ? { 'Content-Type': 'application/json' } : undefined
+        headers: isEditMode 
+          ? { 'Content-Type': 'application/json' } 
+          : { 'x-type': 'fields' }
       });
 
       closeModal();

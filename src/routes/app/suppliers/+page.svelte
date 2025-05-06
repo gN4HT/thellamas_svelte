@@ -96,7 +96,8 @@
         try {
             await apiFetch(endpoint, {
                 method,
-                body: supplierData
+                body: supplierData,
+                headers: method === "POST" ? { 'x-type': 'suppliers' } : undefined
             });
             showModal = false;
             await fetchSuppliers();
