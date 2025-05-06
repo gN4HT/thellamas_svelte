@@ -2,7 +2,7 @@
   import { afterNavigate } from '$app/navigation';
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import {goto} from "$app/navigation";
+  import { goto } from "$app/navigation";
 
   
   let {children} = $props();
@@ -15,46 +15,46 @@
       isMenuOpen = !isMenuOpen;
   }
   function logout() {
+      if (browser) {
         localStorage.removeItem("token");
-        goto("/web/login");
-    }
+      }
+      isAuthenticated = false;
+      goto("/web/login");
+  }
 
-  // Close menu after navigation
+  function checkAuth() {
+    if (browser) {
+      try {
+        const token = localStorage.getItem('token');
+        isAuthenticated = !!token;
+      } catch (error) {
+        console.error('Error accessing localStorage:', error);
+        isAuthenticated = false;
+      }
+    }
+  }
+
+  // Close menu after navigation & check auth
   afterNavigate(() => {
       isMenuOpen = false;
+      checkAuth();
   });
 
   onMount(async () => {
-    try {
-      // Check authentication status
-      if (browser) {
-        try {
-          const token = localStorage.getItem('token');
-          isAuthenticated = !!token;
-        } catch (error) {
-          console.error('Error accessing localStorage:', error);
-          isAuthenticated = false;
-        }
-      }
+    checkAuth();
 
-      // Use absolute URL for API call
-      const backendUrl = 'http://localhost:8000'; // <-- Adjust if your backend runs on a different port
+    // Fetch logo
+    try {
+      const backendUrl = 'https://tkhoa-innovation.com/invTracker_api/public';
       const response = await fetch(`${backendUrl}/api/logo`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      
       if (data.success && data.logo_url) {
-        // Prepend backend URL if logo_url is relative
         logoUrl = data.logo_url.startsWith('/') ? `${backendUrl}${data.logo_url}` : data.logo_url;
-        footerLogoUrl = logoUrl; // Use the same fetched logo for the footer
+        footerLogoUrl = logoUrl;
       }
     } catch (error) {
       console.error('Error fetching logo:', error);
-      // Keep default logos if fetch fails
     }
   });
 </script>

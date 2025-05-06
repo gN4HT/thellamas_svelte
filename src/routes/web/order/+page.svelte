@@ -173,15 +173,15 @@
             console.log('Payment URL Response:', paymentData);
             
             if (paymentData && paymentData.data) {
-                if (paymentData.data.callback_url) {
-                    // Gọi callback URL trước
-                    await fetch(paymentData.data.callback_url, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        }
-                    });
-                }
+                // if (paymentData.data.callback_url) {
+                //     // Gọi callback URL trước
+                //     await fetch(paymentData.data.callback_url, {
+                //         method: 'POST',
+                //         headers: {
+                //             'Authorization': `Bearer ${localStorage.getItem('token')}`
+                //         }
+                //     });
+                // }
                 
                 if (paymentData.data.order_url) {
                     // 3. Chuyển hướng đến trang thanh toán Zalopay

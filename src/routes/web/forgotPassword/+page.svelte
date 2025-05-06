@@ -67,7 +67,7 @@
                 <button 
                     type="submit" 
                     disabled={isLoading}
-                    class="bg-[#00205b] text-white py-3 rounded-lg hover:bg-red-600 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="bg-[#00205b] border border-[#00205b] text-white py-3 rounded-lg hover:bg-white hover:text-[#00205b] transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                     {#if isLoading}
                         Đang gửi...
                     {:else}
