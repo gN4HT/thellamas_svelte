@@ -228,7 +228,7 @@
         <form on:submit|preventDefault={handleSubmit} class="bg-white p-6 rounded-lg shadow-md">
             <div class="mb-6">
                 <label class="block text-gray-700 text-sm font-bold mb-2">
-                    Thông tin thanh toán
+                    Ghi chú:
                 </label>
                 <textarea
                     bind:value={formData.user_billing_address}
