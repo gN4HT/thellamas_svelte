@@ -25,6 +25,8 @@
     let folders: Folder[] = [];
     let items: Item[] = [];
     let isLoading = false;
+    let isImporting: boolean = false;
+
     let error: string | null = null;
     let currentFolderId: number | null = null;
     let currentFolderName: string = "Tất cả mặt hàng";
@@ -56,7 +58,6 @@
     // Add new state variables
     let importFile: File | null = null;
     let importError: string | null = null;
-    let isImporting = false;
     let showImportModal = false;
 
     // Add new state variables after other state declarations
@@ -555,6 +556,8 @@
         const file = input.files[0];
         const reader = new FileReader();
 
+        isImporting = true; // Start loading
+
         reader.onload = async (e) => {
             try {
                 const data = new Uint8Array(e.target?.result as ArrayBuffer);
@@ -596,6 +599,8 @@
             } catch (error) {
                 console.error('Lỗi khi import:', error);
                 alert('Có lỗi xảy ra khi import. Vui lòng kiểm tra lại file.');
+            } finally {
+                isImporting = false; // End loading
             }
         };
 
@@ -619,6 +624,13 @@
     });
 </script>
   
+{#if isImporting}
+    <div class="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-50">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00205B]"></div>
+        <span class="ml-4 text-[#00205B] font-semibold">Đang nhập dữ liệu...</span>
+    </div>
+{/if}
+
 <!-- Main Layout -->
 <div class="flex flex-col min-h-screen">
     <!-- Header -->
@@ -1011,7 +1023,13 @@
     <!-- Add Import Modal -->
     {#if showImportModal}
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full relative">
+                {#if isImporting}
+                    <div class="absolute inset-0 bg-white bg-opacity-80 flex flex-col items-center justify-center z-10">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                        <span class="mt-4 text-blue-700 font-semibold">Đang nhập dữ liệu...</span>
+                    </div>
+                {/if}
                 <h2 class="text-xl font-bold mb-4">Nhập dữ liệu từ Excel</h2>
                 {#if importError}
                     <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
@@ -1036,12 +1054,13 @@
                             importFile = null;
                         }}
                         class="px-4 py-2 text-gray-600 hover:text-gray-800"
+                        disabled={isImporting}
                     >
                         Hủy
                     </button>
                     <label class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer">
                         Chọn file
-                        <input type="file" accept=".xlsx,.xls" on:change={handleImportExcel} class="hidden" />
+                        <input type="file" accept=".xlsx,.xls" on:change={handleImportExcel} class="hidden" disabled={isImporting} />
                     </label>
                 </div>
             </div>

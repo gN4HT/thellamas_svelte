@@ -27,7 +27,6 @@
             const data = await apiFetch("/plans");
             console.log('Plans API Response:', data);
             plans = data.data; // Lưu dữ liệu vào biến từ key `data`
-            console.log('Processed Plans:', plans);
         } catch (error) {
             console.error("Error:", error);
         }
